@@ -21,7 +21,8 @@ def safe_generate_today():
         print("INFO: Skipping OpenAI generation (SDK or API key missing).")
         return
 
-    client = OpenAI(api_key=api_key)
+    os.environ["OPENAI_API_KEY"] = api_key
+    client = OpenAI()
     today = datetime.date.today().isoformat()
     slug = today
     md_path = DAILY_DIR / f"{slug}.md"
