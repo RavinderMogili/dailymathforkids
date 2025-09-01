@@ -1,0 +1,13 @@
+:root { --bg:#fff; --ink:#111; --muted:#555; --card:#f6f6f6; --max:820px; }
+* { box-sizing: border-box; }
+html,body { margin:0; padding:0; background:var(--bg); color:var(--ink); font:16px/1.6 system-ui, Arial, sans-serif; }
+header, footer { padding:16px; text-align:center; background:#fafafa; border-bottom:1px solid #eee; }
+footer { border-top:1px solid #eee; border-bottom:none; color:var(--muted); }
+.container { max-width:var(--max); margin:0 auto; padding:20px; }
+.hero { background:var(--card); padding:16px; border-radius:14px; }
+h1,h2 { line-height:1.25; }
+.list { list-style: none; padding-left:0; }
+.list li { padding:8px 0; border-bottom:1px dashed #e5e5e5; }
+a { color:#0b57d0; text-decoration:none; }
+a:hover { text-decoration:underline; }
+.back { margin-top:24px; }
