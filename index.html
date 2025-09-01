@@ -13,16 +13,75 @@
     <section class="hero">
       <h1>Practice a little every day</h1>
       <p>We publish 5 new kid-friendly math problems each morning, with answers included.</p>
-      <p><strong>Today:</strong> (First daily page will appear after the initial run.)</p>
+      <p id="today-link"><strong>Today:</strong> Checking for today’s page…</p>
     </section>
+
     <section>
       <h2>Recent days</h2>
-      <ul class="list">
-        <li>First post arrives after the first daily run.</li>
+      <ul class="list" id="recent-list">
+        <li>Loading recent days…</li>
       </ul>
     </section>
   </main>
   <footer>© <span id="year"></span> • Auto-generated daily</footer>
-  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Helper to format YYYY-MM-DD
+    function ymd(d){
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const day = String(d.getDate()).padStart(2,'0');
+      return `${y}-${m}-${day}`;
+    }
+
+    // Your site base path
+    const BASE = location.pathname.replace(/\/$/, ''); // e.g. /dailymathforkids
+    const today = new Date();
+    const todayPath = `${BASE}/daily/${ymd(today)}.html`;
+
+    // Try to link "Today"
+    fetch(todayPath, { method: 'HEAD' })
+      .then(r => {
+        const el = document.getElementById('today-link');
+        if (r.ok) {
+          el.innerHTML = `<strong>Today:</strong> <a href="${todayPath}">Start here →</a>`;
+        } else {
+          el.innerHTML = `<strong>Today:</strong> Not posted yet — please check again shortly.`;
+        }
+      })
+      .catch(() => {
+        document.getElementById('today-link').innerHTML =
+          `<strong>Today:</strong> Not posted yet — please check again shortly.`;
+      });
+
+    // Build a recent list (checks last 21 days and shows what exists)
+    async function buildRecent(days=21){
+      const ul = document.getElementById('recent-list');
+      ul.innerHTML = '';
+      let count = 0;
+      for (let i=0;i<days;i++){
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const path = `${BASE}/daily/${ymd(d)}.html`;
+        try {
+          const r = await fetch(path, { method: 'HEAD' });
+          if (r.ok) {
+            const pretty = d.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
+            const li = document.createElement('li');
+            li.innerHTML = `<a href="${path}">Daily Math – ${pretty}</a>`;
+            ul.appendChild(li);
+            count++;
+          }
+        } catch(e) {}
+      }
+      if (count === 0){
+        ul.innerHTML = '<li>No daily pages found yet. The first one appears after the workflow runs.</li>';
+      }
+    }
+
+    buildRecent(21);
+  </script>
 </body>
 </html>
