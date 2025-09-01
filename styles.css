@@ -1,13 +1,47 @@
-:root { --bg:#fff; --ink:#111; --muted:#555; --card:#f6f6f6; --max:820px; }
-* { box-sizing: border-box; }
-html,body { margin:0; padding:0; background:var(--bg); color:var(--ink); font:16px/1.6 system-ui, Arial, sans-serif; }
-header, footer { padding:16px; text-align:center; background:#fafafa; border-bottom:1px solid #eee; }
-footer { border-top:1px solid #eee; border-bottom:none; color:var(--muted); }
-.container { max-width:var(--max); margin:0 auto; padding:20px; }
-.hero { background:var(--card); padding:16px; border-radius:14px; }
-h1,h2 { line-height:1.25; }
-.list { list-style: none; padding-left:0; }
-.list li { padding:8px 0; border-bottom:1px dashed #e5e5e5; }
-a { color:#0b57d0; text-decoration:none; }
-a:hover { text-decoration:underline; }
-.back { margin-top:24px; }
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap');
+:root{
+  --bg:#fffefb; --ink:#222; --muted:#5b5b5b;
+  --card:#fff7d6;     /* soft yellow */
+  --accent:#ff7b54;   /* coral */
+  --accent-2:#68c3d4; /* aqua */
+  --accent-3:#8bd17c; /* green */
+  --max:920px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+  font:17px/1.6 'Fredoka', system-ui, Arial, sans-serif;}
+header,footer{padding:18px;text-align:center;
+  background:linear-gradient(90deg,var(--accent),var(--accent-2)); color:white}
+footer{opacity:.9}
+.container{max-width:var(--max);margin:0 auto;padding:24px}
+.hero{background:var(--card);padding:20px;border-radius:18px;border:3px dashed #ffe49a}
+h1{font-size:2rem;margin:.2rem 0}
+h2{font-size:1.4rem;margin-top:1.2rem}
+.list{list-style:none;padding:0;margin:0}
+.list li{padding:10px 0;border-bottom:1px dotted #e2e2e2}
+a{color:#0b57d0;text-decoration:none}
+a:hover{text-decoration:underline}
+button{background:var(--accent);color:#fff;border:none;border-radius:14px;padding:10px 16px;font-weight:600;cursor:pointer}
+button:hover{opacity:.9}
+input{padding:10px;border-radius:12px;border:2px solid #ececec;font-family:inherit}
+.back{margin-top:24px}
+
+/* encouragement callout */
+blockquote.encouragement{background:#eefcff;border-left:6px solid var(--accent-2);
+  padding:12px 14px;border-radius:12px;margin:16px 0}
+
+/* quiz box */
+#quiz-box{background:#fff3f0;border:3px dashed #ffd6cc;margin-top:20px}
+#result{font-weight:600;color:#116611}
+
+/* accessibility */
+:focus{outline:3px solid #68c3d4; outline-offset:2px}
+button,input{min-height:44px}
+
+/* print worksheet */
+@media print{
+  header, footer, #quiz-box, .hero{ display:none !important; }
+  a{ color:#000; text-decoration:none }
+  body{ font-size:12pt }
+  h1{ margin-top:0 }
+}

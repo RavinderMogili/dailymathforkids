@@ -1,25 +1,71 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Daily Math for Kids</title>
-  <meta name="description" content="Five new, kid-friendly math problems every day, plus answers."/>
-  <link rel="stylesheet" href="styles.css"/>
+  <meta name="description" content="Five new, kid-friendly math problems every day with answers. Simple, encouraging, and free." />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header>Daily Math for Kids</header>
   <main class="container">
-    <section class="hero">
+    <section class="hero" aria-label="Intro">
       <h1>Practice a little every day</h1>
-      <p>Five kid-friendly math problems posted daily. Simple, positive, and free.</p>
-      <p><strong>Latest:</strong> <a href='daily/2025-09-01.html'>Open today</a></p>
+      <p>We publish 5 new kid-friendly math problems each afternoon at <strong>4:00 PM Moncton time</strong>.</p>
+      <p id="today-link"><strong>Latest:</strong> checking…</p>
     </section>
-    <section>
-      <h2>Recent days</h2>
-      <ul class="list">
-        <li><a href="daily/2025-09-01.html">Daily Math - 2025-09-01</a></li>
+
+    <section class="hero" aria-labelledby="coach">
+      <h2 id="coach">Tips for Grown-ups (1 minute)</h2>
+      <ul>
+        <li>Ask: “What’s the problem asking you to find?”</li>
+        <li>Encourage drawing, fingers, or counters. Concrete first, abstract later.</li>
+        <li>Praise effort and strategy, not speed. “I love how you explained your steps.”</li>
       </ul>
     </section>
+
+    <section aria-label="Recent days">
+      <h2>Recent days</h2>
+      <ul class="list" id="recent-list"><li>Loading…</li></ul>
+    </section>
   </main>
-  <footer>© 2025 • Auto-generated daily</footer>
-</body></html>
+  <footer>© <span id="year"></span> • Auto-generated daily</footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+    const BASE = location.pathname.replace(/\/$/, '');
+    async function loadFromSitemap() {
+      try {
+        const res = await fetch(BASE + '/sitemap.xml', { cache: 'no-store' });
+        if (!res.ok) throw new Error('no sitemap');
+        const xml = new DOMParser().parseFromString(await res.text(), 'application/xml');
+        const urls = Array.from(xml.querySelectorAll('url loc'))
+          .map(n => n.textContent)
+          .filter(u => /\/daily\/\d{4}-\d{2}-\d{2}\.html$/.test(u))
+          .sort((a,b) => b.localeCompare(a));
+        const todayEl = document.getElementById('today-link');
+        if (urls.length) {
+          const latest = urls[0];
+          const d = latest.match(/(\d{4}-\d{2}-\d{2})/)[1];
+          todayEl.innerHTML = `<strong>Latest:</strong> <a href="${latest}">Daily Math – ${d}</a>`;
+        } else {
+          todayEl.textContent = 'First post arrives after the first daily run.';
+        }
+        const recentEl = document.getElementById('recent-list');
+        recentEl.innerHTML = '';
+        urls.slice(0,21).forEach(u => {
+          const d = u.match(/(\d{4}-\d{2}-\d{2})/)[1];
+          const li = document.createElement('li');
+          li.innerHTML = `<a href="${u}">Daily Math – ${d}</a>`;
+          recentEl.appendChild(li);
+        });
+        if (!urls.length) recentEl.innerHTML = '<li>No daily pages yet.</li>';
+      } catch (e) {
+        document.getElementById('recent-list').innerHTML = '<li>Could not load daily list yet.</li>';
+      }
+    }
+    loadFromSitemap();
+  </script>
+</body>
+</html>
