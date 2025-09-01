@@ -23,7 +23,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install deps
-        run: pip install --upgrade pip && pip install openai==1.43.0 markdown2
+        run: pip install --upgrade pip && pip install openai==1.43.0 "httpx>=0.25,<1" "httpcore>=0.17,<1" markdown2
 
       - name: Generate today's page (and rebuild index+sitemap)
         env:
