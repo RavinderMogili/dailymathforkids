@@ -1,8 +1,7 @@
 name: Daily Math
-
 on:
   schedule:
-    # 10:00 UTC daily ≈ 07:00 America/Moncton
+    # 10:00 UTC ≈ 07:00 America/Moncton
     - cron: "0 10 * * *"
   workflow_dispatch: {}
 
@@ -11,26 +10,37 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      PYTHONUNBUFFERED: "1"
     steps:
       - uses: actions/checkout@v4
+
+      - name: Show tree (before)
+        run: ls -la && echo "----" && ls -la daily || true
 
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Install deps
-        run: pip install openai==1.43.0 markdown2
+        run: pip install --upgrade pip && pip install openai==1.43.0 markdown2
 
-      - name: Generate today’s page
+      - name: Generate today's page (and rebuild index+sitemap)
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SITE_TITLE: "Daily Math for Kids"
         run: python scripts/gen_site.py
 
-      - name: Commit & push
+      - name: Show tree (after)
+        run: ls -la && echo "----" && ls -la daily || true
+
+      - name: Git status
+        run: git status --porcelain=v1
+
+      - name: Commit & push (even if nothing changed)
         run: |
           git config user.name "github-actions"
           git config user.email "actions@users.noreply.github.com"
-          git add .
-          git commit -m "daily: auto-generate problems" || echo "No changes"
+          git add -A
+          git commit -m "daily: generate & rebuild" || git commit --allow-empty -m "daily: refresh"
           git push
