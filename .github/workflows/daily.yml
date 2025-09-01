@@ -1,0 +1,36 @@
+name: Daily Math
+
+on:
+  schedule:
+    # 10:00 UTC daily ≈ 07:00 America/Moncton
+    - cron: "0 10 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install openai==1.43.0 markdown2
+
+      - name: Generate today’s page
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SITE_TITLE: "Daily Math for Kids"
+        run: python scripts/gen_site.py
+
+      - name: Commit & push
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add .
+          git commit -m "daily: auto-generate problems" || echo "No changes"
+          git push
