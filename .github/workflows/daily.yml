@@ -1,8 +1,7 @@
 name: Daily Math
 on:
   schedule:
-    # 10:00 UTC ≈ 07:00 America/Moncton
-    - cron: "0 10 * * *"
+    - cron: "0 19 * * *"   # 19:00 UTC = 4:00 PM Moncton (ADT)
   workflow_dispatch: {}
 
 jobs:
@@ -15,32 +14,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Show tree (before)
-        run: ls -la && echo "----" && ls -la daily || true
-
-      - uses: actions/setup-python@v5
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Install deps
-        run: pip install --upgrade pip && pip install openai==1.43.0 "httpx>=0.25,<1" "httpcore>=0.17,<1" markdown2
+        run: |
+          pip install --upgrade pip
+          pip install "openai==1.43.0" "httpx>=0.25,<1" "httpcore>=0.17,<1" markdown2
 
       - name: Generate today's page (and rebuild index+sitemap)
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SITE_TITLE: "Daily Math for Kids"
+          PUBLIC_API_BASE: "https://YOUR_BACKEND_URL"   # e.g., https://dailymathforkids-api.vercel.app
         run: python scripts/gen_site.py
-
-      - name: Show tree (after)
-        run: ls -la && echo "----" && ls -la daily || true
-
-      - name: Git status
-        run: git status --porcelain=v1
 
       - name: Commit & push (even if nothing changed)
         run: |
           git config user.name "github-actions"
           git config user.email "actions@users.noreply.github.com"
           git add -A
-          git commit -m "daily: generate & rebuild" || git commit --allow-empty -m "daily: refresh"
+          git commit -m "daily: generate & rebuild (4pm ADT, bilingual, hints/steps, encouragement, story)" || git commit --allow-empty -m "daily: refresh"
           git push
