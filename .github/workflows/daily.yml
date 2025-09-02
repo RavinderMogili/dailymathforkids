@@ -28,7 +28,7 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SITE_TITLE: "Daily Math for Kids"
-          PUBLIC_API_BASE: "https://YOUR_BACKEND_URL"   # e.g., https://dailymathforkids-api.vercel.app
+          PUBLIC_API_BASE: "https://dailymathforkids-api.vercel.app"   # e.g., https://dailymathforkids-api.vercel.app
         run: python scripts/gen_site.py
 
       - name: Commit & push (even if nothing changed)
