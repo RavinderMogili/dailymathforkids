@@ -1,7 +1,7 @@
 name: Daily Math
 on:
   schedule:
-    - cron: "0 19 * * *"   # 19:00 UTC = 4:00 PM Moncton (ADT)
+    - cron: "0 18 * * *"   # 18:00 UTC = 3:00 PM Moncton (ADT, summer)
   workflow_dispatch: {}
 
 jobs:
