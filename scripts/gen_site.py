@@ -1,4 +1,4 @@
-import os, pathlib, datetime, sys
+import os, pathlib, datetime, sys, re
 import markdown2
 
 try:
@@ -92,6 +92,33 @@ HELPERS_JS = r"""
 })();
 </script>
 """
+
+def upsert_quiz_to_supabase(quiz_id, questions, answers):
+    supabase_url = os.environ.get("SUPABASE_URL", "").strip()
+    service_role  = os.environ.get("SUPABASE_SERVICE_ROLE", "").strip()
+    if not supabase_url or not service_role:
+        print("INFO: Supabase env vars not set — skipping quiz DB insert.")
+        return
+    try:
+        import httpx
+        r = httpx.post(
+            f"{supabase_url}/rest/v1/quizzes",
+            json={"id": quiz_id, "questions": questions, "answers": answers},
+            headers={
+                "apikey": service_role,
+                "Authorization": f"Bearer {service_role}",
+                "Content-Type": "application/json",
+                "Prefer": "resolution=merge-duplicates",
+            },
+            timeout=10,
+        )
+        if r.status_code in (200, 201):
+            print(f"INFO: Quiz {quiz_id} saved to Supabase.")
+        else:
+            print(f"WARN: Supabase returned {r.status_code}: {r.text}")
+    except Exception as e:
+        print(f"WARN: Could not save quiz to Supabase: {e}")
+
 
 def safe_generate_today():
     api_key = os.environ.get("OPENAI_API_KEY", "").strip()
@@ -261,6 +288,10 @@ A 3–4 sentence story about a child helping someone in Canada (English, very si
 </body></html>"""
         html_path.write_text(page_html, encoding="utf-8")
         print(f"INFO: Wrote {html_path}")
+
+        questions = re.findall(r'^\s*-\s*EN:\s*(.+)', text, re.MULTILINE)
+        answers   = re.findall(r'^\s*-\s*Answer:\s*(\S+)', text, re.MULTILINE)
+        upsert_quiz_to_supabase(today, questions, answers)
     except Exception as e:
         print(f"ERROR: OpenAI generation failed: {e}", file=sys.stderr)
 

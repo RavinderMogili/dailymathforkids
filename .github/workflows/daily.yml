@@ -27,8 +27,10 @@ jobs:
       - name: Generate today's page (and rebuild index+sitemap)
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
           SITE_TITLE: "Daily Math for Kids"
-          PUBLIC_API_BASE: "https://dailymathforkids-api.vercel.app"   # e.g., https://dailymathforkids-api.vercel.app
+          PUBLIC_API_BASE: "https://dailymathforkids-api.vercel.app"
         run: python scripts/gen_site.py
 
       - name: Commit & push (even if nothing changed)
