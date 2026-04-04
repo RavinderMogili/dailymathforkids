@@ -1,0 +1,530 @@
+// Daily Math for Kids — shared app logic
+// Pages set window.DMK_API and window.DMK_ROOT before loading this script.
+
+const API = (window.DMK_API || '').replace(/\/$/, '');
+const ROOT = window.DMK_ROOT || './';
+
+// ── LocalStorage helpers ─────────────────────────────────────────────────────
+
+const store = {
+  get(k, def = null) {
+    try { const v = localStorage.getItem(k); return v === null ? def : JSON.parse(v); } catch { return def; }
+  },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+
+// ── User ─────────────────────────────────────────────────────────────────────
+
+function getUser() { return store.get('dmk_user', null); }
+function saveUser(u) { store.set('dmk_user', u); }
+
+function renderBadge() {
+  const u = getUser();
+  document.querySelectorAll('.user-badge').forEach(el => {
+    if (u) {
+      el.innerHTML =
+        `<span class="badge-name">⭐ ${escHtml(u.nickname)}</span>` +
+        `<a class="badge-link" href="${ROOT}leaderboard.html">🏆 Rankings</a>` +
+        `<button class="badge-link" onclick="showGroupModal()">🤝 Group</button>` +
+        `<button class="badge-link" onclick="logOut()">Log out</button>`;
+    } else {
+      el.innerHTML =
+        `<button class="badge-btn" onclick="showRegModal()">Join Free 🚀</button>` +
+        `<button class="badge-link" onclick="showLoginModal()">Log in</button>`;
+    }
+  });
+}
+
+function logOut() {
+  store.set('dmk_user', null);
+  renderBadge();
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Modal injection ──────────────────────────────────────────────────────────
+
+function injectModals() {
+  if (document.getElementById('dmk-modals')) return;
+  const grades = ['Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6','Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'];
+  const opts = grades.map(g => `<option value="${g}">${g}</option>`).join('');
+
+  document.body.insertAdjacentHTML('beforeend', `
+<div id="dmk-modals">
+  <!-- Registration modal -->
+  <div id="reg-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="reg-title" style="display:none">
+    <div class="modal-card">
+      <button class="modal-close" onclick="hideRegModal()" aria-label="Close">✕</button>
+      <h2 class="modal-title" id="reg-title">Join Daily Math for Kids! 🧮</h2>
+      <p class="modal-sub">Free daily practice — track your personal best and grow every day! 🌱</p>
+      <form id="reg-form" onsubmit="submitReg(event)" novalidate>
+        <label class="form-label">Nickname <span class="req">*</span>
+          <input id="reg-nickname" class="form-input" placeholder="e.g. MathStar99" required maxlength="30" autocomplete="off"/>
+        </label>
+        <label class="form-label">Grade <span class="req">*</span>
+          <select id="reg-grade" class="form-input" required>
+            <option value="">Choose your grade…</option>${opts}
+          </select>
+        </label>
+        <label class="form-label">School name <small class="opt-label">(optional)</small>
+          <input id="reg-school" class="form-input" placeholder="e.g. Hillcrest Elementary" maxlength="60"/>
+        </label>
+        <label class="form-label">City <small class="opt-label">(optional)</small>
+          <input id="reg-city" class="form-input" placeholder="e.g. Moncton" maxlength="40"/>
+        </label>
+        <label class="form-label">Parent / Guardian email <small class="opt-label">(optional)</small>
+          <input id="reg-parent-email" class="form-input" type="email" placeholder="parent@example.com" maxlength="100"/>
+          <small class="opt-label" style="margin-top:2px">📧 We’ll send a weekly progress report. Never shared or used for marketing.</small>
+        </label>
+        <p id="reg-msg" class="form-msg" aria-live="polite"></p>
+        <p class="privacy-note">🔒 Only your nickname and grade are shown publicly (if you opt into rankings).</p>
+        <button type="submit" class="btn-primary">Join for Free! 🎉</button>
+      </form>
+      <p class="modal-note">Already joined? <button class="link-btn" onclick="showLoginModal()">Log in with nickname</button></p>
+    </div>
+  </div>
+
+  <!-- Group modal -->
+  <div id="group-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="group-title" style="display:none">
+    <div class="modal-card">
+      <button class="modal-close" onclick="hideGroupModal()" aria-label="Close">✕</button>
+      <h2 class="modal-title" id="group-title">🤝 Family / Class Goal</h2>
+      <p class="modal-sub">Practice together and celebrate as a team — no public ranking!</p>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div>
+          <strong>Create a new group</strong>
+          <label class="form-label" style="margin-top:8px">Group name
+            <input id="group-name-input" class="form-input" placeholder="e.g. Smith Family" maxlength="50"/>
+          </label>
+          <button class="btn-primary" onclick="createGroup()" style="margin-top:4px">Create &amp; Get Code</button>
+        </div>
+        <hr style="border:none;border-top:1px solid #eee"/>
+        <div>
+          <strong>Join an existing group</strong>
+          <label class="form-label" style="margin-top:8px">Invite code
+            <input id="group-code-input" class="form-input" placeholder="e.g. ABC123" maxlength="10" style="text-transform:uppercase"/>
+          </label>
+          <button class="btn-secondary" onclick="joinGroup()" style="margin-top:4px">Join Group</button>
+        </div>
+      </div>
+      <p id="group-msg" class="form-msg" aria-live="polite" style="margin-top:12px"></p>
+    </div>
+  </div>
+
+  <!-- Login modal -->
+  <div id="login-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="login-title" style="display:none">
+    <div class="modal-card">
+      <button class="modal-close" onclick="hideLoginModal()" aria-label="Close">✕</button>
+      <h2 class="modal-title" id="login-title">Welcome Back! 👋</h2>
+      <p class="modal-sub">Enter your nickname to continue tracking your progress.</p>
+      <form id="login-form" onsubmit="submitLogin(event)" novalidate>
+        <label class="form-label">Nickname
+          <input id="login-nickname" class="form-input" placeholder="Your nickname" required maxlength="30" autocomplete="off"/>
+        </label>
+        <p id="login-msg" class="form-msg" aria-live="polite"></p>
+        <button type="submit" class="btn-primary">Log In</button>
+      </form>
+      <p class="modal-note">New here? <button class="link-btn" onclick="showRegModal()">Register</button></p>
+    </div>
+  </div>
+</div>`);
+}
+
+function showRegModal()   { injectModals(); document.getElementById('reg-modal').style.display   = 'flex'; setTimeout(() => document.getElementById('reg-nickname').focus(), 40); }
+function hideRegModal()   { const m = document.getElementById('reg-modal');   if (m) m.style.display = 'none'; }
+function showLoginModal() { injectModals(); hideRegModal(); document.getElementById('login-modal').style.display = 'flex'; setTimeout(() => document.getElementById('login-nickname').focus(), 40); }
+function hideLoginModal() { const m = document.getElementById('login-modal'); if (m) m.style.display = 'none'; }
+function showGroupModal() { injectModals(); document.getElementById('group-modal').style.display  = 'flex'; setTimeout(() => document.getElementById('group-name-input').focus(), 40); }
+function hideGroupModal() { const m = document.getElementById('group-modal'); if (m) m.style.display = 'none'; }
+
+// Close modals when clicking the overlay background
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('modal-overlay')) {
+    hideRegModal(); hideLoginModal(); hideGroupModal();
+  }
+});
+
+// ── Registration ─────────────────────────────────────────────────────────────
+
+async function submitReg(e) {
+  e.preventDefault();
+  const nickname = document.getElementById('reg-nickname').value.trim();
+  const grade    = document.getElementById('reg-grade').value;
+  const school        = document.getElementById('reg-school').value.trim();
+  const city          = document.getElementById('reg-city').value.trim();
+  const parent_email  = document.getElementById('reg-parent-email').value.trim();
+  const msg      = document.getElementById('reg-msg');
+
+  if (!nickname || !grade) {
+    msg.textContent = 'Please fill in your nickname and grade.';
+    msg.className = 'form-msg error';
+    return;
+  }
+  msg.textContent = 'Saving…';
+  msg.className = 'form-msg';
+
+  if (!API) {
+    saveUser({ userId: crypto.randomUUID(), nickname, grade, school, city });
+    hideRegModal(); renderBadge();
+    return;
+  }
+
+  try {
+    const res  = await fetch(`${API}/api/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nickname, grade, school, city, parent_email }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      msg.textContent = data.error || 'That nickname might already be taken. Try another!';
+      msg.className = 'form-msg error';
+      return;
+    }
+    saveUser({ userId: data.userId, nickname: data.nickname, grade: data.grade, school: data.school, city: data.city, parent_email: data.parent_email });
+    hideRegModal(); renderBadge();
+  } catch {
+    // Network error — continue as guest so the student can still practice offline
+    saveUser({ userId: crypto.randomUUID(), nickname, grade, school, city, parent_email, guest: true });
+    hideRegModal(); renderBadge();
+  }
+}
+
+// ── Login (returning user) ────────────────────────────────────────────────────
+
+async function submitLogin(e) {
+  e.preventDefault();
+  const nickname = document.getElementById('login-nickname').value.trim();
+  const msg      = document.getElementById('login-msg');
+  msg.textContent = 'Looking up…';
+  msg.className = 'form-msg';
+
+  if (!API) {
+    msg.textContent = 'No API configured – please register.';
+    msg.className = 'form-msg error';
+    return;
+  }
+
+  try {
+    const res  = await fetch(`${API}/api/lookup?nickname=${encodeURIComponent(nickname)}`);
+    const data = await res.json();
+    if (!res.ok) {
+      msg.textContent = data.error || 'Nickname not found. Please register first.';
+      msg.className = 'form-msg error';
+      return;
+    }
+    saveUser({ userId: data.userId, nickname: data.nickname, grade: data.grade, school: data.school, city: data.city });
+    hideLoginModal(); renderBadge();
+  } catch {
+    msg.textContent = 'Could not connect. Please try again.';
+    msg.className = 'form-msg error';
+  }
+}
+
+// ── Quiz submission ───────────────────────────────────────────────────────────
+
+async function submitQuizAnswers(quizId, answers, resultEl) {
+  const u = getUser();
+  if (!u) { showRegModal(); return false; }
+
+  if (!API) {
+    resultEl.textContent = 'Practice recorded! Keep going! 🌟';
+    return true;
+  }
+
+  try {
+    const res  = await fetch(`${API}/api/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: u.userId, quizId, answers }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      resultEl.textContent = data.error || 'Something went wrong. Try again!';
+      return false;
+    }
+    if (data.already) {
+      resultEl.innerHTML = `<p>✅ You already completed this quiz today — great job showing up!</p>`;
+    } else {
+      const perfect  = data.score === data.outOf;
+      const pct      = data.outOf > 0 ? data.score / data.outOf : 0;
+      const emoji    = perfect ? '🎉' : pct >= 0.6 ? '🌟' : '💪';
+      const praise   = perfect
+        ? 'Perfect score — you nailed every single one!'
+        : pct >= 0.6
+        ? `Great effort! ${data.score} out of ${data.outOf} — you showed up and that counts!`
+        : `Keep going! ${data.score} out of ${data.outOf} today — every practice makes you stronger!`;
+      resultEl.innerHTML =
+        `<div class="result-celebration">` +
+        `<p class="result-praise">${emoji} ${praise}</p>` +
+        `<p class="points-earned">+${data.points_earned} point${data.points_earned !== 1 ? 's' : ''} earned today!</p>` +
+        (!perfect ? `<button class="btn-secondary" onclick="retryQuiz()">✏️ Try again</button>` : '') +
+        `</div>`;
+      checkAndRevealFadedHints(quizId, answers);
+      saveWrongAnswersForReview(quizId, answers);
+    }
+    return true;
+  } catch {
+    resultEl.textContent = 'Could not reach the server. Keep practising!';
+    return false;
+  }
+}
+
+// ── Cooperative groups ────────────────────────────────────────────────────────
+
+async function createGroup() {
+  const u    = getUser();
+  const msg  = document.getElementById('group-msg');
+  const name = document.getElementById('group-name-input')?.value.trim();
+  if (!u) { showRegModal(); return; }
+  if (!name) { msg.textContent = 'Please enter a group name.'; msg.className = 'form-msg error'; return; }
+  msg.textContent = 'Creating…'; msg.className = 'form-msg';
+  try {
+    const res  = await fetch(`${API}/api/groups`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'create', userId: u.userId, groupName: name }),
+    });
+    const data = await res.json();
+    if (!res.ok) { msg.textContent = data.error || 'Could not create group.'; msg.className = 'form-msg error'; return; }
+    store.set('dmk_group', data);
+    msg.innerHTML = `✅ Group created! Share this code with your family/class: <strong style="font-size:1.3rem;letter-spacing:2px">${data.invite_code}</strong>`;
+    msg.className = 'form-msg';
+  } catch { msg.textContent = 'Could not connect. Try again.'; msg.className = 'form-msg error'; }
+}
+
+async function joinGroup() {
+  const u    = getUser();
+  const msg  = document.getElementById('group-msg');
+  const code = document.getElementById('group-code-input')?.value.trim().toUpperCase();
+  if (!u) { showRegModal(); return; }
+  if (!code) { msg.textContent = 'Please enter an invite code.'; msg.className = 'form-msg error'; return; }
+  msg.textContent = 'Joining…'; msg.className = 'form-msg';
+  try {
+    const res  = await fetch(`${API}/api/groups`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'join', userId: u.userId, invite_code: code }),
+    });
+    const data = await res.json();
+    if (!res.ok) { msg.textContent = data.error || 'Could not join group.'; msg.className = 'form-msg error'; return; }
+    store.set('dmk_group', data);
+    msg.innerHTML = `🎉 Joined <strong>${escHtml(data.groupName)}</strong>! ${data.member_count} members, ${data.total_points} pts so far.`;
+    msg.className = 'form-msg';
+  } catch { msg.textContent = 'Could not connect. Try again.'; msg.className = 'form-msg error'; }
+}
+
+// ── Retry quiz ────────────────────────────────────────────────────────────────
+
+function retryQuiz() {
+  const form     = document.getElementById('quiz');
+  const resultEl = document.getElementById('result');
+  const streakEl = document.getElementById('streak-msg');
+  if (resultEl) resultEl.innerHTML = '<p class="retry-nudge">✏️ Hints are now visible — give it another go!</p>';
+  if (streakEl) streakEl.textContent = '';
+  if (form) {
+    form.querySelectorAll('input[type=text],input:not([type])').forEach(inp => inp.value = '');
+    form.style.display = 'block';
+  }
+}
+
+// ── Feelings check-in ─────────────────────────────────────────────────────────
+
+function renderFeelingsCheckin(containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const todayKey = 'dmk_feeling_' + new Date().toISOString().slice(0, 10);
+  const stored   = store.get(todayKey);
+  if (stored) { el.style.display = 'none'; return; }
+  el.innerHTML =
+    `<div class="feelings-bar">
+      <span>How are you feeling about today's math?</span>
+      <button class="feeling-btn" onclick="recordFeeling('calm',this)">😊 Calm</button>
+      <button class="feeling-btn" onclick="recordFeeling('unsure',this)">😐 Unsure</button>
+      <button class="feeling-btn" onclick="recordFeeling('stressed',this)">😰 Stressed</button>
+    </div>`;
+}
+
+function recordFeeling(feeling, btn) {
+  const todayKey = 'dmk_feeling_' + new Date().toISOString().slice(0, 10);
+  store.set(todayKey, feeling);
+  const bar = btn.closest('.feelings-bar');
+  if (feeling === 'stressed') {
+    bar.innerHTML = `<p class="feelings-response">💙 That's okay — take a breath. Start with Problem 1 and use the hint if you need it. You've got this!</p>`;
+    const firstHintBtn = document.querySelector('.hint-wrap');
+    if (firstHintBtn) firstHintBtn.open = true;
+  } else if (feeling === 'unsure') {
+    bar.innerHTML = `<p class="feelings-response">👍 That's normal! Hints and steps are there to help — give it your best shot!</p>`;
+  } else {
+    bar.innerHTML = `<p class="feelings-response">🌟 Love the energy! Let's go!</p>`;
+  }
+}
+
+// ── Hint reveal ────────────────────────────────────────────────────────────────
+
+function trackWrongAnswer(quizId, qNum) {
+  const key = 'dmk_wrong_' + quizId;
+  const d   = store.get(key, {});
+  d[qNum]   = (d[qNum] || 0) + 1;
+  store.set(key, d);
+  return d[qNum];
+}
+
+function revealFadedHint(qNum, wrongCount) {
+  const li = document.querySelectorAll('#problems-list li')[qNum - 1];
+  if (!li) return;
+  if (wrongCount >= 1) {
+    const hintEl = li.querySelector('.hint-wrap');
+    if (hintEl) hintEl.open = true;
+  }
+  if (wrongCount >= 2) {
+    const stepsEl = li.querySelector('.steps-wrap');
+    if (stepsEl) stepsEl.open = true;
+  }
+}
+
+function checkAndRevealFadedHints(quizId, answers) {
+  const problems = document.querySelectorAll('#problems-list li');
+  answers.forEach((ans, i) => {
+    const li      = problems[i];
+    if (!li) return;
+    const correct = (li.dataset.answer || '').trim();
+    if (correct && String(ans).trim() !== correct) {
+      const count = trackWrongAnswer(quizId, i + 1);
+      revealFadedHint(i + 1, count);
+    }
+  });
+}
+
+// ── Review questions ───────────────────────────────────────────────────────────
+
+function saveWrongAnswersForReview(quizId, answers) {
+  const problems = document.querySelectorAll('#problems-list li');
+  const items    = store.get('dmk_review', []);
+  answers.forEach((ans, i) => {
+    const li      = problems[i];
+    if (!li) return;
+    const correct = (li.dataset.answer || '').trim();
+    const qText   = li.dataset.question || li.querySelector('.problem-en')?.textContent || '';
+    if (correct && String(ans).trim() !== correct && qText) {
+      const filtered = items.filter(x => !(x.quizId === quizId && x.qNum === i + 1));
+      filtered.push({ quizId, qNum: i + 1, questionText: qText, answer: correct, date: new Date().toISOString().slice(0, 10) });
+      items.length = 0;
+      items.push(...filtered.slice(-30));
+    }
+  });
+  store.set('dmk_review', items);
+}
+
+function renderReviewSection(containerId) {
+  const el    = document.getElementById(containerId);
+  if (!el) return;
+  const all   = store.get('dmk_review', []);
+  const today = new Date().toISOString().slice(0, 10);
+  const due   = all.filter(x => x.date < today).slice(-3);
+  if (!due.length) { el.style.display = 'none'; return; }
+  el.innerHTML =
+    `<div class="review-section">
+      <h3>🔁 Review from earlier</h3>
+      <p class="review-sub">These gave you trouble before — try them again!</p>
+      <ol>${due.map(it =>
+        `<li>
+          <p>${escHtml(it.questionText)}</p>
+          <details class="steps-wrap"><summary>Show answer</summary>
+            <p><strong>${escHtml(it.answer)}</strong></p>
+          </details>
+        </li>`).join('')}
+      </ol>
+    </div>`;
+}
+
+// ── Streaks ───────────────────────────────────────────────────────────────────
+
+function markDayDone(slug) {
+  const d = store.get('doneDays', {});
+  d[slug] = true;
+  store.set('doneDays', d);
+}
+
+function calcStreak(slug) {
+  const d  = store.get('doneDays', {});
+  let s = 0;
+  const dt = new Date(slug);
+  for (;;) {
+    const key = dt.toISOString().slice(0, 10);
+    if (d[key]) { s++; dt.setDate(dt.getDate() - 1); } else break;
+  }
+  return s;
+}
+
+// ── Daily reminders ────────────────────────────────────────────────────────────
+
+function registerSW() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register((window.DMK_ROOT || './') + 'scripts/sw.js')
+      .catch(() => {});
+  }
+}
+
+async function enableReminders(btnEl) {
+  if (!('Notification' in window)) {
+    alert('Your browser does not support notifications.');
+    return;
+  }
+  const permission = await Notification.requestPermission();
+  if (permission !== 'granted') {
+    if (btnEl) { btnEl.textContent = '🔕 Notifications blocked'; btnEl.disabled = true; }
+    return;
+  }
+  store.set('dmk_reminders', true);
+  if (btnEl) { btnEl.textContent = '✅ Reminders on!'; btnEl.disabled = true; btnEl.className = 'reminder-btn on'; }
+
+  if ('serviceWorker' in navigator && 'periodicSync' in (await navigator.serviceWorker.ready)) {
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      await reg.periodicSync.register('dmk-daily-reminder', { minInterval: 24 * 60 * 60 * 1000 });
+    } catch {}
+  }
+
+  new Notification('🧮 Daily Math for Kids', {
+    body: "You're all set! We'll remind you every day to keep your streak going 🔥",
+    icon: (window.DMK_ROOT || './') + 'favicon.ico',
+    tag: 'dmk-confirm',
+  });
+}
+
+function checkDailyReminder() {
+  if (!store.get('dmk_reminders')) return;
+  if (Notification.permission !== 'granted') return;
+  const today  = new Date().toISOString().slice(0, 10);
+  const done   = store.get('doneDays', {});
+  const hour   = new Date().getHours();
+  const shown  = store.get('dmk_reminder_shown_' + today);
+  if (!done[today] && hour >= 15 && !shown) {
+    store.set('dmk_reminder_shown_' + today, true);
+    new Notification('🧮 Daily Math for Kids', {
+      body: "You haven't done today's problems yet — keep your streak alive! 🔥",
+      icon: (window.DMK_ROOT || './') + 'favicon.ico',
+      tag: 'dmk-daily',
+    });
+  }
+}
+
+function renderReminderButton(containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const on = store.get('dmk_reminders') && Notification.permission === 'granted';
+  el.innerHTML =
+    `<button class="reminder-btn ${on ? 'on' : ''}" onclick="enableReminders(this)" ${on ? 'disabled' : ''}>` +
+    (on ? '✅ Daily reminders on' : '🔔 Enable daily reminders') +
+    `</button>`;
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+
+document.addEventListener('DOMContentLoaded', () => {
+  registerSW();
+  injectModals();
+  renderBadge();
+  checkDailyReminder();
+});

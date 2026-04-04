@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Rankings – Daily Math for Kids</title>
+  <meta name="description" content="See the top math students! Filter by grade and track your progress."/>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <header>
+    <a href="index.html">🧮 Daily Math for Kids</a>
+    <span class="user-badge"></span>
+  </header>
+  <main class="container">
+    <h1>🏆 Rankings</h1>
+    <p style="color:var(--muted)">Top math stars earning points through daily practice!</p>
+
+    <div class="points-info">
+      🌟 <strong>Points:</strong> 1 pt per correct answer &nbsp;|&nbsp; +3 bonus for a perfect score (5/5)!
+      &nbsp; Complete a quiz every day to build your streak and climb the rankings!
+    </div>
+
+    <div class="filter-bar">
+      <label>Grade:
+        <select id="grade-filter">
+          <option value="">All Grades</option>
+          <option value="Grade 1">Grade 1</option>
+          <option value="Grade 2">Grade 2</option>
+          <option value="Grade 3">Grade 3</option>
+          <option value="Grade 4">Grade 4</option>
+          <option value="Grade 5">Grade 5</option>
+          <option value="Grade 6">Grade 6</option>
+          <option value="Grade 7">Grade 7</option>
+          <option value="Grade 8">Grade 8</option>
+          <option value="Grade 9">Grade 9</option>
+          <option value="Grade 10">Grade 10</option>
+          <option value="Grade 11">Grade 11</option>
+          <option value="Grade 12">Grade 12</option>
+        </select>
+      </label>
+      <label>City:
+        <select id="city-filter">
+          <option value="">All Cities</option>
+          <option value="Moncton" selected>Moncton</option>
+        </select>
+      </label>
+      <button onclick="loadBoard()" style="min-height:40px;padding:6px 18px">Refresh</button>
+    </div>
+
+    <div class="board-wrap">
+      <table class="board-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Name</th>
+            <th>Grade</th>
+            <th>Points</th>
+            <th>Days</th>
+          </tr>
+        </thead>
+        <tbody id="board-body">
+          <tr><td colspan="5" class="loading-msg">Loading rankings…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="my-rank-box" class="my-rank-box" style="display:none"></div>
+
+    <p class="privacy-note" style="margin-top:16px">
+      🔒 Only nicknames and grades appear here. School names and cities are never shown publicly.
+    </p>
+    <p style="margin-top:12px;color:var(--muted);font-size:.9rem">
+      Not on the list yet?
+      <button class="link-btn" onclick="showRegModal()">Join for free</button> and start earning points today!
+    </p>
+
+    <p class="back"><a href="index.html">← Back to Home</a></p>
+  </main>
+  <footer>© 2026 • Free math practice for kids • Moncton, NB</footer>
+
+  <script>
+    window.DMK_API  = 'https://dailymathforkids-api.vercel.app';
+    window.DMK_ROOT = './';
+  </script>
+  <script src="scripts/app.js"></script>
+  <script>
+    function rankEmoji(r) {
+      if (r === 1) return '🥇';
+      if (r === 2) return '🥈';
+      if (r === 3) return '🥉';
+      return r;
+    }
+
+    async function loadBoard() {
+      const tbody    = document.getElementById('board-body');
+      const grade    = document.getElementById('grade-filter').value;
+      const city     = document.getElementById('city-filter').value;
+      const myRankEl = document.getElementById('my-rank-box');
+
+      tbody.innerHTML = '<tr><td colspan="5" class="loading-msg">Loading…</td></tr>';
+      myRankEl.style.display = 'none';
+
+      const api = (window.DMK_API || '').replace(/\/$/, '');
+      if (!api || api.includes('YOUR_BACKEND_URL')) {
+        tbody.innerHTML = '<tr><td colspan="5" class="empty-msg">Rankings will appear once the backend is connected.</td></tr>';
+        return;
+      }
+
+      try {
+        let url = `${api}/api/leaderboard?limit=50`;
+        if (grade) url += `&grade=${encodeURIComponent(grade)}`;
+        if (city)  url += `&city=${encodeURIComponent(city)}`;
+
+        const res  = await fetch(url);
+        const data = await res.json();
+        const rows = data.leaderboard || [];
+
+        if (!rows.length) {
+          tbody.innerHTML = '<tr><td colspan="5" class="empty-msg">No students yet — be the first! 🌟</td></tr>';
+          return;
+        }
+
+        const u = getUser();
+        tbody.innerHTML = rows.map(r => {
+          const isMe = u && r.nickname === u.nickname;
+          return `<tr class="${isMe ? 'my-row' : ''}">
+            <td><span class="rank-medal">${rankEmoji(r.rank)}</span></td>
+            <td>${isMe ? '⭐ ' : ''}${escHtml(r.nickname)}</td>
+            <td>${escHtml(r.grade || '–')}</td>
+            <td><span class="pts-chip">${r.total_points} pts</span></td>
+            <td><span class="days-chip">${r.days_played}d</span></td>
+          </tr>`;
+        }).join('');
+
+        if (u) {
+          const me = rows.find(r => r.nickname === u.nickname);
+          if (me) {
+            myRankEl.innerHTML =
+              `🎯 <strong>Your rank:</strong> #${me.rank} &nbsp;|&nbsp; ` +
+              `<strong>${me.total_points} points</strong> &nbsp;|&nbsp; ` +
+              `${me.days_played} days completed`;
+            myRankEl.style.display = 'block';
+          } else {
+            myRankEl.innerHTML = `You're not in the current filter — try "All Grades" to find yourself!`;
+            myRankEl.style.display = 'block';
+          }
+        }
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="5" class="empty-msg">Could not load rankings. Please try again later.</td></tr>`;
+      }
+    }
+
+    document.getElementById('grade-filter').addEventListener('change', loadBoard);
+    document.getElementById('city-filter').addEventListener('change', loadBoard);
+
+    document.addEventListener('DOMContentLoaded', loadBoard);
+  </script>
+</body>
+</html>
