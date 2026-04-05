@@ -295,12 +295,17 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
         : pct >= 0.6
         ? `Great effort! ${data.score} out of ${data.outOf} — you showed up and that counts!`
         : `Keep going! ${data.score} out of ${data.outOf} today — every practice makes you stronger!`;
+      if (perfect) awardShield();
+      const shieldNote = perfect
+        ? `<p class="shield-note" style="color:var(--primary);font-weight:700">🛡️ Streak shield earned! Miss a day and your streak stays safe.</p>`
+        : (hasShield() ? `<p class="shield-note" style="color:var(--muted)">🛡️ You have a streak shield ready.</p>` : '');
       const timeNote = timeSeconds ? `<p class="time-taken">&#9201; Completed in <strong>${dmkTimer.fmt(timeSeconds)}</strong></p>` : '';
       resultEl.innerHTML =
         `<div class="result-celebration">` +
         `<p class="result-praise">${emoji} ${praise}</p>` +
         `<p class="points-earned">+${data.points_earned} point${data.points_earned !== 1 ? 's' : ''} earned today!</p>` +
         timeNote +
+        shieldNote +
         (!perfect ? `<button class="btn-secondary" onclick="retryQuiz()">&#9999;&#65039; Try again</button>` : '') +
         `</div>`;
       checkAndRevealFadedHints(quizId, answers);
@@ -516,13 +521,26 @@ function markDayDone(slug) {
   store.set('doneDays', d);
 }
 
+function hasShield()   { return store.get('dmk_shield', false) === true; }
+function awardShield() { store.set('dmk_shield', true); }
+function consumeShield() { store.set('dmk_shield', false); }
+
 function calcStreak(slug) {
   const d  = store.get('doneDays', {});
-  let s = 0;
+  let s = 0, shieldUsed = false;
   const dt = new Date(slug);
   for (;;) {
     const key = dt.toISOString().slice(0, 10);
-    if (d[key]) { s++; dt.setDate(dt.getDate() - 1); } else break;
+    if (d[key]) {
+      s++;
+      dt.setDate(dt.getDate() - 1);
+    } else if (!shieldUsed && hasShield()) {
+      shieldUsed = true;
+      consumeShield();
+      dt.setDate(dt.getDate() - 1);
+    } else {
+      break;
+    }
   }
   return s;
 }

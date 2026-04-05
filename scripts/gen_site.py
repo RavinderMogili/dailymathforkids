@@ -26,8 +26,11 @@ HELPERS_JS = r"""
     const steps   = (text.match(/Steps:\s*([\s\S]*?)(?=\n\s*Answer:)/i)|| [])[1]?.trim() || '';
     const ans     = (text.match(/Answer:\s*(\S+)/i)                    || [])[1]?.trim() || '';
 
-    const choicePairs = [...choiceStr.matchAll(/([A-D])\)\s*([^A-D)\n]+?)(?=\s+[A-D]\)|$)/gi)]
-      .map(m => ({ label: m[1].toUpperCase(), value: m[2].trim() }));
+    const choiceParts = choiceStr.split(/\s{2,}(?=[A-D]\))/i);
+    const choicePairs = choiceParts.map(p => {
+      const m = p.match(/^([A-D])\)\s*(.+)/i);
+      return m ? { label: m[1].toUpperCase(), value: m[2].trim() } : null;
+    }).filter(Boolean);
 
     li.dataset.answer   = ans;
     li.dataset.question  = en;
@@ -109,13 +112,13 @@ def upsert_quiz_to_supabase(quiz_id, questions, answers):
     try:
         import httpx
         r = httpx.post(
-            f"{supabase_url}/rest/v1/quizzes",
+            f"{supabase_url}/rest/v1/quizzes?on_conflict=id",
             json={"id": quiz_id, "questions": questions, "answers": answers},
             headers={
                 "apikey": service_role,
                 "Authorization": f"Bearer {service_role}",
                 "Content-Type": "application/json",
-                "Prefer": "resolution=merge-duplicates",
+                "Prefer": "resolution=merge-duplicates,return=representation",
             },
             timeout=10,
         )
