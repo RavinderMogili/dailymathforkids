@@ -17,10 +17,15 @@
 
     <div class="points-info">
       🌟 <strong>Points:</strong> 1 pt per correct answer &nbsp;|&nbsp; +3 bonus for a perfect score (5/5)!
-      &nbsp; Complete a quiz every day to build your streak and climb the rankings!
+      &nbsp; ⚡ <strong>Speed tab</strong> shows today's fastest perfect-score completions!
     </div>
 
-    <div class="filter-bar">
+    <div style="display:flex;gap:8px;margin:16px 0">
+      <button id="tab-points" onclick="switchTab('points')" style="min-height:38px;padding:6px 20px">🏆 Points</button>
+      <button id="tab-speed"  onclick="switchTab('speed')"  style="min-height:38px;padding:6px 20px;background:var(--surface);color:var(--primary);border:2px solid var(--primary)">⚡ Speed</button>
+    </div>
+
+    <div class="filter-bar" id="filter-bar-points">
       <label>Grade:
         <select id="grade-filter">
           <option value="">All Grades</option>
@@ -47,24 +52,48 @@
       <button onclick="loadBoard()" style="min-height:40px;padding:6px 18px">Refresh</button>
     </div>
 
-    <div class="board-wrap">
-      <table class="board-table">
-        <thead>
-          <tr>
-            <th>Rank</th>
-            <th>Name</th>
-            <th>Grade</th>
-            <th>Points</th>
-            <th>Days</th>
-          </tr>
-        </thead>
-        <tbody id="board-body">
-          <tr><td colspan="5" class="loading-msg">Loading rankings…</td></tr>
-        </tbody>
-      </table>
+    <div class="filter-bar" id="filter-bar-speed" style="display:none">
+      <label>Grade:
+        <select id="speed-grade-filter">
+          <option value="">All Grades</option>
+          <option value="Grade 1">Grade 1</option>
+          <option value="Grade 2">Grade 2</option>
+          <option value="Grade 3">Grade 3</option>
+          <option value="Grade 4">Grade 4</option>
+          <option value="Grade 5">Grade 5</option>
+          <option value="Grade 6">Grade 6</option>
+          <option value="Grade 7">Grade 7</option>
+          <option value="Grade 8">Grade 8</option>
+          <option value="Grade 9">Grade 9</option>
+          <option value="Grade 10">Grade 10</option>
+          <option value="Grade 11">Grade 11</option>
+          <option value="Grade 12">Grade 12</option>
+        </select>
+      </label>
+      <button onclick="loadSpeedBoard()" style="min-height:40px;padding:6px 18px">Refresh</button>
     </div>
 
-    <div id="my-rank-box" class="my-rank-box" style="display:none"></div>
+    <div id="board-points">
+      <div class="board-wrap">
+        <table class="board-table">
+          <thead><tr><th>Rank</th><th>Name</th><th>Grade</th><th>Points</th><th>Days</th></tr></thead>
+          <tbody id="board-body"><tr><td colspan="5" class="loading-msg">Loading rankings…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="board-speed" style="display:none">
+      <p style="color:var(--muted);font-size:.9rem">⚡ Only <strong>perfect scores (5/5)</strong> qualify. Today's fastest completions:</p>
+      <div class="board-wrap">
+        <table class="board-table">
+          <thead><tr><th>Rank</th><th>Name</th><th>Grade</th><th>Time</th><th>Date</th></tr></thead>
+          <tbody id="speed-board-body"><tr><td colspan="5" class="loading-msg">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="my-rank-box"    class="my-rank-box" style="display:none"></div>
+    <div id="my-speed-box" class="my-rank-box" style="display:none"></div>
 
     <p class="privacy-note" style="margin-top:16px">
       🔒 Only nicknames and grades appear here. School names and cities are never shown publicly.
@@ -150,8 +179,71 @@
       }
     }
 
+    let _activeTab = 'points';
+    function switchTab(tab) {
+      _activeTab = tab;
+      document.getElementById('board-points').style.display    = tab === 'points' ? '' : 'none';
+      document.getElementById('board-speed').style.display     = tab === 'speed'  ? '' : 'none';
+      document.getElementById('filter-bar-points').style.display = tab === 'points' ? '' : 'none';
+      document.getElementById('filter-bar-speed').style.display  = tab === 'speed'  ? '' : 'none';
+      document.getElementById('tab-points').style.cssText = tab === 'points'
+        ? 'min-height:38px;padding:6px 20px'
+        : 'min-height:38px;padding:6px 20px;background:var(--surface);color:var(--primary);border:2px solid var(--primary)';
+      document.getElementById('tab-speed').style.cssText = tab === 'speed'
+        ? 'min-height:38px;padding:6px 20px'
+        : 'min-height:38px;padding:6px 20px;background:var(--surface);color:var(--primary);border:2px solid var(--primary)';
+      if (tab === 'speed') loadSpeedBoard();
+    }
+
+    function fmtTime(s) {
+      const m = Math.floor(s/60), sec = s%60;
+      return m + ':' + String(sec).padStart(2,'0');
+    }
+
+    async function loadSpeedBoard() {
+      const tbody  = document.getElementById('speed-board-body');
+      const grade  = document.getElementById('speed-grade-filter').value;
+      const myEl   = document.getElementById('my-speed-box');
+      tbody.innerHTML = '<tr><td colspan="5" class="loading-msg">Loading…</td></tr>';
+      myEl.style.display = 'none';
+      const api = (window.DMK_API || '').replace(/\/$/, '');
+      const today = new Date().toISOString().slice(0,10);
+      try {
+        let url = `${api}/api/leaderboard?type=speed&date=${today}&limit=50`;
+        if (grade) url += `&grade=${encodeURIComponent(grade)}`;
+        const res  = await fetch(url);
+        const data = await res.json();
+        const rows = data.leaderboard || [];
+        if (!rows.length) {
+          tbody.innerHTML = '<tr><td colspan="5" class="empty-msg">No speed entries yet today — be the first with a perfect score! ⚡</td></tr>';
+          return;
+        }
+        const u = getUser();
+        tbody.innerHTML = rows.map(r => {
+          const isMe = u && r.nickname === u.nickname;
+          return `<tr class="${isMe ? 'my-row' : ''}">
+            <td><span class="rank-medal">${rankEmoji(r.rank)}</span></td>
+            <td>${isMe ? '⭐ ' : ''}${escHtml(r.nickname)}</td>
+            <td>${escHtml(r.grade || '–')}</td>
+            <td><strong>${fmtTime(r.timeSeconds)}</strong></td>
+            <td>${r.date}</td>
+          </tr>`;
+        }).join('');
+        if (u) {
+          const me = rows.find(r => r.nickname === u.nickname);
+          if (me) {
+            myEl.innerHTML = `⚡ <strong>Your speed rank:</strong> #${me.rank} &nbsp;|&nbsp; <strong>${fmtTime(me.timeSeconds)}</strong>`;
+            myEl.style.display = 'block';
+          }
+        }
+      } catch {
+        tbody.innerHTML = '<tr><td colspan="5" class="empty-msg">Could not load speed rankings.</td></tr>';
+      }
+    }
+
     document.getElementById('grade-filter').addEventListener('change', loadBoard);
     document.getElementById('city-filter').addEventListener('change', loadBoard);
+    document.getElementById('speed-grade-filter').addEventListener('change', loadSpeedBoard);
 
     document.addEventListener('DOMContentLoaded', loadBoard);
   </script>

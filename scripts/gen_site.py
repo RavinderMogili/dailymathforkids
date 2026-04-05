@@ -19,11 +19,15 @@ HELPERS_JS = r"""
 (function enhanceProblems() {
   document.querySelectorAll('.problems-list > li').forEach(li => {
     const text = li.innerText;
-    const en    = (text.match(/EN:\s*([\s\S]*?)(?=\n\s*FR:)/i)      || [])[1]?.trim() || '';
-    const fr    = (text.match(/FR:\s*([\s\S]*?)(?=\n\s*Hint:)/i)    || [])[1]?.trim() || '';
-    const hint  = (text.match(/Hint:\s*([\s\S]*?)(?=\n\s*Steps:)/i) || [])[1]?.trim() || '';
-    const steps = (text.match(/Steps:\s*([\s\S]*?)(?=\n\s*Answer:)/i) || [])[1]?.trim() || '';
-    const ans   = (text.match(/Answer:\s*(\S+)/i) || [])[1]?.trim() || '';
+    const en      = (text.match(/EN:\s*([\s\S]*?)(?=\n\s*FR:)/i)       || [])[1]?.trim() || '';
+    const fr      = (text.match(/FR:\s*([\s\S]*?)(?=\n\s*Choices:)/i)  || [])[1]?.trim() || '';
+    const choiceStr = (text.match(/Choices:\s*([^\n]+)/i)              || [])[1]?.trim() || '';
+    const hint    = (text.match(/Hint:\s*([\s\S]*?)(?=\n\s*Steps:)/i)  || [])[1]?.trim() || '';
+    const steps   = (text.match(/Steps:\s*([\s\S]*?)(?=\n\s*Answer:)/i)|| [])[1]?.trim() || '';
+    const ans     = (text.match(/Answer:\s*(\S+)/i)                    || [])[1]?.trim() || '';
+
+    const choicePairs = [...choiceStr.matchAll(/([A-D])\)\s*([^A-D)\n]+?)(?=\s+[A-D]\)|$)/gi)]
+      .map(m => ({ label: m[1].toUpperCase(), value: m[2].trim() }));
 
     li.dataset.answer   = ans;
     li.dataset.question  = en;
@@ -50,7 +54,33 @@ HELPERS_JS = r"""
       (hint ? '<details style="width:100%;margin-top:4px"><summary style="cursor:pointer;font-weight:700;color:var(--warn)">&#128161; Show hint</summary><p style="margin:6px 0 0;padding:8px;background:var(--warn-light);border-radius:8px">' + hint + '</p></details>' : '') +
       (stepsHtml ? '<details style="width:100%;margin-top:4px"><summary style="cursor:pointer;font-weight:700;color:var(--primary)">&#128218; Show steps</summary>' + stepsHtml + '</details>' : '');
 
-    li.innerHTML = titleHtml + '<p style="margin:6px 0 4px">' + (en || '') + '</p>';
+    const choicesHtml = choicePairs.length
+      ? '<div class="mc-options" style="display:flex;flex-wrap:wrap;gap:8px;margin:10px 0">' +
+        choicePairs.map(c =>
+          '<button type="button" class="mc-btn" data-value="' + c.value + '"' +
+          ' style="min-height:40px;padding:8px 18px;background:var(--surface);color:var(--ink);' +
+          'border:2px solid var(--border);border-radius:var(--radius-pill);cursor:pointer;font-family:inherit;font-size:.95rem;font-weight:600">' +
+          '<span style="color:var(--primary);font-weight:800">' + c.label + ')</span> ' + c.value +
+          '</button>'
+        ).join('') + '</div>'
+      : '';
+
+    li.innerHTML = titleHtml + '<p style="margin:6px 0 4px">' + (en || '') + '</p>' + choicesHtml;
+
+    li.querySelectorAll('.mc-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        li.querySelectorAll('.mc-btn').forEach(b => {
+          b.style.background = 'var(--surface)';
+          b.style.borderColor = 'var(--border)';
+          b.style.color = 'var(--ink)';
+        });
+        btn.style.background  = 'var(--primary)';
+        btn.style.borderColor = 'var(--primary)';
+        btn.style.color       = '#fff';
+        li.dataset.selected   = btn.dataset.value;
+      });
+    });
+
     li.appendChild(bar);
 
     bar.querySelector('.tts-en').onclick = () => speak(en, 'en-CA');
@@ -158,11 +188,12 @@ Use EXACTLY this format — no deviations:
 1. **Title**
    - EN: problem in English
    - FR: same problem in French
+   - Choices: A) [wrong]  B) [correct]  C) [wrong]  D) [wrong]
    - Hint: one short hint (do not give away the answer)
    - Steps:
      - step 1
      - step 2
-   - Answer: [number only]
+   - Answer: [number only — must match one of the Choices values exactly]
 2. **Title**
    ...
 [problems 3-5 for G1]
@@ -282,14 +313,15 @@ def generate_html_from_text(text, today):
 <div id="quiz-feelings"></div>
 <section class="hero" id="quiz-box">
   <h2>Test Yourself! &#128221;</h2>
+  <div id="quiz-timer" style="display:none;font-size:1.1rem;font-weight:700;color:var(--primary);margin-bottom:8px">&#9201; <span id="timer-display">0:00</span></div>
   <p id="hello">Log in and select your grade &#8212; problems will appear above!</p>
   <form id="quiz" aria-label="Enter answers">
     <ol>
-      <li><input name="q1" placeholder="Answer 1" required autocomplete="off"></li>
-      <li><input name="q2" placeholder="Answer 2" required autocomplete="off"></li>
-      <li><input name="q3" placeholder="Answer 3" required autocomplete="off"></li>
-      <li><input name="q4" placeholder="Answer 4" required autocomplete="off"></li>
-      <li><input name="q5" placeholder="Answer 5" required autocomplete="off"></li>
+      <li style="display:none"><input name="q1" type="hidden"></li>
+      <li style="display:none"><input name="q2" type="hidden"></li>
+      <li style="display:none"><input name="q3" type="hidden"></li>
+      <li style="display:none"><input name="q4" type="hidden"></li>
+      <li style="display:none"><input name="q5" type="hidden"></li>
     </ol>
     <button type="submit">Submit &amp; Earn Points &#127775;</button>
   </form>
@@ -307,21 +339,48 @@ def generate_html_from_text(text, today):
 <script>
   const QUIZ_DATE = '{today}';
   let QUIZ_ID = QUIZ_DATE + '-G3';
+  let _timerTick = null;
+  function _startTimerUI() {{
+    const timerEl = document.getElementById('quiz-timer');
+    const dispEl  = document.getElementById('timer-display');
+    if (!timerEl || !dispEl) return;
+    dmkTimer.begin();
+    timerEl.style.display = 'block';
+    if (_timerTick) return;
+    _timerTick = setInterval(() => {{
+      dispEl.textContent = dmkTimer.fmt(dmkTimer.elapsed());
+    }}, 1000);
+  }}
   document.addEventListener('DOMContentLoaded', () => {{
     showGradeProblems();
     renderFeelingsCheckin('quiz-feelings');
     renderReviewSection('review-section');
     renderReminderButton('reminder-btn-wrap');
+    document.addEventListener('click', function _mcStart(e) {{
+      if (e.target.closest('.mc-btn')) {{ _startTimerUI(); document.removeEventListener('click', _mcStart); }}
+    }});
   }});
   document.getElementById('quiz').addEventListener('submit', async function(e) {{
     e.preventDefault();
     const fd = new FormData(this);
-    const answers = ['q1','q2','q3','q4','q5'].map(k => fd.get(k).trim());
+    const grade = (window.QUIZ_ID || QUIZ_ID).replace(/^.*-(G\d+)$/, '$1');
+    const section = document.querySelector('.grade-section[data-grade="' + grade + '"]');
+    const lis = section ? section.querySelectorAll('.problems-list > li') : [];
+    ['q1','q2','q3','q4','q5'].forEach((k, i) => {{
+      const sel = lis[i] ? (lis[i].dataset.selected || '') : '';
+      const input = document.querySelector('input[name="' + k + '"]');
+      if (input) input.value = sel;
+    }});
+    const answers = ['q1','q2','q3','q4','q5'].map(k => (fd.get(k) || '').trim());
     const resultEl = document.getElementById('result');
     resultEl.textContent = 'Checking\u2026';
     const qid = window.QUIZ_ID || QUIZ_ID;
-    const ok = await submitQuizAnswers(qid, answers, resultEl);
+    const secs = dmkTimer.stop();
+    const timerEl = document.getElementById('quiz-timer');
+    if (timerEl) timerEl.style.display = 'none';
+    const ok = await submitQuizAnswers(qid, answers, resultEl, secs || null);
     if (ok) {{
+      dmkTimer.reset();
       markDayDone(qid);
       const streak = calcStreak(qid);
       const streakEl = document.getElementById('streak-msg');

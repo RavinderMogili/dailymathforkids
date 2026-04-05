@@ -238,9 +238,28 @@ function _retryPendingSubmit() {
   submitQuizAnswers(quizId, answers, resultEl);
 }
 
+// ── Speed timer ─────────────────────────────────────────────────────────────
+
+const dmkTimer = {
+  _start: null,
+  _seconds: null,
+  begin() { if (!this._start) this._start = Date.now(); },
+  stop() {
+    if (this._start && this._seconds === null)
+      this._seconds = Math.round((Date.now() - this._start) / 1000);
+    return this._seconds;
+  },
+  elapsed() {
+    if (this._seconds !== null) return this._seconds;
+    return this._start ? Math.round((Date.now() - this._start) / 1000) : 0;
+  },
+  reset() { this._start = null; this._seconds = null; },
+  fmt(s) { const m = Math.floor(s/60), sec = s%60; return m+':'+String(sec).padStart(2,'0'); },
+};
+
 // ── Quiz submission ───────────────────────────────────────────────────────────
 
-async function submitQuizAnswers(quizId, answers, resultEl) {
+async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
   const u = getUser();
   if (!u) {
     window._pendingSubmit = { quizId, answers, resultEl };
@@ -258,7 +277,7 @@ async function submitQuizAnswers(quizId, answers, resultEl) {
     const res  = await fetch(`${API}/api/submit`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: u.userId, quizId, answers }),
+      body: JSON.stringify({ userId: u.userId, quizId, answers, timeSeconds: timeSeconds ?? null }),
     });
     const data = await res.json();
     if (!res.ok) {
@@ -276,11 +295,13 @@ async function submitQuizAnswers(quizId, answers, resultEl) {
         : pct >= 0.6
         ? `Great effort! ${data.score} out of ${data.outOf} — you showed up and that counts!`
         : `Keep going! ${data.score} out of ${data.outOf} today — every practice makes you stronger!`;
+      const timeNote = timeSeconds ? `<p class="time-taken">&#9201; Completed in <strong>${dmkTimer.fmt(timeSeconds)}</strong></p>` : '';
       resultEl.innerHTML =
         `<div class="result-celebration">` +
         `<p class="result-praise">${emoji} ${praise}</p>` +
         `<p class="points-earned">+${data.points_earned} point${data.points_earned !== 1 ? 's' : ''} earned today!</p>` +
-        (!perfect ? `<button class="btn-secondary" onclick="retryQuiz()">✏️ Try again</button>` : '') +
+        timeNote +
+        (!perfect ? `<button class="btn-secondary" onclick="retryQuiz()">&#9999;&#65039; Try again</button>` : '') +
         `</div>`;
       checkAndRevealFadedHints(quizId, answers);
       saveWrongAnswersForReview(quizId, answers);
