@@ -213,8 +213,12 @@ A 3–4 sentence story about a child helping someone in Canada (English, Grade 3
 """
 
     try:
-        resp = client.responses.create(model="gpt-4o-mini", input=prompt)
-        text = resp.output_text.strip()
+        resp = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=8000,
+        )
+        text = resp.choices[0].message.content.strip()
         if not text:
             print("WARN: OpenAI returned empty text; skipping page write.")
             return
@@ -326,7 +330,10 @@ A 3–4 sentence story about a child helping someone in Canada (English, Grade 3
         print(f"ERROR: OpenAI generation failed: {e}", file=sys.stderr)
 
 def rebuild_index_and_sitemap():
-    pages = sorted(DAILY_DIR.glob("*.html"), key=lambda p: p.name, reverse=True)
+    pages = sorted(
+        [p for p in DAILY_DIR.glob("*.html") if re.match(r'\d{4}-\d{2}-\d{2}\.html$', p.name)],
+        key=lambda p: p.name, reverse=True
+    )
     latest = pages[0].stem if pages else None
     today_link = f"daily/{latest}.html" if latest else None
     latest_link_html = (
@@ -354,16 +361,17 @@ def rebuild_index_and_sitemap():
   <main class="container">
     <section class="hero">
       <h1>Practice a little every day</h1>
-      <p>Five kid-friendly math problems posted daily — aligned to the Canadian curriculum. Simple, positive, and <strong>free</strong>.</p>
-      <p><strong>Latest:</strong> {latest_link_html}</p>
+      <p>Five math problems posted daily across <strong>Grades 1–12</strong> — aligned to the Canadian curriculum. Simple, positive, and <strong>free</strong>.</p>
+      <p id="latest-link"><strong>Latest:</strong> {latest_link_html}</p>
       <p id="join-cta" style="margin-top:10px">
         <button onclick="showRegModal()" style="font-size:1rem;padding:12px 22px">Join Free &amp; Track Your Progress 🚀</button>
       </p>
     </section>
     <div class="points-info">
       🌟 <strong>How points work:</strong> Complete a daily quiz to earn points — 1 point per correct answer, +3 bonus for a perfect score!
-      Check the <a href="leaderboard.html">🏆 Rankings</a> to see where you stand.
+      Check the <a href="leaderboard.html">🏆 Rankings</a> or <a href="profile.html">📊 My Progress</a> to see how you're doing.
     </div>
+    <div style="margin:12px 0" id="reminder-btn-wrap"></div>
     <section>
       <h2>Recent days</h2>
       <ul class="list">
@@ -373,8 +381,7 @@ def rebuild_index_and_sitemap():
     <section style="margin-top:28px">
       <h2>About this site</h2>
       <p>Built with ❤️ for kids in <strong>Moncton, NB, Canada</strong> (and anywhere else!). Daily problems cover
-         addition, subtraction, multiplication, division, and word problems across Grades 1–8.</p>
-      <p>A Sunday tutoring session is also available — check back for details!</p>
+         all topics from Grades 1–12 — generated fresh every day.</p>
     </section>
   </main>
   <footer>© {datetime.date.today().year} • Free math practice for kids • Moncton, NB</footer>
