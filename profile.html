@@ -107,8 +107,6 @@
 </script>
 <script src="scripts/app.js"></script>
 <script>
-const API = window.DMK_API || '';
-
 async function loadProfile() {
   const u = getUser();
   if (!u) {
@@ -117,7 +115,8 @@ async function loadProfile() {
   }
   document.getElementById('profile-content').style.display = 'block';
 
-  const res = await fetch(`${API}/api/history?userId=${encodeURIComponent(u.userId)}`);
+  const histAPI = window.DMK_API || '';
+  const res = await fetch(`${histAPI}/api/history?userId=${encodeURIComponent(u.userId)}`);
   if (!res.ok) {
     document.getElementById('history-wrap').innerHTML =
       '<p class="empty-msg">Could not load history. Please try again later.</p>';
