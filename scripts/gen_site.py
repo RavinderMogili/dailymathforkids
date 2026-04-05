@@ -104,30 +104,28 @@ def parse_grade_sections(text):
 
 
 def upsert_quiz_to_supabase(quiz_id, questions, answers):
-    supabase_url = os.environ.get("SUPABASE_URL", "").strip()
-    service_role  = os.environ.get("SUPABASE_SERVICE_ROLE", "").strip()
-    if not supabase_url or not service_role:
-        print("INFO: Supabase env vars not set — skipping quiz DB insert.")
+    api_base     = os.environ.get("PUBLIC_API_BASE", "").strip().rstrip("/")
+    service_role = os.environ.get("SUPABASE_SERVICE_ROLE", "").strip()
+    if not api_base or not service_role:
+        print("INFO: API/service-role env vars not set — skipping quiz DB insert.")
         return
     try:
         import httpx
         r = httpx.post(
-            f"{supabase_url}/rest/v1/quizzes?on_conflict=id",
-            json={"id": quiz_id, "questions": questions, "answers": answers},
+            f"{api_base}/api/upsert-quiz",
+            json={"quizId": quiz_id, "questions": questions, "answers": answers},
             headers={
-                "apikey": service_role,
-                "Authorization": f"Bearer {service_role}",
                 "Content-Type": "application/json",
-                "Prefer": "resolution=merge-duplicates,return=representation",
+                "x-internal-key": service_role,
             },
-            timeout=10,
+            timeout=15,
         )
-        if r.status_code in (200, 201):
-            print(f"INFO: Quiz {quiz_id} saved to Supabase.")
+        if r.status_code == 200:
+            print(f"INFO: Quiz {quiz_id} saved via API.")
         else:
-            print(f"WARN: Supabase returned {r.status_code}: {r.text}")
+            print(f"WARN: upsert-quiz returned {r.status_code}: {r.text}")
     except Exception as e:
-        print(f"WARN: Could not save quiz to Supabase: {e}")
+        print(f"WARN: Could not save quiz {quiz_id}: {e}")
 
 
 def safe_generate_today():
