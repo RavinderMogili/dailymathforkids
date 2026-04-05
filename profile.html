@@ -47,6 +47,20 @@
       border-radius: 20px; padding: 4px 14px;
       font-weight: 600; font-size: .95rem; margin-top: 8px;
     }
+    .grade-change-row {
+      display: flex; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap;
+    }
+    .grade-change-row label { font-weight: 600; font-size: .9rem; color: var(--muted); }
+    .grade-change-row select {
+      min-height: 36px; padding: 4px 10px; border-radius: 8px;
+      border: 1px solid var(--border, #e0e0e0); font-family: inherit; font-size: .95rem;
+    }
+    .grade-change-row button {
+      min-height: 36px; padding: 5px 18px; font-size: .88rem;
+      border-radius: 20px; background: var(--primary, #2563eb); color: #fff;
+      border: none; cursor: pointer; font-family: inherit; font-weight: 700;
+    }
+    #grade-save-msg { font-size: .85rem; color: var(--success, #16a34a); font-weight: 600; }
   </style>
 </head>
 <body>
@@ -69,6 +83,25 @@
       <h2 id="profile-name">—</h2>
       <div class="profile-meta" id="profile-meta"></div>
       <div id="streak-badge-wrap"></div>
+      <div class="grade-change-row">
+        <label for="grade-select">Change grade:</label>
+        <select id="grade-select">
+          <option value="1">Grade 1</option>
+          <option value="2">Grade 2</option>
+          <option value="3">Grade 3</option>
+          <option value="4">Grade 4</option>
+          <option value="5">Grade 5</option>
+          <option value="6">Grade 6</option>
+          <option value="7">Grade 7</option>
+          <option value="8">Grade 8</option>
+          <option value="9">Grade 9</option>
+          <option value="10">Grade 10</option>
+          <option value="11">Grade 11</option>
+          <option value="12">Grade 12</option>
+        </select>
+        <button onclick="saveGrade()">Save</button>
+        <span id="grade-save-msg"></span>
+      </div>
       <div class="stat-row">
         <div class="stat-box">
           <div class="stat-num" id="stat-total-pts">—</div>
@@ -125,8 +158,11 @@ async function loadProfile() {
   const data = await res.json();
 
   document.getElementById('profile-name').textContent = data.nickname || u.nickname;
+  const currentGrade = data.grade || u.grade || '3';
   document.getElementById('profile-meta').textContent =
-    [data.grade ? 'Grade ' + data.grade : '', data.school].filter(Boolean).join(' · ');
+    [currentGrade ? 'Grade ' + currentGrade : '', data.school].filter(Boolean).join(' · ');
+  const gradeSelect = document.getElementById('grade-select');
+  if (gradeSelect) gradeSelect.value = String(currentGrade).replace(/\D/g, '') || '3';
 
   const subs = data.submissions || [];
   const streak = calcCurrentStreak(subs);
@@ -182,6 +218,32 @@ function calcCurrentStreak(subs) {
     else break;
   }
   return streak;
+}
+
+async function saveGrade() {
+  const u = getUser();
+  if (!u) return;
+  const newGrade = document.getElementById('grade-select').value;
+  const msgEl = document.getElementById('grade-save-msg');
+  msgEl.textContent = 'Saving…';
+  try {
+    const api = window.DMK_API || '';
+    const res = await fetch(`${api}/api/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nickname: u.nickname, grade: newGrade, school: u.school || '', city: u.city || '' })
+    });
+    if (!res.ok) throw new Error('Server error');
+    saveUser({ ...u, grade: newGrade });
+    msgEl.textContent = '✓ Grade updated!';
+    document.getElementById('profile-meta').textContent =
+      ['Grade ' + newGrade, u.school].filter(Boolean).join(' · ');
+    setTimeout(() => { msgEl.textContent = ''; }, 3000);
+  } catch {
+    saveUser({ ...u, grade: newGrade });
+    msgEl.textContent = '✓ Saved locally';
+    setTimeout(() => { msgEl.textContent = ''; }, 3000);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', loadProfile);

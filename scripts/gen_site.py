@@ -19,15 +19,17 @@ HELPERS_JS = r"""
 (function enhanceProblems() {
   document.querySelectorAll('.problems-list > li').forEach(li => {
     const text = li.innerText;
-    const en    = (text.match(/EN:\s*([\s\S]*?)\n\s*-\s*FR:/i)      || [])[1]?.trim() || '';
-    const fr    = (text.match(/FR:\s*([\s\S]*?)\n\s*-\s*Hint:/i)    || [])[1]?.trim() || '';
-    const hint  = (text.match(/Hint:\s*([\s\S]*?)\n\s*-\s*Steps:/i) || [])[1]?.trim() || '';
-    const steps = (text.match(/Steps:\s*([\s\S]*?)\n\s*-\s*Answer:/i) || [])[1]?.trim() || '';
-    const ans   = (text.match(/Answer:\s*([\S]+)/i) || [])[1]?.trim() || '';
+    const en    = (text.match(/EN:\s*([\s\S]*?)(?=\n\s*FR:)/i)      || [])[1]?.trim() || '';
+    const fr    = (text.match(/FR:\s*([\s\S]*?)(?=\n\s*Hint:)/i)    || [])[1]?.trim() || '';
+    const hint  = (text.match(/Hint:\s*([\s\S]*?)(?=\n\s*Steps:)/i) || [])[1]?.trim() || '';
+    const steps = (text.match(/Steps:\s*([\s\S]*?)(?=\n\s*Answer:)/i) || [])[1]?.trim() || '';
+    const ans   = (text.match(/Answer:\s*(\S+)/i) || [])[1]?.trim() || '';
 
     li.dataset.answer   = ans;
-    li.dataset.hint     = hint;
-    li.dataset.question = en;
+    li.dataset.question  = en;
+
+    const titleMatch = li.innerHTML.match(/<strong>(.*?)<\/strong>/);
+    const titleHtml  = titleMatch ? '<strong>' + titleMatch[1] + '</strong>' : '';
 
     function speak(t, lang) {
       const u = new SpeechSynthesisUtterance(t);
@@ -36,27 +38,19 @@ HELPERS_JS = r"""
     }
 
     const stepsHtml = steps
-      ? '<ul><li>' + steps.replace(/\n\s*-\s*/g, '</li><li>') + '</li></ul>'
-      : '<ul><li>Break the problem into smaller parts.</li></ul>';
+      ? '<ul style="margin:4px 0;padding-left:20px"><li>' + steps.replace(/\n\s*-\s*/g, '</li><li>') + '</li></ul>'
+      : '';
 
+    const tag = li.closest('.grade-section')?.dataset.grade || '';
     const bar = document.createElement('div');
-    bar.style.cssText = 'margin:8px 0;display:flex;flex-wrap:wrap;gap:6px;align-items:center';
-    bar.innerHTML = `
-      <span class="grade-badge">${tag.replace('G','Grade ')}</span>
-      <button type="button" class="tts-en">🎧 EN</button>
-      <button type="button" class="tts-fr">🎧 FR</button>
-      <details class="hint-wrap" style="width:100%">
-        <summary style="cursor:pointer;font-weight:600">Show hint</summary>
-        <p style="margin:6px 0 0">${hint || 'Try drawing a picture or using counters!'}</p>
-      </details>
-      <details class="steps-wrap" style="width:100%">
-        <summary style="cursor:pointer;font-weight:600">Show steps</summary>
-        ${stepsHtml}
-      </details>
-      <details style="width:100%">
-        <summary style="cursor:pointer;font-weight:600">Show answer</summary>
-        <p style="margin:6px 0 0;font-weight:700">${ans || 'Check your steps!'}</p>
-      </details>`;
+    bar.style.cssText = 'margin:8px 0;display:flex;flex-wrap:wrap;gap:6px;align-items:flex-start';
+    bar.innerHTML =
+      '<button type="button" class="tts-en" style="min-height:32px;padding:4px 10px;font-size:.82rem">&#127911; Listen EN</button>' +
+      '<button type="button" class="tts-fr" style="min-height:32px;padding:4px 10px;font-size:.82rem">&#127911; Listen FR</button>' +
+      (hint ? '<details style="width:100%;margin-top:4px"><summary style="cursor:pointer;font-weight:700;color:var(--warn)">&#128161; Show hint</summary><p style="margin:6px 0 0;padding:8px;background:var(--warn-light);border-radius:8px">' + hint + '</p></details>' : '') +
+      (stepsHtml ? '<details style="width:100%;margin-top:4px"><summary style="cursor:pointer;font-weight:700;color:var(--primary)">&#128218; Show steps</summary>' + stepsHtml + '</details>' : '');
+
+    li.innerHTML = titleHtml + '<p style="margin:6px 0 4px">' + (en || '') + '</p>';
     li.appendChild(bar);
 
     bar.querySelector('.tts-en').onclick = () => speak(en, 'en-CA');
@@ -116,6 +110,10 @@ def safe_generate_today():
     slug = today
     md_path = DAILY_DIR / f"{slug}.md"
     html_path = DAILY_DIR / f"{slug}.html"
+
+    if html_path.exists() and html_path.stat().st_size > 1000:
+        print(f"INFO: {html_path.name} already exists ({html_path.stat().st_size} bytes) — skipping generation.")
+        return
 
     # Pick 5 grade levels to feature today, cycling so all 12 grades appear across the fortnight.
     # Day-of-year offset ensures a different mix each day.
@@ -224,49 +222,67 @@ A 3–4 sentence story about a child helping someone in Canada (English, Grade 3
             return
         md_path.write_text(text + "\n", encoding="utf-8")
 
+        page_html = generate_html_from_text(text, today)
+        html_path.write_text(page_html, encoding="utf-8")
+        print(f"INFO: Wrote {html_path}")
+
         grade_sections = parse_grade_sections(text)
-
-        enc_m    = re.search(r"## Today's Encouragement\n(.*?)(?=\n## |\Z)", text, re.DOTALL)
-        enc_text = enc_m.group(1).strip() if enc_m else "Every problem you solve makes your brain stronger and braver."
-        story_m  = re.search(r"## Mini Story of Kindness\n(.*?)(?=\n## |\Z)", text, re.DOTALL)
-        story_text = story_m.group(1).strip() if story_m else ""
-
-        all_sections_html = ""
         for code in GRADE_CODES:
             content = grade_sections.get(code, "")
-            if not content:
-                continue
-            sec_html = markdown2.markdown(content, extras=["tables", "fenced-code-blocks"])
-            sec_html = sec_html.replace('<ol>\n<li>', '<ol class="problems-list">\n<li>', 1)
-            grade_num = code[1:]
-            all_sections_html += (
-                f'\n<div class="grade-section" data-grade="{code}" style="display:none">'
-                f'\n<h2>Grade {grade_num} Problems</h2>\n{sec_html}\n</div>\n'
-            )
+            if content:
+                qs  = re.findall(r'^\s*-\s*EN:\s*(.+)',      content, re.MULTILINE)
+                ans = re.findall(r'^\s*-\s*Answer:\s*(\S+)', content, re.MULTILINE)
+                upsert_quiz_to_supabase(f"{today}-{code}", qs, ans)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        print(f"ERROR: generation failed: {e}", file=sys.stderr)
+        sys.exit(1)
 
-        enc_html   = f'<h2>Today\'s Encouragement</h2>\n<blockquote class="encouragement"><p>{enc_text}</p></blockquote>'
-        story_html = f'<h2>A Story of Kindness</h2>\n{markdown2.markdown(story_text)}' if story_text else ""
+def generate_html_from_text(text, today):
+    grade_sections = parse_grade_sections(text)
+    enc_m    = re.search(r"## Today's Encouragement\n(.*?)(?=\n## |\Z)", text, re.DOTALL)
+    enc_text = enc_m.group(1).strip() if enc_m else "Every problem you solve makes your brain stronger."
+    story_m  = re.search(r"## Mini Story of Kindness\n(.*?)(?=\n## |\Z)", text, re.DOTALL)
+    story_text = story_m.group(1).strip() if story_m else ""
 
-        page_html = f"""<!doctype html>
+    all_sections_html = ""
+    for code in GRADE_CODES:
+        content = grade_sections.get(code, "")
+        if not content:
+            continue
+        sec_html = markdown2.markdown(content, extras=["tables", "fenced-code-blocks"])
+        sec_html = sec_html.replace('<ol>\n<li>', '<ol class="problems-list">\n<li>', 1)
+        grade_num = code[1:]
+        all_sections_html += (
+            f'\n<div class="grade-section" data-grade="{code}" style="display:none">'
+            f'\n<h2>Grade {grade_num} Problems</h2>\n{sec_html}\n</div>\n'
+        )
+
+    enc_html   = f'<h2>Today\'s Encouragement</h2>\n<blockquote class="encouragement"><p>{enc_text}</p></blockquote>'
+    story_html = f'<h2>A Story of Kindness</h2>\n{markdown2.markdown(story_text)}' if story_text else ""
+
+    page_html = f"""<!doctype html>
 <html lang="en">
 <head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>{TITLE} - {today}</title><link rel="stylesheet" href="../styles.css"/></head>
 <body>
 <header>
-  <a href="../index.html">🧮 {TITLE}</a>
+  <a href="../index.html">&#129518; {TITLE}</a>
   <span class="user-badge"></span>
 </header>
 <main class="container">
-<h1>Daily Math — {today}</h1>
+<h1>Daily Math &#8212; {today}</h1>
 <div id="review-section"></div>
 {all_sections_html}
 {enc_html}
 {story_html}
 <div id="reminder-btn-wrap" style="margin:12px 0"></div>
+<div id="corrective-feedback" style="margin:16px 0"></div>
 <div id="quiz-feelings"></div>
 <section class="hero" id="quiz-box">
-  <h2>Test Yourself! 📝</h2>
-  <p id="hello">Log in and select your grade — problems will appear above!</p>
+  <h2>Test Yourself! &#128221;</h2>
+  <p id="hello">Log in and select your grade &#8212; problems will appear above!</p>
   <form id="quiz" aria-label="Enter answers">
     <ol>
       <li><input name="q1" placeholder="Answer 1" required autocomplete="off"></li>
@@ -275,14 +291,14 @@ A 3–4 sentence story about a child helping someone in Canada (English, Grade 3
       <li><input name="q4" placeholder="Answer 4" required autocomplete="off"></li>
       <li><input name="q5" placeholder="Answer 5" required autocomplete="off"></li>
     </ol>
-    <button type="submit">Submit &amp; Earn Points 🌟</button>
+    <button type="submit">Submit &amp; Earn Points &#127775;</button>
   </form>
   <p id="result"></p>
   <p id="streak-msg" style="margin-top:8px;font-size:.95rem;color:var(--muted)"></p>
 </section>
-<p class="back"><a href="../index.html">← Back to Home</a> &nbsp;·&nbsp; <a href="../profile.html">📊 My Progress</a> &nbsp;·&nbsp; <a href="../leaderboard.html">🏆 Rankings</a></p>
+<p class="back"><a href="../index.html">&#8592; Back to Home</a> &nbsp;&middot;&nbsp; <a href="../profile.html">&#128202; My Progress</a> &nbsp;&middot;&nbsp; <a href="../leaderboard.html">&#127942; Rankings</a></p>
 </main>
-<footer>© {datetime.date.today().year} • Free math practice for kids • Moncton, NB</footer>
+<footer>&#169; {datetime.date.today().year} &#8226; Free math practice for kids &#8226; Moncton, NB</footer>
 <script>
   window.DMK_API  = '{PUBLIC_API}';
   window.DMK_ROOT = '../';
@@ -310,24 +326,38 @@ A 3–4 sentence story about a child helping someone in Canada (English, Grade 3
       const streak = calcStreak(qid);
       const streakEl = document.getElementById('streak-msg');
       streakEl.textContent = streak > 1
-        ? '\uD83D\uDD25 ' + streak + '-day streak! Keep it up!'
+        ? '\U0001F525 ' + streak + '-day streak! Keep it up!'
         : '\u2B50 Day 1 \u2014 great start!';
+
+      const grade = qid.replace(/^.*-(G\d+)$/, '$1');
+      const section = document.querySelector('.grade-section[data-grade="' + grade + '"]');
+      const feedbackEl = document.getElementById('corrective-feedback');
+      if (section && feedbackEl) {{
+        const lis = section.querySelectorAll('.problems-list > li');
+        let html = '<h3 style="margin-bottom:10px">Your Results</h3><ol style="list-style:none;padding:0;margin:0">';
+        answers.forEach((userAns, i) => {{
+          const li = lis[i];
+          const correct = li ? (li.dataset.answer || '').trim() : '';
+          const q = li ? (li.dataset.question || '') : '';
+          const isRight = userAns.trim().toLowerCase() === correct.toLowerCase();
+          html += '<li style="margin:8px 0;padding:10px 14px;border-radius:10px;background:' +
+            (isRight ? 'var(--success-light)' : 'var(--danger-light)') + ';border:1px solid ' +
+            (isRight ? 'var(--success)' : 'var(--danger)') + '">';
+          html += (isRight ? '&#9989;' : '&#10060;') + ' <strong>Q' + (i+1) + ':</strong> ' + (q || '(question ' + (i+1) + ')') + '<br>';
+          html += 'Your answer: <strong>' + (userAns || '—') + '</strong>';
+          if (!isRight) html += ' &nbsp;&middot;&nbsp; Correct: <strong style="color:var(--success)">' + (correct || '?') + '</strong>';
+          html += '</li>';
+        }});
+        html += '</ol>';
+        feedbackEl.innerHTML = html;
+        feedbackEl.scrollIntoView({{behavior:'smooth', block:'nearest'}});
+      }}
     }}
   }});
 </script>
 {HELPERS_JS}
 </body></html>"""
-        html_path.write_text(page_html, encoding="utf-8")
-        print(f"INFO: Wrote {html_path}")
-
-        for code in GRADE_CODES:
-            content = grade_sections.get(code, "")
-            if content:
-                qs  = re.findall(r'^\s*-\s*EN:\s*(.+)',      content, re.MULTILINE)
-                ans = re.findall(r'^\s*-\s*Answer:\s*(\S+)', content, re.MULTILINE)
-                upsert_quiz_to_supabase(f"{today}-{code}", qs, ans)
-    except Exception as e:
-        print(f"ERROR: OpenAI generation failed: {e}", file=sys.stderr)
+    return page_html
 
 def rebuild_index_and_sitemap():
     pages = sorted(
