@@ -10,23 +10,21 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 DAILY_DIR = ROOT / "daily"
 DAILY_DIR.mkdir(parents=True, exist_ok=True)
 
-TITLE = os.getenv("SITE_TITLE", "Daily Math for Kids")
-PUBLIC_API = os.getenv("PUBLIC_API_BASE", "https://YOUR_BACKEND_URL").rstrip("/")
+TITLE       = os.getenv("SITE_TITLE", "Daily Math for Kids")
+PUBLIC_API  = os.getenv("PUBLIC_API_BASE", "https://YOUR_BACKEND_URL").rstrip("/")
+GRADE_CODES = ["G1","G2","G3","G4","G5","G6","G7","G8","G9","G10","G11","G12"]
 
-# JS injected into every generated daily page
 HELPERS_JS = r"""
 <script>
 (function enhanceProblems() {
-  document.querySelectorAll('#problems-list > li').forEach(li => {
+  document.querySelectorAll('.problems-list > li').forEach(li => {
     const text = li.innerText;
-    const en    = (text.match(/EN:\s*([\s\S]*?)\n\s*-\s*FR:/i)       || [])[1]?.trim() || '';
-    const fr    = (text.match(/FR:\s*([\s\S]*?)\n\s*-\s*Grade Tag:/i) || [])[1]?.trim() || '';
-    const hint  = (text.match(/Hint:\s*([\s\S]*?)\n\s*-\s*Steps:/i)  || [])[1]?.trim() || '';
+    const en    = (text.match(/EN:\s*([\s\S]*?)\n\s*-\s*FR:/i)      || [])[1]?.trim() || '';
+    const fr    = (text.match(/FR:\s*([\s\S]*?)\n\s*-\s*Hint:/i)    || [])[1]?.trim() || '';
+    const hint  = (text.match(/Hint:\s*([\s\S]*?)\n\s*-\s*Steps:/i) || [])[1]?.trim() || '';
     const steps = (text.match(/Steps:\s*([\s\S]*?)\n\s*-\s*Answer:/i) || [])[1]?.trim() || '';
     const ans   = (text.match(/Answer:\s*([\S]+)/i) || [])[1]?.trim() || '';
-    const tag   = (text.match(/Grade Tag:\s*(G(?:1[0-2]|[1-9]))/i) || [])[1] || 'G3';
 
-    li.dataset.level    = tag;
     li.dataset.answer   = ans;
     li.dataset.hint     = hint;
     li.dataset.question = en;
@@ -66,32 +64,17 @@ HELPERS_JS = r"""
   });
 })();
 
-(function difficultyFilter() {
-  const grades = ['G1','G2','G3','G4','G5','G6','G7','G8','G9','G10','G11','G12'];
-  const labels = {G1:'Gr.1',G2:'Gr.2',G3:'Gr.3',G4:'Gr.4',G5:'Gr.5',G6:'Gr.6',
-                  G7:'Gr.7',G8:'Gr.8',G9:'Gr.9',G10:'Gr.10',G11:'Gr.11',G12:'Gr.12'};
-  const box = document.createElement('div');
-  box.className = 'hero'; box.style.marginTop = '12px';
-  box.setAttribute('aria-label','Choose difficulty');
-  const stored = (() => { try { return JSON.parse(localStorage.getItem('dmk_lvl')) || 'G3'; } catch { return 'G3'; } })();
-  box.innerHTML = '<strong>Your grade:</strong> ' +
-    grades.map(g => `<label style="margin:0 4px"><input type="radio" name="lvl" value="${g}"${g===stored?' checked':''}> ${labels[g]}</label>`).join('');
-  const h1 = document.querySelector('h1');
-  if (h1) h1.after(box);
-
-  function apply() {
-    const lvl = (box.querySelector('input[name="lvl"]:checked') || {}).value || 'G3';
-    try { localStorage.setItem('dmk_lvl', JSON.stringify(lvl)); } catch {}
-    document.querySelectorAll('#problems-list > li').forEach(li => {
-      li.style.opacity = (li.dataset.level === lvl) ? '1' : '0.35';
-      li.style.pointerEvents = (li.dataset.level === lvl) ? '' : 'none';
-    });
-  }
-  box.querySelectorAll('input[name="lvl"]').forEach(r => r.addEventListener('change', apply));
-  apply();
-})();
 </script>
 """
+
+def parse_grade_sections(text):
+    sections = {}
+    for code in GRADE_CODES:
+        m = re.search(rf'## {re.escape(code)}\n(.*?)(?=\n## |\Z)', text, re.DOTALL)
+        if m:
+            sections[code] = m.group(1).strip()
+    return sections
+
 
 def upsert_quiz_to_supabase(quiz_id, questions, answers):
     supabase_url = os.environ.get("SUPABASE_URL", "").strip()
@@ -156,49 +139,77 @@ CANADIAN MATH CURRICULUM GUIDE — use this to calibrate each problem:
   G11 (Grade 11): functions (linear/quadratic/exponential), logarithms intro, sequences and series, financial math (compound interest, annuities), trigonometric identities
   G12 (Grade 12): advanced functions (polynomial/rational/trig), derivatives intro (rates of change), combinations and permutations, vectors intro, probability distributions"""
 
-    prompt = f"""
-You are creating today's daily math problems for Canadian students in Grades 1–12.
-Today's featured grades are: {featured_grades_str}.
-Generate exactly 5 problems — one per featured grade in the order listed above.
+    prompt = f"""You are creating daily math problems for Canadian students in Grades 1–12.
+Generate exactly 5 problems for EACH grade from G1 to G12. That is 60 problems total.
+"""
+    prompt += grade_curriculum
+    prompt += f"""
 
-{grade_curriculum}
+RULES:
+- Each problem must match the curriculum exactly for its assigned grade. No topics above grade level.
+- Use real-life Canadian contexts: loonies/toonies, hockey, maple syrup, Tim Hortons, snowfall (cm), camping, school supplies in CAD.
+- Answer must be a single number (integer or simple decimal). No units in the answer field.
+- Keep language short, friendly, and age-appropriate.
+- Provide each problem in both English and French.
 
-RULES for each problem:
-- The problem MUST match the curriculum topics for its assigned grade exactly.
-- Use only concepts a student AT that grade would have learned. Do NOT include topics above their grade.
-- Use real-life Canadian contexts: loonies/toonies, hockey, maple syrup, Tim Hortons, snowfall (cm), camping, school supplies priced in CAD.
-- The Answer must be a single number (integer or simple decimal). No units in the answer field.
-- Keep problem language short, friendly, and age-appropriate.
-- Provide the problem in both English and French.
+Use EXACTLY this format — no deviations:
 
-For each problem provide ALL of these fields:
-- Title: a short child-friendly name
-- EN: problem statement in English
-- FR: same problem in French
-- Grade Tag: the assigned grade code (e.g. G4, G9, G11)
-- Hint: one short hint in English (do not give away the answer)
-- Steps: 2–5 bullet steps in English showing how to solve it
-- Answer: the final numeric answer only (no units, no words)
-
-Output format — use EXACTLY this Markdown (no deviations):
 # Daily Math - {today}
-## Problems
+
+## G1
 1. **Title**
-   - EN: ...
-   - FR: ...
-   - Grade Tag: G1/G2/G3/G4/G5/G6/G7/G8
-   - Hint: ...
+   - EN: problem in English
+   - FR: same problem in French
+   - Hint: one short hint (do not give away the answer)
    - Steps:
-     - ...
-     - ...
-   - Answer: ...
-(repeat for problems 2–5)
+     - step 1
+     - step 2
+   - Answer: [number only]
+2. **Title**
+   ...
+[problems 3-5 for G1]
+
+## G2
+[5 problems]
+
+## G3
+[5 problems]
+
+## G4
+[5 problems]
+
+## G5
+[5 problems]
+
+## G6
+[5 problems]
+
+## G7
+[5 problems]
+
+## G8
+[5 problems]
+
+## G9
+[5 problems]
+
+## G10
+[5 problems]
+
+## G11
+[5 problems]
+
+## G12
+[5 problems]
 
 ## Today's Encouragement
 One cheerful sentence (10–16 words, English only). No emojis.
 
 ## Mini Story of Kindness
-A 3–4 sentence story about a child helping someone in Canada (English, very simple language, Grade 3 reading level).
+A 3–4 sentence story about a child helping someone in Canada (English, Grade 3 reading level).
+"""
+    # (original prompt replaced — keep variable name for compatibility)
+    _unused_prompt = f"""
 """
 
     try:
@@ -209,18 +220,28 @@ A 3–4 sentence story about a child helping someone in Canada (English, very si
             return
         md_path.write_text(text + "\n", encoding="utf-8")
 
-        body_html = markdown2.markdown(text, extras=["tables", "fenced-code-blocks"])
+        grade_sections = parse_grade_sections(text)
 
-        # Wrap the problems <ol> with an id so JS can target it
-        body_html = body_html.replace('<ol>\n<li>', '<ol id="problems-list">\n<li>', 1)
+        enc_m    = re.search(r"## Today's Encouragement\n(.*?)(?=\n## |\Z)", text, re.DOTALL)
+        enc_text = enc_m.group(1).strip() if enc_m else "Every problem you solve makes your brain stronger and braver."
+        story_m  = re.search(r"## Mini Story of Kindness\n(.*?)(?=\n## |\Z)", text, re.DOTALL)
+        story_text = story_m.group(1).strip() if story_m else ""
 
-        # Style the Encouragement section as a callout
-        if "<h2>Today's Encouragement</h2>" in body_html:
-            parts = body_html.split("<h2>Today's Encouragement</h2>", 1)
-            if "<p>" in parts[1]:
-                parts[1] = parts[1].replace("<p>", '<blockquote class="encouragement"><p>', 1)\
-                                   .replace("</p>", "</p></blockquote>", 1)
-                body_html = "<h2>Today's Encouragement</h2>".join(parts)
+        all_sections_html = ""
+        for code in GRADE_CODES:
+            content = grade_sections.get(code, "")
+            if not content:
+                continue
+            sec_html = markdown2.markdown(content, extras=["tables", "fenced-code-blocks"])
+            sec_html = sec_html.replace('<ol>\n<li>', '<ol class="problems-list">\n<li>', 1)
+            grade_num = code[1:]
+            all_sections_html += (
+                f'\n<div class="grade-section" data-grade="{code}" style="display:none">'
+                f'\n<h2>Grade {grade_num} Problems</h2>\n{sec_html}\n</div>\n'
+            )
+
+        enc_html   = f'<h2>Today\'s Encouragement</h2>\n<blockquote class="encouragement"><p>{enc_text}</p></blockquote>'
+        story_html = f'<h2>A Story of Kindness</h2>\n{markdown2.markdown(story_text)}' if story_text else ""
 
         page_html = f"""<!doctype html>
 <html lang="en">
@@ -232,13 +253,16 @@ A 3–4 sentence story about a child helping someone in Canada (English, very si
   <span class="user-badge"></span>
 </header>
 <main class="container">
+<h1>Daily Math — {today}</h1>
 <div id="review-section"></div>
-{body_html}
+{all_sections_html}
+{enc_html}
+{story_html}
 <div id="reminder-btn-wrap" style="margin:12px 0"></div>
 <div id="quiz-feelings"></div>
 <section class="hero" id="quiz-box">
   <h2>Test Yourself! 📝</h2>
-  <p id="hello">Enter your answers below — your score is saved and you earn points!</p>
+  <p id="hello">Log in and select your grade — problems will appear above!</p>
   <form id="quiz" aria-label="Enter answers">
     <ol>
       <li><input name="q1" placeholder="Answer 1" required autocomplete="off"></li>
@@ -252,7 +276,7 @@ A 3–4 sentence story about a child helping someone in Canada (English, very si
   <p id="result"></p>
   <p id="streak-msg" style="margin-top:8px;font-size:.95rem;color:var(--muted)"></p>
 </section>
-<p class="back"><a href="../index.html">← Back to Home</a></p>
+<p class="back"><a href="../index.html">← Back to Home</a> &nbsp;·&nbsp; <a href="../profile.html">📊 My Progress</a> &nbsp;·&nbsp; <a href="../leaderboard.html">🏆 Rankings</a></p>
 </main>
 <footer>© {datetime.date.today().year} • Free math practice for kids • Moncton, NB</footer>
 <script>
@@ -261,8 +285,10 @@ A 3–4 sentence story about a child helping someone in Canada (English, very si
 </script>
 <script src="../scripts/app.js"></script>
 <script>
-  const QUIZ_ID = '{today}';
+  const QUIZ_DATE = '{today}';
+  let QUIZ_ID = QUIZ_DATE + '-G3';
   document.addEventListener('DOMContentLoaded', () => {{
+    showGradeProblems();
     renderFeelingsCheckin('quiz-feelings');
     renderReviewSection('review-section');
     renderReminderButton('reminder-btn-wrap');
@@ -273,10 +299,11 @@ A 3–4 sentence story about a child helping someone in Canada (English, very si
     const answers = ['q1','q2','q3','q4','q5'].map(k => fd.get(k).trim());
     const resultEl = document.getElementById('result');
     resultEl.textContent = 'Checking\u2026';
-    const ok = await submitQuizAnswers(QUIZ_ID, answers, resultEl);
+    const qid = window.QUIZ_ID || QUIZ_ID;
+    const ok = await submitQuizAnswers(qid, answers, resultEl);
     if (ok) {{
-      markDayDone(QUIZ_ID);
-      const streak = calcStreak(QUIZ_ID);
+      markDayDone(qid);
+      const streak = calcStreak(qid);
       const streakEl = document.getElementById('streak-msg');
       streakEl.textContent = streak > 1
         ? '\uD83D\uDD25 ' + streak + '-day streak! Keep it up!'
@@ -289,9 +316,12 @@ A 3–4 sentence story about a child helping someone in Canada (English, very si
         html_path.write_text(page_html, encoding="utf-8")
         print(f"INFO: Wrote {html_path}")
 
-        questions = re.findall(r'^\s*-\s*EN:\s*(.+)', text, re.MULTILINE)
-        answers   = re.findall(r'^\s*-\s*Answer:\s*(\S+)', text, re.MULTILINE)
-        upsert_quiz_to_supabase(today, questions, answers)
+        for code in GRADE_CODES:
+            content = grade_sections.get(code, "")
+            if content:
+                qs  = re.findall(r'^\s*-\s*EN:\s*(.+)',      content, re.MULTILINE)
+                ans = re.findall(r'^\s*-\s*Answer:\s*(\S+)', content, re.MULTILINE)
+                upsert_quiz_to_supabase(f"{today}-{code}", qs, ans)
     except Exception as e:
         print(f"ERROR: OpenAI generation failed: {e}", file=sys.stderr)
 

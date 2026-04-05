@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>My Progress – Daily Math for Kids</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    .profile-card {
+      background: var(--card-bg, #fff);
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.07);
+    }
+    .profile-card h2 { margin: 0 0 4px; font-size: 1.4rem; }
+    .profile-meta { color: var(--muted, #666); font-size: .9rem; margin-bottom: 12px; }
+    .stat-row { display: flex; gap: 24px; flex-wrap: wrap; margin-top: 12px; }
+    .stat-box {
+      background: #f0faf4;
+      border-radius: 12px;
+      padding: 12px 20px;
+      text-align: center;
+      min-width: 90px;
+    }
+    .stat-box .stat-num { font-size: 1.8rem; font-weight: 700; color: #2e7d32; }
+    .stat-box .stat-lbl { font-size: .8rem; color: #555; margin-top: 2px; }
+    .history-table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+    .history-table th {
+      text-align: left; padding: 8px 12px;
+      background: #f5f5f5; border-bottom: 2px solid #e0e0e0;
+    }
+    .history-table td { padding: 8px 12px; border-bottom: 1px solid #eee; }
+    .history-table tr:last-child td { border-bottom: none; }
+    .score-pill {
+      display: inline-block; padding: 2px 10px; border-radius: 20px;
+      font-weight: 600; font-size: .85rem;
+    }
+    .score-perfect { background: #e8f5e9; color: #2e7d32; }
+    .score-good    { background: #fff8e1; color: #f57f17; }
+    .score-low     { background: #fce4ec; color: #c62828; }
+    .empty-msg     { color: var(--muted, #888); text-align: center; padding: 32px; }
+    .loading-msg   { color: var(--muted, #888); }
+    .streak-badge  {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #fff3e0; color: #e65100;
+      border-radius: 20px; padding: 4px 14px;
+      font-weight: 600; font-size: .95rem; margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <a href="index.html">🧮 Daily Math for Kids</a>
+  <span class="user-badge"></span>
+</header>
+<main class="container">
+  <h1>My Progress</h1>
+
+  <div id="not-logged-in" style="display:none" class="profile-card">
+    <p>You need to be logged in to see your progress.</p>
+    <button class="btn-primary" onclick="showRegModal()">Join Free</button>
+    &nbsp;
+    <button class="btn-secondary" onclick="showLoginModal()">Log In</button>
+  </div>
+
+  <div id="profile-content" style="display:none">
+    <div class="profile-card">
+      <h2 id="profile-name">—</h2>
+      <div class="profile-meta" id="profile-meta"></div>
+      <div id="streak-badge-wrap"></div>
+      <div class="stat-row">
+        <div class="stat-box">
+          <div class="stat-num" id="stat-total-pts">—</div>
+          <div class="stat-lbl">Total Points</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="stat-quizzes">—</div>
+          <div class="stat-lbl">Quizzes Done</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="stat-streak">—</div>
+          <div class="stat-lbl">Day Streak 🔥</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="stat-perfect">—</div>
+          <div class="stat-lbl">Perfect Scores</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-card">
+      <h2>Quiz History</h2>
+      <div id="history-wrap">
+        <p class="loading-msg">Loading…</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="back"><a href="index.html">← Back to Home</a></p>
+</main>
+<footer>&copy; 2026 &bull; Free math practice for kids &bull; Moncton, NB</footer>
+
+<script>
+  window.DMK_API  = 'https://dailymathforkids-api.vercel.app';
+  window.DMK_ROOT = './';
+</script>
+<script src="scripts/app.js"></script>
+<script>
+const API = window.DMK_API || '';
+
+async function loadProfile() {
+  const u = getUser();
+  if (!u) {
+    document.getElementById('not-logged-in').style.display = 'block';
+    return;
+  }
+  document.getElementById('profile-content').style.display = 'block';
+
+  const res = await fetch(`${API}/api/history?userId=${encodeURIComponent(u.userId)}`);
+  if (!res.ok) {
+    document.getElementById('history-wrap').innerHTML =
+      '<p class="empty-msg">Could not load history. Please try again later.</p>';
+    return;
+  }
+  const data = await res.json();
+
+  document.getElementById('profile-name').textContent = data.nickname || u.nickname;
+  document.getElementById('profile-meta').textContent =
+    [data.grade ? 'Grade ' + data.grade : '', data.school].filter(Boolean).join(' · ');
+
+  const subs = data.submissions || [];
+  const streak = calcCurrentStreak(subs);
+
+  document.getElementById('stat-total-pts').textContent = data.totalPoints ?? 0;
+  document.getElementById('stat-quizzes').textContent   = subs.length;
+  document.getElementById('stat-streak').textContent    = streak;
+  document.getElementById('stat-perfect').textContent   =
+    subs.filter(s => s.score !== null && s.score === 5).length;
+
+  if (streak > 1) {
+    document.getElementById('streak-badge-wrap').innerHTML =
+      `<span class="streak-badge">🔥 ${streak}-day streak! Keep it up!</span>`;
+  }
+
+  if (subs.length === 0) {
+    document.getElementById('history-wrap').innerHTML =
+      '<p class="empty-msg">No quizzes completed yet — go solve today\'s problems!</p>';
+    return;
+  }
+
+  const rows = subs.map(s => {
+    const pct   = s.score != null ? s.score / 5 : 0;
+    const cls   = s.score === 5 ? 'score-perfect' : pct >= 0.6 ? 'score-good' : 'score-low';
+    const grade = (s.quizId || '').split('-').pop();
+    const date  = s.date || '—';
+    const scoreText = s.score != null ? `${s.score}/5` : '—';
+    return `<tr>
+      <td>${date}</td>
+      <td>${grade}</td>
+      <td><span class="score-pill ${cls}">${scoreText}</span></td>
+      <td>+${s.pointsEarned ?? 0} pts</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('history-wrap').innerHTML = `
+    <table class="history-table">
+      <thead><tr><th>Date</th><th>Grade</th><th>Score</th><th>Points</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function calcCurrentStreak(subs) {
+  if (!subs.length) return 0;
+  const dates = [...new Set(subs.map(s => s.date).filter(Boolean))].sort().reverse();
+  let streak = 0;
+  let expected = new Date();
+  expected.setHours(0,0,0,0);
+  for (const d of dates) {
+    const day = new Date(d + 'T00:00:00');
+    const diff = Math.round((expected - day) / 86400000);
+    if (diff <= 1) { streak++; expected = day; }
+    else break;
+  }
+  return streak;
+}
+
+document.addEventListener('DOMContentLoaded', loadProfile);
+</script>
+</body>
+</html>

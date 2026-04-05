@@ -185,10 +185,14 @@ async function submitReg(e) {
     }
     saveUser({ userId: data.userId, nickname: data.nickname, grade: data.grade, school: data.school, city: data.city, parent_email: data.parent_email });
     hideRegModal(); renderBadge();
+    if (typeof showGradeProblems === 'function') showGradeProblems();
+    _retryPendingSubmit();
   } catch {
     // Network error — continue as guest so the student can still practice offline
     saveUser({ userId: crypto.randomUUID(), nickname, grade, school, city, parent_email, guest: true });
     hideRegModal(); renderBadge();
+    if (typeof showGradeProblems === 'function') showGradeProblems();
+    _retryPendingSubmit();
   }
 }
 
@@ -217,17 +221,32 @@ async function submitLogin(e) {
     }
     saveUser({ userId: data.userId, nickname: data.nickname, grade: data.grade, school: data.school, city: data.city });
     hideLoginModal(); renderBadge();
+    if (typeof showGradeProblems === 'function') showGradeProblems();
+    _retryPendingSubmit();
   } catch {
     msg.textContent = 'Could not connect. Please try again.';
     msg.className = 'form-msg error';
   }
 }
 
+function _retryPendingSubmit() {
+  if (!window._pendingSubmit) return;
+  const { quizId, answers, resultEl } = window._pendingSubmit;
+  window._pendingSubmit = null;
+  resultEl.textContent = 'Checking…';
+  submitQuizAnswers(quizId, answers, resultEl);
+}
+
 // ── Quiz submission ───────────────────────────────────────────────────────────
 
 async function submitQuizAnswers(quizId, answers, resultEl) {
   const u = getUser();
-  if (!u) { showRegModal(); return false; }
+  if (!u) {
+    window._pendingSubmit = { quizId, answers, resultEl };
+    resultEl.textContent = 'Register or log in below to save your score!';
+    showRegModal();
+    return false;
+  }
 
   if (!API) {
     resultEl.textContent = 'Practice recorded! Keep going! 🌟';
@@ -351,7 +370,9 @@ function recordFeeling(feeling, btn) {
   const bar = btn.closest('.feelings-bar');
   if (feeling === 'stressed') {
     bar.innerHTML = `<p class="feelings-response">💙 That's okay — take a breath. Start with Problem 1 and use the hint if you need it. You've got this!</p>`;
-    const firstHintBtn = document.querySelector('.hint-wrap');
+    const grade = window.DMK_ACTIVE_GRADE || 'G3';
+    const sec   = document.querySelector(`.grade-section[data-grade="${grade}"]`);
+    const firstHintBtn = (sec || document).querySelector('.hint-wrap');
     if (firstHintBtn) firstHintBtn.open = true;
   } else if (feeling === 'unsure') {
     bar.innerHTML = `<p class="feelings-response">👍 That's normal! Hints and steps are there to help — give it your best shot!</p>`;
@@ -360,7 +381,28 @@ function recordFeeling(feeling, btn) {
   }
 }
 
-// ── Hint reveal ────────────────────────────────────────────────────────────────
+// ── Grade helpers ───────────────────────────────────────────────────────────
+
+function gradeToCode(grade) {
+  const m = String(grade || '').match(/(\d+)/);
+  return m ? 'G' + m[1] : 'G3';
+}
+
+function showGradeProblems() {
+  const u    = getUser();
+  const code = gradeToCode(u ? u.grade : store.get('dmk_lvl') || 'G3');
+  window.DMK_ACTIVE_GRADE = code;
+  document.querySelectorAll('.grade-section').forEach(el => {
+    el.style.display = el.dataset.grade === code ? 'block' : 'none';
+  });
+  if (typeof QUIZ_DATE !== 'undefined') window.QUIZ_ID = QUIZ_DATE + '-' + code;
+  const notice = document.getElementById('grade-notice');
+  if (notice) notice.textContent = `Grade ${code.replace('G', '')} problems`;
+  const helloEl = document.getElementById('hello');
+  if (helloEl && u) helloEl.textContent = `Grade ${code.replace('G', '')} problems — enter your answers to earn points!`;
+}
+
+// ── Hint reveal ──────────────────────────────────────────────────────────────────
 
 function trackWrongAnswer(quizId, qNum) {
   const key = 'dmk_wrong_' + quizId;
@@ -371,7 +413,9 @@ function trackWrongAnswer(quizId, qNum) {
 }
 
 function revealFadedHint(qNum, wrongCount) {
-  const li = document.querySelectorAll('#problems-list li')[qNum - 1];
+  const grade   = window.DMK_ACTIVE_GRADE || 'G3';
+  const section = document.querySelector(`.grade-section[data-grade="${grade}"]`);
+  const li = (section || document).querySelectorAll('.problems-list li')[qNum - 1];
   if (!li) return;
   if (wrongCount >= 1) {
     const hintEl = li.querySelector('.hint-wrap');
@@ -384,7 +428,9 @@ function revealFadedHint(qNum, wrongCount) {
 }
 
 function checkAndRevealFadedHints(quizId, answers) {
-  const problems = document.querySelectorAll('#problems-list li');
+  const grade   = window.DMK_ACTIVE_GRADE || 'G3';
+  const section = document.querySelector(`.grade-section[data-grade="${grade}"]`);
+  const problems = (section || document).querySelectorAll('.problems-list li');
   answers.forEach((ans, i) => {
     const li      = problems[i];
     if (!li) return;
@@ -399,7 +445,9 @@ function checkAndRevealFadedHints(quizId, answers) {
 // ── Review questions ───────────────────────────────────────────────────────────
 
 function saveWrongAnswersForReview(quizId, answers) {
-  const problems = document.querySelectorAll('#problems-list li');
+  const grade   = window.DMK_ACTIVE_GRADE || 'G3';
+  const section = document.querySelector(`.grade-section[data-grade="${grade}"]`);
+  const problems = (section || document).querySelectorAll('.problems-list li');
   const items    = store.get('dmk_review', []);
   answers.forEach((ans, i) => {
     const li      = problems[i];
