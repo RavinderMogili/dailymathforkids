@@ -116,7 +116,7 @@ def upsert_quiz_to_supabase(quiz_id, questions, answers):
             json={"quizId": quiz_id, "questions": questions, "answers": answers},
             headers={
                 "Content-Type": "application/json",
-                "x-internal-key": service_role,
+                "Authorization": f"Bearer {service_role}",
             },
             timeout=15,
         )
