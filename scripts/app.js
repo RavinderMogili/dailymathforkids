@@ -300,11 +300,24 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
         ? `<p class="shield-note" style="color:var(--primary);font-weight:700">🛡️ Streak shield earned! Miss a day and your streak stays safe.</p>`
         : (hasShield() ? `<p class="shield-note" style="color:var(--muted)">🛡️ You have a streak shield ready.</p>` : '');
       const timeNote = timeSeconds ? `<p class="time-taken">&#9201; Completed in <strong>${dmkTimer.fmt(timeSeconds)}</strong></p>` : '';
+      let feedbackHtml = '';
+      if (data.results && data.results.length) {
+        feedbackHtml = '<div class="answer-feedback" style="margin-top:1rem;text-align:left">';
+        data.results.forEach(r => {
+          const icon = r.correct ? '✅' : '❌';
+          const detail = r.correct
+            ? `<span style="color:green">Q${r.question}: Correct!</span>`
+            : `<span style="color:red">Q${r.question}: Your answer: <strong>${r.given || '(blank)'}</strong> — Correct answer: <strong>${r.expected}</strong></span>`;
+          feedbackHtml += `<p style="margin:0.3rem 0">${icon} ${detail}</p>`;
+        });
+        feedbackHtml += '</div>';
+      }
       resultEl.innerHTML =
         `<div class="result-celebration">` +
         `<p class="result-praise">${emoji} ${praise}</p>` +
         `<p class="points-earned">+${data.points_earned} point${data.points_earned !== 1 ? 's' : ''} earned today!</p>` +
         timeNote +
+        feedbackHtml +
         shieldNote +
         (!perfect ? `<button class="btn-secondary" onclick="retryQuiz()">&#9999;&#65039; Try again</button>` : '') +
         `</div>`;

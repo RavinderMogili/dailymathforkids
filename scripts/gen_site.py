@@ -373,7 +373,6 @@ def generate_html_from_text(text, today):
   }});
   document.getElementById('quiz').addEventListener('submit', async function(e) {{
     e.preventDefault();
-    const fd = new FormData(this);
     const grade = (window.QUIZ_ID || QUIZ_ID).replace(/^.*-(G\d+)$/, '$1');
     const section = document.querySelector('.grade-section[data-grade="' + grade + '"]');
     const lis = section ? section.querySelectorAll('.problems-list > li') : [];
@@ -382,7 +381,10 @@ def generate_html_from_text(text, today):
       const input = document.querySelector('input[name="' + k + '"]');
       if (input) input.value = sel;
     }});
-    const answers = ['q1','q2','q3','q4','q5'].map(k => (fd.get(k) || '').trim());
+    const answers = ['q1','q2','q3','q4','q5'].map(k => {{
+      const inp = document.querySelector('input[name="' + k + '"]');
+      return inp ? inp.value.trim() : '';
+    }});
     const resultEl = document.getElementById('result');
     resultEl.textContent = 'Checking\u2026';
     const qid = window.QUIZ_ID || QUIZ_ID;
