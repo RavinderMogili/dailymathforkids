@@ -356,9 +356,27 @@ function showGroupModal() {
   const msg   = document.getElementById('group-msg');
   const g     = store.get('dmk_group', null);
   if (g && g.groupName) {
-    msg.innerHTML = `🤝 You're in <strong>${escHtml(g.groupName)}</strong>` +
-      (g.invite_code ? ` — invite code: <strong style="font-size:1.2rem;letter-spacing:2px">${g.invite_code}</strong>` : '') +
-      (g.member_count != null ? `<br>${g.member_count} members, ${g.total_points ?? 0} pts` : '');
+    let html = `<div style="text-align:left">` +
+      `<h3 style="margin:0 0 6px">🤝 ${escHtml(g.groupName)}</h3>` +
+      (g.invite_code ? `<p style="margin:4px 0">Invite code: <strong style="font-size:1.2rem;letter-spacing:2px;color:var(--primary)">${g.invite_code}</strong></p>` : '') +
+      `<p style="margin:4px 0;color:var(--muted)">${g.member_count ?? 0} members · ${g.total_points ?? 0} total pts · ${g.quizzes_completed ?? 0} quizzes</p>`;
+    if (g.members && g.members.length > 0) {
+      html += `<table style="width:100%;border-collapse:collapse;margin:10px 0;font-size:.9rem">` +
+        `<thead><tr style="border-bottom:2px solid var(--border,#e0e0e0);text-align:left">` +
+        `<th style="padding:6px 8px">Member</th><th style="padding:6px 8px">Grade</th>` +
+        `<th style="padding:6px 8px">Points</th><th style="padding:6px 8px">Quizzes</th><th style="padding:6px 8px">Perfect</th></tr></thead><tbody>`;
+      g.members.forEach(m => {
+        html += `<tr style="border-bottom:1px solid var(--border,#eee)">` +
+          `<td style="padding:6px 8px;font-weight:600">${escHtml(m.nickname)}</td>` +
+          `<td style="padding:6px 8px">${m.grade || '—'}</td>` +
+          `<td style="padding:6px 8px">${m.totalPoints}</td>` +
+          `<td style="padding:6px 8px">${m.quizzes}</td>` +
+          `<td style="padding:6px 8px">${m.perfect > 0 ? '⭐ ' + m.perfect : '—'}</td></tr>`;
+      });
+      html += `</tbody></table>`;
+    }
+    html += `</div>`;
+    msg.innerHTML = html;
     msg.className = 'form-msg';
   } else {
     msg.textContent = '';
