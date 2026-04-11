@@ -467,13 +467,48 @@ function showGradeProblems() {
   const code = gradeToCode(u ? u.grade : store.get('dmk_lvl') || 'G3');
   window.DMK_ACTIVE_GRADE = code;
   document.querySelectorAll('.grade-section').forEach(el => {
-    el.style.display = el.dataset.grade === code ? 'block' : 'none';
+    if (el.dataset.grade === code) {
+      el.style.display = 'block';
+      el.style.filter = 'blur(6px)';
+      el.style.pointerEvents = 'none';
+      el.style.userSelect = 'none';
+    } else {
+      el.style.display = 'none';
+    }
   });
   if (typeof QUIZ_DATE !== 'undefined') window.QUIZ_ID = QUIZ_DATE + '-' + code;
   const notice = document.getElementById('grade-notice');
   if (notice) notice.textContent = `Grade ${code.replace('G', '')} problems`;
   const helloEl = document.getElementById('hello');
-  if (helloEl && u) helloEl.textContent = `Grade ${code.replace('G', '')} problems — enter your answers to earn points!`;
+  if (helloEl && u) helloEl.textContent = `Grade ${code.replace('G', '')} problems — press Start Test to begin!`;
+
+  // Show start test button
+  let startBtn = document.getElementById('start-test-btn');
+  if (!startBtn && u) {
+    startBtn = document.createElement('button');
+    startBtn.id = 'start-test-btn';
+    startBtn.type = 'button';
+    startBtn.textContent = '▶ Start Test';
+    startBtn.style.cssText = 'display:block;margin:16px auto;padding:12px 36px;font-size:1.15rem;font-weight:700;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-pill,24px);cursor:pointer;font-family:inherit;box-shadow:0 2px 8px rgba(0,0,0,.15)';
+    const quizBox = document.getElementById('quiz-box');
+    if (quizBox) quizBox.parentNode.insertBefore(startBtn, quizBox);
+  }
+  if (startBtn) startBtn.style.display = u ? 'block' : 'none';
+}
+
+function startTest() {
+  const code = window.DMK_ACTIVE_GRADE || 'G3';
+  const section = document.querySelector(`.grade-section[data-grade="${code}"]`);
+  if (section) {
+    section.style.filter = 'none';
+    section.style.pointerEvents = 'auto';
+    section.style.userSelect = 'auto';
+  }
+  const startBtn = document.getElementById('start-test-btn');
+  if (startBtn) startBtn.style.display = 'none';
+  const helloEl = document.getElementById('hello');
+  if (helloEl) helloEl.textContent = `Grade ${code.replace('G', '')} problems — enter your answers to earn points!`;
+  if (typeof _startTimerUI === 'function') _startTimerUI();
 }
 
 // ── Hint reveal ──────────────────────────────────────────────────────────────────

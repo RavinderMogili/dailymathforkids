@@ -367,8 +367,8 @@ def generate_html_from_text(text, today):
     renderFeelingsCheckin('quiz-feelings');
     renderReviewSection('review-section');
     renderReminderButton('reminder-btn-wrap');
-    document.addEventListener('click', function _mcStart(e) {{
-      if (e.target.closest('.mc-btn')) {{ _startTimerUI(); document.removeEventListener('click', _mcStart); }}
+    document.addEventListener('click', function _startClick(e) {{
+      if (e.target.closest('#start-test-btn')) {{ startTest(); document.removeEventListener('click', _startClick); }}
     }});
   }});
   document.getElementById('quiz').addEventListener('submit', async function(e) {{
