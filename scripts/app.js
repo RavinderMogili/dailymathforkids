@@ -350,11 +350,21 @@ async function loadUserGroup() {
   } catch {}
 }
 
-function showGroupModal() {
+async function showGroupModal() {
   injectModals();
   const modal = document.getElementById('group-modal');
   const msg   = document.getElementById('group-msg');
-  const g     = store.get('dmk_group', null);
+  modal.style.display = 'flex';
+
+  // Fetch fresh group data
+  const u = getUser();
+  if (u && API) {
+    msg.textContent = 'Loading group…';
+    msg.className = 'form-msg';
+    await loadUserGroup();
+  }
+
+  const g = store.get('dmk_group', null);
   if (g && g.groupName) {
     let html = `<div style="text-align:left">` +
       `<h3 style="margin:0 0 6px">🤝 ${escHtml(g.groupName)}</h3>` +
@@ -381,8 +391,7 @@ function showGroupModal() {
   } else {
     msg.textContent = '';
   }
-  modal.style.display = 'flex';
-  setTimeout(() => document.getElementById('group-name-input').focus(), 40);
+  setTimeout(() => document.getElementById('group-name-input')?.focus(), 40);
 }
 
 async function createGroup() {
