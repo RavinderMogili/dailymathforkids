@@ -60,9 +60,6 @@ Replace `https://YOUR_BACKEND_URL` with your actual Vercel deployment URL in:
 ## Notes
 - **Time zone:** Workflow runs at 07:00 America/Moncton (10:00 UTC). Adjust cron in `.github/workflows/daily.yml`.
 - **Cost:** Using `gpt-4o-mini` costs only a few cents per month.
-- **Grades:** Problems cover G1–G12; 5 grades are featured each day, cycling so all grades appear regularly.
-- **Tutoring:** Free in-person sessions in Moncton for Grades 3–8 (expanding to Grade 12 in future).
-- **No passwords:** Students identify by nickname only — simple and kid-friendly.
 
 ## License
 - Content: CC BY 4.0
