@@ -185,12 +185,14 @@ async function submitReg(e) {
       return;
     }
     saveUser({ userId: data.userId, nickname: data.nickname, grade: data.grade, school: data.school, city: data.city, parent_email: data.parent_email });
+    store.set('dmk_review', []); store.set('doneDays', {});
     hideRegModal(); renderBadge();
     if (typeof showGradeProblems === 'function') showGradeProblems();
     _retryPendingSubmit();
   } catch {
     // Network error — continue as guest so the student can still practice offline
     saveUser({ userId: crypto.randomUUID(), nickname, grade, school, city, parent_email, guest: true });
+    store.set('dmk_review', []); store.set('doneDays', {});
     hideRegModal(); renderBadge();
     if (typeof showGradeProblems === 'function') showGradeProblems();
     _retryPendingSubmit();
@@ -221,6 +223,7 @@ async function submitLogin(e) {
       return;
     }
     saveUser({ userId: data.userId, nickname: data.nickname, grade: data.grade, school: data.school, city: data.city });
+    store.set('dmk_review', []); store.set('doneDays', {});
     hideLoginModal(); renderBadge();
     if (typeof showGradeProblems === 'function') showGradeProblems();
     _retryPendingSubmit();
