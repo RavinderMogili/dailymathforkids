@@ -38,6 +38,7 @@ function renderBadge() {
 
 function logOut() {
   store.set('dmk_user', null);
+  store.set('dmk_group', null);
   renderBadge();
 }
 
@@ -137,7 +138,7 @@ function showRegModal()   { injectModals(); document.getElementById('reg-modal')
 function hideRegModal()   { const m = document.getElementById('reg-modal');   if (m) m.style.display = 'none'; }
 function showLoginModal() { injectModals(); hideRegModal(); document.getElementById('login-modal').style.display = 'flex'; setTimeout(() => document.getElementById('login-nickname').focus(), 40); }
 function hideLoginModal() { const m = document.getElementById('login-modal'); if (m) m.style.display = 'none'; }
-function showGroupModal() { injectModals(); document.getElementById('group-modal').style.display  = 'flex'; setTimeout(() => document.getElementById('group-name-input').focus(), 40); }
+// showGroupModal defined below in Cooperative groups section
 function hideGroupModal() { const m = document.getElementById('group-modal'); if (m) m.style.display = 'none'; }
 
 // Close modals when clicking the overlay background
@@ -188,6 +189,7 @@ async function submitReg(e) {
     store.set('dmk_review', []); store.set('doneDays', {});
     hideRegModal(); renderBadge();
     if (typeof showGradeProblems === 'function') showGradeProblems();
+    loadUserGroup();
     _retryPendingSubmit();
   } catch {
     // Network error — continue as guest so the student can still practice offline
@@ -226,6 +228,7 @@ async function submitLogin(e) {
     store.set('dmk_review', []); store.set('doneDays', {});
     hideLoginModal(); renderBadge();
     if (typeof showGradeProblems === 'function') showGradeProblems();
+    loadUserGroup();
     _retryPendingSubmit();
   } catch {
     msg.textContent = 'Could not connect. Please try again.';
@@ -335,6 +338,34 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
 }
 
 // ── Cooperative groups ────────────────────────────────────────────────────────
+
+async function loadUserGroup() {
+  const u = getUser();
+  if (!u || !API) return;
+  try {
+    const res = await fetch(`${API}/api/groups?userId=${encodeURIComponent(u.userId)}`);
+    const data = await res.json();
+    if (data.group) store.set('dmk_group', data.group);
+    else store.set('dmk_group', null);
+  } catch {}
+}
+
+function showGroupModal() {
+  injectModals();
+  const modal = document.getElementById('group-modal');
+  const msg   = document.getElementById('group-msg');
+  const g     = store.get('dmk_group', null);
+  if (g && g.groupName) {
+    msg.innerHTML = `🤝 You're in <strong>${escHtml(g.groupName)}</strong>` +
+      (g.invite_code ? ` — invite code: <strong style="font-size:1.2rem;letter-spacing:2px">${g.invite_code}</strong>` : '') +
+      (g.member_count != null ? `<br>${g.member_count} members, ${g.total_points ?? 0} pts` : '');
+    msg.className = 'form-msg';
+  } else {
+    msg.textContent = '';
+  }
+  modal.style.display = 'flex';
+  setTimeout(() => document.getElementById('group-name-input').focus(), 40);
+}
 
 async function createGroup() {
   const u    = getUser();
