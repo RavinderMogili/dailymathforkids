@@ -119,6 +119,10 @@
           <div class="stat-num" id="stat-perfect">—</div>
           <div class="stat-lbl">Perfect Scores</div>
         </div>
+        <div class="stat-box" id="shield-box">
+          <div class="stat-num" id="stat-shield">—</div>
+          <div class="stat-lbl">Streak Shield 🛡️</div>
+        </div>
       </div>
     </div>
 
@@ -173,9 +177,16 @@ async function loadProfile() {
   document.getElementById('stat-perfect').textContent   =
     subs.filter(s => s.score !== null && s.score === 5).length;
 
+  const shieldActive = typeof hasShield === 'function' ? hasShield() : false;
+  const shieldEl = document.getElementById('stat-shield');
+  if (shieldEl) shieldEl.textContent = shieldActive ? '✅ Ready' : 'None';
+  const shieldBox = document.getElementById('shield-box');
+  if (shieldBox) shieldBox.style.background = shieldActive ? 'linear-gradient(135deg,#e0f2fe,#bae6fd)' : '';
+
   if (streak > 1) {
+    const shieldBadge = shieldActive ? ' 🛡️' : '';
     document.getElementById('streak-badge-wrap').innerHTML =
-      `<span class="streak-badge">🔥 ${streak}-day streak! Keep it up!</span>`;
+      `<span class="streak-badge">🔥 ${streak}-day streak! Keep it up!${shieldBadge}</span>`;
   }
 
   if (subs.length === 0) {
