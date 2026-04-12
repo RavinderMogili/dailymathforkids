@@ -127,6 +127,14 @@
           <div class="stat-num" id="stat-shield">—</div>
           <div class="stat-lbl">Streak Shield 🛡️</div>
         </div>
+        <div class="stat-box">
+          <div class="stat-num" id="stat-best-time">—</div>
+          <div class="stat-lbl">Best Time ⚡</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="stat-avg-time">—</div>
+          <div class="stat-lbl">Avg Time ⏱</div>
+        </div>
       </div>
       <div style="margin-top:16px;padding:12px 16px;background:var(--surface-2,#f1f5f9);border-radius:12px;font-size:.9rem;color:var(--muted,#64748b)">
         🔥 <strong>What's a streak?</strong> Every day you do a quiz, your streak number goes up! Do it 3 days in a row? That's a 3-day streak! But if you skip a day, it goes back to zero 😢<br><br>
@@ -203,23 +211,36 @@ async function loadProfile() {
     return;
   }
 
+  // Calculate time stats
+  const timeSubs = subs.filter(s => s.timeSeconds != null && s.timeSeconds > 0);
+  const bestTime = timeSubs.length ? Math.min(...timeSubs.map(s => s.timeSeconds)) : null;
+  const avgTime = timeSubs.length ? Math.round(timeSubs.reduce((sum, s) => sum + s.timeSeconds, 0) / timeSubs.length) : null;
+  const fmtTime = (s) => { if (!s && s !== 0) return '—'; const m = Math.floor(s/60), sec = s%60; return m+':'+String(sec).padStart(2,'0'); };
+
+  const bestEl = document.getElementById('stat-best-time');
+  const avgEl = document.getElementById('stat-avg-time');
+  if (bestEl) bestEl.textContent = bestTime != null ? fmtTime(bestTime) : '—';
+  if (avgEl) avgEl.textContent = avgTime != null ? fmtTime(avgTime) : '—';
+
   const rows = subs.map(s => {
     const pct   = s.score != null ? s.score / 5 : 0;
     const cls   = s.score === 5 ? 'score-perfect' : pct >= 0.6 ? 'score-good' : 'score-low';
     const grade = (s.quizId || '').split('-').pop();
     const date  = s.date || '—';
     const scoreText = s.score != null ? `${s.score}/5` : '—';
+    const time = s.timeSeconds != null ? fmtTime(s.timeSeconds) : '—';
     return `<tr>
       <td>${date}</td>
       <td>${grade}</td>
       <td><span class="score-pill ${cls}">${scoreText}</span></td>
+      <td>${time}</td>
       <td>+${s.pointsEarned ?? 0} pts</td>
     </tr>`;
   }).join('');
 
   document.getElementById('history-wrap').innerHTML = `
     <table class="history-table">
-      <thead><tr><th>Date</th><th>Grade</th><th>Score</th><th>Points</th></tr></thead>
+      <thead><tr><th>Date</th><th>Grade</th><th>Score</th><th>⏱ Time</th><th>Points</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
 }
