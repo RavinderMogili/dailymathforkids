@@ -11,6 +11,11 @@
 <h1>Daily Math &#8212; 2026-04-11</h1>
 <div id="review-section"></div>
 
+<h2>Today's Encouragement</h2>
+<blockquote class="encouragement"><p>You are capable of achieving amazing things with your hard work and determination!</p></blockquote>
+<h2>A Story of Kindness</h2>
+<p>One sunny day, a girl named Emily saw an elderly neighbor struggling with heavy groceries. She rushed over to help carry the bags. The neighbor smiled and thanked her for her kindness. They talked about their favorite flowers, and Emily learned so much! It felt good to help someone in her community.</p>
+
 <div class="grade-section" data-grade="G1" style="display:none">
 <h2>Grade 1 Problems</h2>
 <ol class="problems-list">
@@ -829,11 +834,6 @@
 
 </div>
 
-<h2>Today's Encouragement</h2>
-<blockquote class="encouragement"><p>You are capable of achieving amazing things with your hard work and determination!</p></blockquote>
-<h2>A Story of Kindness</h2>
-<p>One sunny day, a girl named Emily saw an elderly neighbor struggling with heavy groceries. She rushed over to help carry the bags. The neighbor smiled and thanked her for her kindness. They talked about their favorite flowers, and Emily learned so much! It felt good to help someone in her community.</p>
-
 <div id="reminder-btn-wrap" style="margin:12px 0"></div>
 <div id="corrective-feedback" style="margin:16px 0"></div>
 <div id="quiz-feelings"></div>
@@ -883,7 +883,10 @@
     renderReviewSection('review-section');
     renderReminderButton('reminder-btn-wrap');
     document.addEventListener('click', function _startClick(e) {
-      if (e.target.closest('#start-test-btn')) { startTest(); document.removeEventListener('click', _startClick); }
+      if (e.target.closest('#start-test-btn')) {
+        startTest();
+        if (getUser()) document.removeEventListener('click', _startClick);
+      }
     });
   });
   document.getElementById('quiz').addEventListener('submit', async function(e) {
@@ -906,10 +909,11 @@
     const secs = dmkTimer.stop();
     const timerEl = document.getElementById('quiz-timer');
     if (timerEl) timerEl.style.display = 'none';
-    const ok = await submitQuizAnswers(qid, answers, resultEl, secs || null);
-    if (ok) {
+    const data = await submitQuizAnswers(qid, answers, resultEl, secs || null);
+    if (data) {
       dmkTimer.reset();
       markDayDone(qid);
+      lockAnswersAfterSubmit();
       const streak = calcStreak(qid);
       const streakEl = document.getElementById('streak-msg');
       streakEl.textContent = streak > 1
@@ -939,6 +943,8 @@
         feedbackEl.innerHTML = html;
         feedbackEl.scrollIntoView({behavior:'smooth', block:'nearest'});
       }
+      const score = data.score != null ? data.score : 0;
+      setTimeout(() => showCompletionAndRedirect(score), 3000);
     }
   });
 </script>

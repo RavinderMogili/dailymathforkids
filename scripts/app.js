@@ -301,10 +301,12 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
         : pct >= 0.6
         ? `Great effort! ${data.score} out of ${data.outOf} — you showed up and that counts!`
         : `Keep going! ${data.score} out of ${data.outOf} today — every practice makes you stronger!`;
-      if (perfect) awardShield();
-      const shieldNote = perfect
-        ? `<p class="shield-note" style="color:var(--primary);font-weight:700">🛡️ Streak shield earned! Miss a day and your streak stays safe.</p>`
-        : (hasShield() ? `<p class="shield-note" style="color:var(--muted)">🛡️ You have a streak shield ready.</p>` : '');
+      const shieldAwarded = perfect ? awardShield() : false;
+      const shieldNote = shieldAwarded
+        ? `<p class="shield-note" style="color:var(--primary);font-weight:700">🛡️ You won a magic shield! It lets you skip one day without losing your streak!</p>`
+        : perfect && !shieldAwarded
+        ? `<p class="shield-note" style="color:var(--muted)">🛡️ Perfect score! You can earn a new shield next month.</p>`
+        : (hasShield() ? `<p class="shield-note" style="color:var(--muted)">🛡️ Your magic shield is ready — you can skip a day and your streak stays safe!</p>` : '');
       const timeNote = timeSeconds ? `<p class="time-taken">&#9201; Completed in <strong>${dmkTimer.fmt(timeSeconds)}</strong></p>` : '';
       let feedbackHtml = '';
       if (data.results && data.results.length) {
@@ -330,7 +332,7 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
       checkAndRevealFadedHints(quizId, answers);
       saveWrongAnswersForReview(quizId, answers);
     }
-    return true;
+    return data;
   } catch {
     resultEl.textContent = 'Could not reach the server. Keep practising!';
     return false;
@@ -508,22 +510,30 @@ function showGradeProblems() {
   if (notice) notice.textContent = `Grade ${code.replace('G', '')} problems`;
   const helloEl = document.getElementById('hello');
   if (helloEl && u) helloEl.textContent = `Grade ${code.replace('G', '')} problems — press Start Test to begin!`;
+  if (helloEl && !u) helloEl.textContent = 'Sign up or log in to start the quiz!';
 
-  // Show start test button
+  // Show start test button above the grade sections (top of page)
   let startBtn = document.getElementById('start-test-btn');
-  if (!startBtn && u) {
+  if (!startBtn) {
     startBtn = document.createElement('button');
     startBtn.id = 'start-test-btn';
     startBtn.type = 'button';
     startBtn.textContent = '▶ Start Test';
-    startBtn.style.cssText = 'display:block;margin:16px auto;padding:12px 36px;font-size:1.15rem;font-weight:700;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-pill,24px);cursor:pointer;font-family:inherit;box-shadow:0 2px 8px rgba(0,0,0,.15)';
-    const quizBox = document.getElementById('quiz-box');
-    if (quizBox) quizBox.parentNode.insertBefore(startBtn, quizBox);
+    startBtn.style.cssText = 'display:block;margin:16px auto;padding:14px 40px;font-size:1.2rem;font-weight:700;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-pill,24px);cursor:pointer;font-family:inherit;box-shadow:0 4px 12px rgba(37,99,235,.3)';
+    // Insert before the first grade-section so it appears at the top
+    const firstSection = document.querySelector('.grade-section');
+    if (firstSection) firstSection.parentNode.insertBefore(startBtn, firstSection);
   }
-  if (startBtn) startBtn.style.display = u ? 'block' : 'none';
+  startBtn.style.display = 'block';
 }
 
 function startTest() {
+  // Require login before starting
+  const u = getUser();
+  if (!u) {
+    showRegModal();
+    return;
+  }
   const code = window.DMK_ACTIVE_GRADE || 'G3';
   const section = document.querySelector(`.grade-section[data-grade="${code}"]`);
   if (section) {
@@ -534,8 +544,33 @@ function startTest() {
   const startBtn = document.getElementById('start-test-btn');
   if (startBtn) startBtn.style.display = 'none';
   const helloEl = document.getElementById('hello');
-  if (helloEl) helloEl.textContent = `Grade ${code.replace('G', '')} problems — enter your answers to earn points!`;
+  if (helloEl) helloEl.textContent = `Grade ${code.replace('G', '')} problems — select your answers and submit!`;
   if (typeof _startTimerUI === 'function') _startTimerUI();
+}
+
+function lockAnswersAfterSubmit() {
+  document.querySelectorAll('.mc-btn').forEach(btn => {
+    btn.disabled = true;
+    btn.style.cursor = 'default';
+    btn.style.opacity = '0.7';
+  });
+  const submitBtn = document.querySelector('#quiz button[type="submit"]');
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.style.opacity = '0.5'; }
+}
+
+function showCompletionAndRedirect(score) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,.6);display:flex;align-items:center;justify-content:center;z-index:2000;padding:16px';
+  const perfect = score === 5;
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:20px;padding:32px 28px;max-width:420px;width:100%;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.2)">
+      <div style="font-size:3rem;margin-bottom:12px">${perfect ? '🎉' : '✅'}</div>
+      <h2 style="margin:0 0 8px;font-size:1.5rem">${perfect ? 'Perfect Score!' : 'Quiz Complete!'}</h2>
+      <p style="color:#64748b;margin:0 0 16px">${perfect ? 'Amazing! You got all 5 correct!' : 'Great effort! Keep practicing every day.'}</p>
+      <p style="font-size:1.1rem;font-weight:700;color:#2563eb;margin:0 0 20px">+${score} point${score !== 1 ? 's' : ''}${perfect ? ' + 3 bonus!' : ''}</p>
+      <a href="${ROOT || './'}index.html" style="display:inline-block;background:#2563eb;color:#fff;padding:12px 32px;border-radius:999px;font-weight:700;text-decoration:none;font-size:1rem">Back to Home</a>
+    </div>`;
+  document.body.appendChild(overlay);
 }
 
 // ── Hint reveal ──────────────────────────────────────────────────────────────────
@@ -631,7 +666,16 @@ function markDayDone(slug) {
 }
 
 function hasShield()   { return store.get('dmk_shield', false) === true; }
-function awardShield() { store.set('dmk_shield', true); }
+function awardShield() {
+  const lastEarned = store.get('dmk_shield_date', null);
+  if (lastEarned) {
+    const daysSince = Math.floor((Date.now() - new Date(lastEarned).getTime()) / 86400000);
+    if (daysSince < 30) return false; // max one shield per month
+  }
+  store.set('dmk_shield', true);
+  store.set('dmk_shield_date', new Date().toISOString().slice(0, 10));
+  return true;
+}
 function consumeShield() { store.set('dmk_shield', false); }
 
 function calcStreak(slug) {
