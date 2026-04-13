@@ -2,18 +2,18 @@
 // Generates math questions algorithmically based on grade, topic, difficulty.
 
 const TOPICS_BY_GRADE = {
-  1: ['Addition & Subtraction', 'Place Value', 'Counting', 'Measurement', 'Geometry'],
-  2: ['Addition & Subtraction', 'Place Value', 'Measurement', 'Money', 'Geometry'],
-  3: ['Multiplication & Division', 'Fractions', 'Place Value', 'Measurement', 'Geometry'],
-  4: ['Multi-digit Arithmetic', 'Fractions', 'Decimals', 'Measurement', 'Geometry'],
-  5: ['Decimals', 'Fractions', 'Order of Operations', 'Volume', 'Coordinate Plane'],
-  6: ['Ratios & Proportions', 'Integers', 'Expressions & Equations', 'Area & Surface Area', 'Statistics'],
-  7: ['Proportional Relationships', 'Operations with Rationals', 'Expressions & Equations', 'Geometry', 'Probability & Statistics'],
-  8: ['Linear Equations', 'Functions', 'Exponents & Roots', 'Pythagorean Theorem', 'Transformations'],
-  9: ['Linear Functions', 'Quadratic Equations', 'Polynomials', 'Inequalities', 'Data Analysis'],
-  10: ['Quadratics', 'Trigonometry', 'Circle Geometry', 'Coordinate Geometry', 'Systems of Equations'],
-  11: ['Functions', 'Exponential & Logarithmic', 'Sequences & Series', 'Trigonometric Functions', 'Financial Math'],
-  12: ['Limits & Derivatives', 'Advanced Functions', 'Probability & Statistics', 'Vectors', 'Proof & Logic'],
+  1: ['Addition & Subtraction', 'Place Value', 'Counting', 'Measurement', 'Geometry', 'Word Problems'],
+  2: ['Addition & Subtraction', 'Place Value', 'Measurement', 'Money', 'Geometry', 'Word Problems'],
+  3: ['Multiplication & Division', 'Fractions', 'Place Value', 'Measurement', 'Geometry', 'Word Problems'],
+  4: ['Multi-digit Arithmetic', 'Fractions', 'Decimals', 'Measurement', 'Geometry', 'Word Problems'],
+  5: ['Decimals', 'Fractions', 'Order of Operations', 'Volume', 'Coordinate Plane', 'Word Problems'],
+  6: ['Ratios & Proportions', 'Integers', 'Expressions & Equations', 'Area & Surface Area', 'Statistics', 'Word Problems'],
+  7: ['Proportional Relationships', 'Operations with Rationals', 'Expressions & Equations', 'Geometry', 'Probability & Statistics', 'Word Problems'],
+  8: ['Linear Equations', 'Functions', 'Exponents & Roots', 'Pythagorean Theorem', 'Transformations', 'Word Problems'],
+  9: ['Linear Functions', 'Quadratic Equations', 'Polynomials', 'Inequalities', 'Data Analysis', 'Word Problems'],
+  10: ['Quadratics', 'Trigonometry', 'Circle Geometry', 'Coordinate Geometry', 'Systems of Equations', 'Word Problems'],
+  11: ['Functions', 'Exponential & Logarithmic', 'Sequences & Series', 'Trigonometric Functions', 'Financial Math', 'Word Problems'],
+  12: ['Limits & Derivatives', 'Advanced Functions', 'Probability & Statistics', 'Vectors', 'Proof & Logic', 'Word Problems'],
 };
 
 function getTopicsForGrade(grade) {
@@ -696,30 +696,49 @@ function getPoolQuestions(grade, topics) {
 // Auto-load pool on script load
 if (typeof window !== 'undefined') loadPracticePool();
 
+function makePoolQuestion(pq) {
+  return {
+    question: pq.question,
+    questionFr: pq.questionFr || '',
+    answer: String(pq.answer),
+    choices: pq.choices.map(String),
+    hint: pq.hint || 'Think carefully about this problem.',
+    steps: pq.steps || ['Read the problem carefully', 'Find the answer'],
+    topic: pq.topic || 'Word Problem',
+    _source: 'chatgpt',
+  };
+}
+
 function generateQuiz(grade, topics, difficulty, count) {
   const questions = [];
-  // Try to mix in ChatGPT pool questions (up to ~40% of quiz)
-  const poolQs = getPoolQuestions(grade, topics);
+  const isWordProblems = topics.length === 1 && topics[0] === 'Word Problems';
+
+  if (isWordProblems) {
+    // Word Problems only — pull entirely from the ChatGPT pool
+    const poolQs = getPoolQuestions(grade, []);
+    const usedPool = shuffle([...poolQs]).slice(0, count);
+    usedPool.forEach(pq => questions.push(makePoolQuestion(pq)));
+    // If pool doesn't have enough, pad with algorithmic from random topics
+    const remaining = count - questions.length;
+    for (let i = 0; i < remaining; i++) {
+      const topic = pick(getTopicsForGrade(grade).filter(t => t !== 'Word Problems'));
+      questions.push({ ...generateQuestion(grade, topic, difficulty), topic, _source: 'algorithmic' });
+    }
+    return shuffle(questions);
+  }
+
+  // Normal mode — mix in pool questions (up to ~40%)
+  const nonWordTopics = topics.filter(t => t !== 'Word Problems');
+  const poolQs = getPoolQuestions(grade, nonWordTopics);
   const poolCount = Math.min(Math.floor(count * 0.4), poolQs.length);
   const usedPool = shuffle([...poolQs]).slice(0, poolCount);
-
-  usedPool.forEach(pq => {
-    questions.push({
-      question: pq.question,
-      questionFr: pq.questionFr || '',
-      answer: String(pq.answer),
-      choices: pq.choices.map(String),
-      hint: pq.hint || 'Think carefully about this problem.',
-      steps: pq.steps || ['Read the problem carefully', 'Find the answer'],
-      topic: pq.topic || 'Word Problem',
-      _source: 'chatgpt',
-    });
-  });
+  usedPool.forEach(pq => questions.push(makePoolQuestion(pq)));
 
   // Fill rest with algorithmic questions
+  const algoTopics = nonWordTopics.length > 0 ? nonWordTopics : getTopicsForGrade(grade).filter(t => t !== 'Word Problems');
   const remaining = count - questions.length;
   for (let i = 0; i < remaining; i++) {
-    const topic = topics.length > 0 ? topics[i % topics.length] : pick(getTopicsForGrade(grade));
+    const topic = algoTopics[i % algoTopics.length];
     questions.push({ ...generateQuestion(grade, topic, difficulty), topic, _source: 'algorithmic' });
   }
   return shuffle(questions);
