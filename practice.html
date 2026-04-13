@@ -134,7 +134,8 @@
           <div class="steps-body" id="pq-steps-text"></div>
         </details>
         <div class="pq-feedback" id="pq-feedback" style="display:none"></div>
-        <button class="pq-next" id="pq-next" onclick="nextQuestion()">Next →</button>
+        <div id="pq-funfact" style="display:none;margin:10px 0;padding:10px 14px;background:linear-gradient(135deg,#ede9fe,#ddd6fe);border-radius:10px;font-size:.85rem;color:#5b21b6">💡 <strong>Did you know?</strong> <span id="pq-funfact-text"></span></div>
+        <button class="pq-next" id="pq-next" style="display:none" onclick="nextQuestion()">Next →</button>
       </div>
     </div>
 
@@ -193,6 +194,30 @@
     answered: false,
     startTime: null,
   };
+
+  const MATH_FACTS = [
+    'A "googol" is 1 followed by 100 zeros!',
+    'Zero is the only number that can\'t be represented in Roman numerals.',
+    'The word "hundred" comes from the Norse word "hundrath" meaning 120, not 100!',
+    'Every odd number has the letter "e" in it.',
+    'A circle has the largest area of any shape with the same perimeter.',
+    'If you shuffle a deck of cards, the order has probably never existed before in history!',
+    '111,111,111 × 111,111,111 = 12,345,678,987,654,321',
+    'The symbol for division (÷) is called an obelus.',
+    'Honey bees build their hives using hexagons because it\'s the most efficient shape!',
+    'The Fibonacci sequence appears in sunflowers, pinecones, and seashells.',
+    'Pi (π) has been calculated to over 100 trillion digits — and it never repeats!',
+    'Ancient Egyptians used math to build the pyramids over 4,500 years ago.',
+    'The number 7 is considered the most popular "lucky number" worldwide.',
+    'A pizza with radius "z" and height "a" has a volume of Pi × z × z × a!',
+    'In a room of 23 people, there\'s a 50% chance two share a birthday!',
+    'The equals sign (=) was invented in 1557 by Robert Recorde.',
+    'Negative numbers weren\'t accepted by mathematicians until the 1600s.',
+    'There are 8 × 10⁶⁷ ways to sort a deck of 52 cards — more than atoms on Earth!',
+    'The Mayans independently invented the concept of zero.',
+    'A "jiffy" is an actual unit of time — 1/100th of a second!',
+  ];
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
   // ── Init: populate topics based on user grade ─────────────────────────
   document.addEventListener('DOMContentLoaded', () => {
@@ -280,6 +305,7 @@
     document.getElementById('pq-topic').textContent = q.topic;
     document.getElementById('pq-question').textContent = q.question;
     document.getElementById('pq-feedback').style.display = 'none';
+    document.getElementById('pq-funfact').style.display = 'none';
     document.getElementById('pq-next').style.display = 'none';
     practiceState.answered = false;
 
@@ -316,9 +342,29 @@
     const fb = document.getElementById('pq-feedback');
     fb.style.display = 'block';
     fb.className = 'pq-feedback ' + (isCorrect ? 'correct' : 'wrong');
-    fb.textContent = isCorrect
-      ? pick(['Correct! 🎉', 'Nice one! ⭐', 'You got it! 💪', 'Perfect! ✨'])
-      : `The answer is ${correct}`;
+    if (isCorrect) {
+      fb.textContent = pick([
+        'Correct! 🎉', 'Nice one! ⭐', 'You got it! 💪', 'Perfect! ✨',
+        'Brilliant! Your brain is firing! 🧠', 'Nailed it! 🎯',
+      ]);
+    } else {
+      const mindset = pick([
+        'Mistakes help your brain grow! 🌱',
+        'Every wrong answer teaches you something new! 📚',
+        'Great try! Struggling means your brain is getting stronger! 💪',
+        'Not yet — but you\'re learning! That\'s what matters! 🌟',
+        'This is how your brain builds new connections! 🧠',
+        'Einstein made mistakes too! Keep going! �',
+        'Almost! Each attempt makes you smarter! ⭐',
+        'Don\'t worry — practice is how champions are made! 🏆',
+      ]);
+      fb.innerHTML = `The answer is <strong>${correct}</strong><br><span style="font-size:.85rem;color:var(--primary)">${mindset}</span>`;
+    }
+
+    // Show fun fact
+    const factEl = document.getElementById('pq-funfact');
+    document.getElementById('pq-funfact-text').textContent = pick(MATH_FACTS);
+    factEl.style.display = 'block';
 
     // Show next button or finish
     const nextBtn = document.getElementById('pq-next');
@@ -360,11 +406,11 @@
     document.getElementById('results-total').textContent = practiceState.count;
     document.getElementById('results-time').textContent = m + ':' + String(s).padStart(2, '0');
 
-    const msg = pct === 100 ? 'Perfect! You nailed every question! 🎉'
-      : pct >= 80 ? 'Amazing work! Almost perfect! ⭐'
-      : pct >= 60 ? 'Great effort! Keep practising! 💪'
-      : pct >= 40 ? 'Good try! Practice makes perfect! 📚'
-      : 'Keep going! Every practice makes you stronger! 🚀';
+    const msg = pct === 100 ? 'Perfect score! Your hard work is paying off! 🎉'
+      : pct >= 80 ? 'Amazing! You\'re building powerful math skills! ⭐'
+      : pct >= 60 ? 'Great effort! Your brain grew stronger today! 💪'
+      : pct >= 40 ? 'Good work showing up! Every problem you try makes you smarter! 📚'
+      : 'You\'re braver than you think! Coming back to practice is what real learners do! 🚀';
     // Half points: 0.5 per correct, capped at 10 pts/day (20 correct answers)
     const today = new Date().toISOString().slice(0, 10);
     const capKey = 'dmk_practice_pts_' + today;

@@ -313,9 +313,17 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
         feedbackHtml = '<div class="answer-feedback" style="margin-top:1rem;text-align:left">';
         data.results.forEach(r => {
           const icon = r.correct ? '✅' : '❌';
+          const mindsetMsgs = [
+            'Mistakes help your brain grow! 🌱',
+            'Every wrong answer teaches you something new! 📚',
+            'Not yet — but you\'re learning! 🌟',
+            'This is how your brain builds new connections! 🧠',
+            'Almost! Each attempt makes you smarter! ⭐',
+          ];
+          const mindset = mindsetMsgs[Math.floor(Math.random() * mindsetMsgs.length)];
           const detail = r.correct
             ? `<span style="color:green">Q${r.question}: Correct!</span>`
-            : `<span style="color:red">Q${r.question}: Your answer: <strong>${r.given || '(blank)'}</strong> — Correct answer: <strong>${r.expected}</strong></span>`;
+            : `<span style="color:red">Q${r.question}: Your answer: <strong>${r.given || '(blank)'}</strong> — Correct: <strong>${r.expected}</strong></span> <span style="font-size:.8rem;color:#2563eb">${mindset}</span>`;
           feedbackHtml += `<p style="margin:0.3rem 0">${icon} ${detail}</p>`;
         });
         feedbackHtml += '</div>';
@@ -566,7 +574,7 @@ function showCompletionAndRedirect(score) {
     <div style="background:#fff;border-radius:20px;padding:32px 28px;max-width:420px;width:100%;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.2)">
       <div style="font-size:3rem;margin-bottom:12px">${perfect ? '🎉' : '✅'}</div>
       <h2 style="margin:0 0 8px;font-size:1.5rem">${perfect ? 'Perfect Score!' : 'Quiz Complete!'}</h2>
-      <p style="color:#64748b;margin:0 0 16px">${perfect ? 'Amazing! You got all 5 correct!' : 'Great effort! Keep practicing every day.'}</p>
+      <p style="color:#64748b;margin:0 0 16px">${perfect ? 'Amazing! You got all 5 correct!' : 'Great effort! Every problem you try makes your brain stronger. Come back tomorrow! 💪'}</p>
       <p style="font-size:1.1rem;font-weight:700;color:#2563eb;margin:0 0 20px">+${score} point${score !== 1 ? 's' : ''}${perfect ? ' + 3 bonus!' : ''}</p>
       <a href="${ROOT || './'}index.html" style="display:inline-block;background:#2563eb;color:#fff;padding:12px 32px;border-radius:999px;font-weight:700;text-decoration:none;font-size:1rem">Back to Home</a>
     </div>`;
