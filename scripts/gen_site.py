@@ -496,11 +496,11 @@ def rebuild_index_and_sitemap():
   <script src="scripts/app.js"></script>
   <script src="scripts/goals.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {{
+    (function() {{
       const u = getUser();
       if (u) document.getElementById('join-cta').style.display = 'none';
       renderWeeklyGoalWidget('weekly-goal-home');
-    }});
+    }})();
   </script>
 </body></html>"""
     (ROOT / "index.html").write_text(index_html, encoding="utf-8")
@@ -519,6 +519,101 @@ def rebuild_index_and_sitemap():
     (ROOT / "sitemap.xml").write_text("\n".join(sitemap), encoding="utf-8")
     print("INFO: Rebuilt index.html and sitemap.xml")
 
+def generate_practice_pool():
+    """Generate a pool of ChatGPT-powered practice questions for topics that
+    algorithmic generators can't handle well: word problems, story problems,
+    multi-step reasoning, proof & logic, real-world applications."""
+
+    import json
+
+    api_key = os.environ.get("OPENAI_API_KEY", "").strip()
+    if not OpenAI or not api_key:
+        print("INFO: Skipping practice pool generation (SDK or API key missing).")
+        return
+
+    data_dir = ROOT / "data"
+    data_dir.mkdir(parents=True, exist_ok=True)
+    pool_path = data_dir / "practice-pool.json"
+
+    os.environ["OPENAI_API_KEY"] = api_key
+    client = OpenAI()
+
+    grade_curriculum = """
+CANADIAN MATH CURRICULUM — calibrate each problem to these standards:
+  G1: counting to 100, addition/subtraction within 20, skip counting, comparing numbers, coins
+  G2: add/sub within 100, time (hour/half-hour), length (cm/m), patterns, counting coins to $1
+  G3: multiplication (2-5,10), basic division, fractions (1/2,1/3,1/4), perimeter, simple graphs
+  G4: all times tables to 9x9, long division, decimal place value, comparing fractions, area, elapsed time
+  G5: multi-digit multiply/divide, fractions (like denominators), decimal ops, percent intro, volume
+  G6: fraction multiply/divide, ratios/rates, percent of number, integers intro, BEDMAS, algebra intro
+  G7: integer operations, fraction/decimal fluency, percent problems, one-step equations, surface area, probability
+  G8: two-step equations, square roots, Pythagorean theorem, percent increase/decrease, slope, statistics
+  G9: linear equations/inequalities, polynomials, graphing lines, similar triangles, trig intro, statistics
+  G10: quadratics, systems of equations, circle geometry, trigonometry, surface area/volume of 3D shapes
+  G11: functions, logarithms, sequences/series, financial math, trig identities
+  G12: advanced functions, derivatives intro, combinations/permutations, vectors, probability distributions"""
+
+    prompt = f"""Generate practice math questions for Canadian students (Grades 1-12).
+{grade_curriculum}
+
+Generate exactly 5 questions per grade (60 total). These must be:
+- WORD PROBLEMS with real-life Canadian contexts (hockey, maple syrup, loonies/toonies, Tim Hortons, camping, school)
+- Multi-step reasoning where possible
+- Story-based and engaging for kids
+- Include both English question and French translation
+- Each question must have 4 multiple-choice answers
+- Include a hint (don't give away answer) and 2 solution steps
+
+Output as valid JSON (no markdown fences, no extra text). Format:
+[
+  {{
+    "grade": 1,
+    "topic": "Addition & Subtraction",
+    "question": "English question text",
+    "questionFr": "French translation",
+    "choices": ["3", "5", "7", "8"],
+    "answer": "5",
+    "hint": "Think about adding the groups together",
+    "steps": ["First add 2 + 3", "You get 5"]
+  }},
+  ...
+]
+
+RULES:
+- answer must exactly match one of the choices
+- Each grade should cover different topics from the curriculum
+- Use age-appropriate language
+- Make stories fun and relatable for Canadian kids
+- For grades 9-12, include real-world application problems (budgeting, sports stats, construction, cooking)
+"""
+
+    try:
+        resp = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=6000,
+        )
+        raw = resp.choices[0].message.content.strip()
+        # Strip markdown code fences if present
+        raw = re.sub(r'^```(?:json)?\s*', '', raw)
+        raw = re.sub(r'\s*```$', '', raw)
+
+        questions = json.loads(raw)
+        if not isinstance(questions, list) or len(questions) < 10:
+            print(f"WARN: Practice pool has only {len(questions)} questions — expected 60.")
+
+        pool_path.write_text(json.dumps(questions, indent=2, ensure_ascii=False), encoding="utf-8")
+        print(f"INFO: Generated practice pool with {len(questions)} questions → {pool_path}")
+    except json.JSONDecodeError as e:
+        print(f"WARN: Failed to parse practice pool JSON: {e}")
+        print(f"Raw response: {raw[:500]}")
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        print(f"WARN: Practice pool generation failed: {e} — continuing without it.")
+
+
 if __name__ == "__main__":
     safe_generate_today()
+    generate_practice_pool()
     rebuild_index_and_sitemap()

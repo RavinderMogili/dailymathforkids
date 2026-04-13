@@ -547,19 +547,51 @@ const HINTS = {
 // ── Steps generator ─────────────────────────────────────────────────────
 function generateSteps(q) {
   const text = q.question;
-  const ans = q.answer;
-  // Parse common patterns
-  const addMatch = text.match(/(\d+\.?\d*)\s*\+\s*(\d+\.?\d*)/);
-  if (addMatch) return [`Step 1: ${addMatch[1]} + ${addMatch[2]}`, `Step 2: Calculate the sum = ${ans}`];
-  const subMatch = text.match(/(\d+\.?\d*)\s*[−\-]\s*(\d+\.?\d*)/);
-  if (subMatch) return [`Step 1: ${subMatch[1]} − ${subMatch[2]}`, `Step 2: Calculate the difference = ${ans}`];
-  const mulMatch = text.match(/(\d+\.?\d*)\s*[×x]\s*(\d+\.?\d*)/);
-  if (mulMatch) return [`Step 1: ${mulMatch[1]} × ${mulMatch[2]}`, `Step 2: Calculate the product = ${ans}`];
-  const divMatch = text.match(/(\d+\.?\d*)\s*÷\s*(\d+\.?\d*)/);
-  if (divMatch) return [`Step 1: ${divMatch[1]} ÷ ${divMatch[2]}`, `Step 2: Calculate the quotient = ${ans}`];
-  const eqMatch = text.match(/Solve/i);
-  if (eqMatch) return [`Step 1: Isolate the variable`, `Step 2: The answer is ${ans}`];
-  return [`Step 1: Read the problem carefully`, `Step 2: The answer is ${ans}`];
+  // Guide the method only — never compute or reveal any part of the answer
+  if (text.match(/\+/)) return [
+    'Step 1: Start from the rightmost digits and add each column',
+    'Step 2: If a column adds to 10 or more, carry the 1 to the next column'
+  ];
+  if (text.match(/[−\-]/)) return [
+    'Step 1: Start from the rightmost digits and subtract each column',
+    'Step 2: If the top digit is smaller, borrow 1 from the next column'
+  ];
+  if (text.match(/[×x]/)) return [
+    'Step 1: Multiply each digit of the bottom number by the top number',
+    'Step 2: Add up all the partial results to get your answer'
+  ];
+  if (text.match(/÷/)) return [
+    'Step 1: Ask yourself how many times the divisor fits into the dividend',
+    'Step 2: Multiply back to check: divisor × your answer should equal the dividend'
+  ];
+  if (text.match(/Simplify/i)) return [
+    'Step 1: Find a number that divides evenly into both the top and bottom',
+    'Step 2: Keep dividing until you can\'t simplify any further'
+  ];
+  if (text.match(/Solve/i)) return [
+    'Step 1: Get the variable alone on one side of the equation',
+    'Step 2: Whatever you do to one side, do the same to the other side'
+  ];
+  if (text.match(/Factor/i)) return [
+    'Step 1: Find two numbers that multiply to the constant term',
+    'Step 2: Check that those two numbers also add up to the middle coefficient'
+  ];
+  if (text.match(/lim/i)) return [
+    'Step 1: Try plugging the value directly into the expression',
+    'Step 2: If that works, that\'s your limit'
+  ];
+  if (text.match(/triangle|sides|shape/i)) return [
+    'Step 1: Think about the properties of the shape mentioned',
+    'Step 2: Use what you know about that shape to find the answer'
+  ];
+  if (text.match(/mean|median|average/i)) return [
+    'Step 1: For the mean, add all numbers then divide by how many there are',
+    'Step 2: For the median, put numbers in order and find the middle one'
+  ];
+  return [
+    'Step 1: Read the problem carefully and figure out what operation to use',
+    'Step 2: Work through it one piece at a time — don\'t rush!'
+  ];
 }
 
 // ── French translation helper ───────────────────────────────────────────
@@ -629,11 +661,66 @@ function generateQuestion(grade, topic, difficulty) {
   return q;
 }
 
+// ── ChatGPT practice pool ────────────────────────────────────────────────
+let _practicePool = null;
+let _poolLoading = false;
+
+function loadPracticePool() {
+  if (_practicePool !== null || _poolLoading) return;
+  _poolLoading = true;
+  const root = window.DMK_ROOT || './';
+  fetch(root + 'data/practice-pool.json')
+    .then(r => r.ok ? r.json() : Promise.reject('not found'))
+    .then(data => {
+      if (Array.isArray(data) && data.length > 0) {
+        _practicePool = data;
+        console.log('Practice pool loaded:', data.length, 'questions');
+      } else {
+        _practicePool = [];
+      }
+    })
+    .catch(() => { _practicePool = []; });
+}
+
+function getPoolQuestions(grade, topics) {
+  if (!_practicePool || _practicePool.length === 0) return [];
+  return _practicePool.filter(q =>
+    q.grade === grade &&
+    (topics.length === 0 || topics.some(t =>
+      t.toLowerCase().includes(q.topic?.toLowerCase()?.split(' ')[0] || '') ||
+      q.topic?.toLowerCase().includes(t.toLowerCase().split(' ')[0] || '')
+    ))
+  );
+}
+
+// Auto-load pool on script load
+if (typeof window !== 'undefined') loadPracticePool();
+
 function generateQuiz(grade, topics, difficulty, count) {
   const questions = [];
-  for (let i = 0; i < count; i++) {
+  // Try to mix in ChatGPT pool questions (up to ~40% of quiz)
+  const poolQs = getPoolQuestions(grade, topics);
+  const poolCount = Math.min(Math.floor(count * 0.4), poolQs.length);
+  const usedPool = shuffle([...poolQs]).slice(0, poolCount);
+
+  usedPool.forEach(pq => {
+    questions.push({
+      question: pq.question,
+      questionFr: pq.questionFr || '',
+      answer: String(pq.answer),
+      choices: pq.choices.map(String),
+      hint: pq.hint || 'Think carefully about this problem.',
+      steps: pq.steps || ['Read the problem carefully', 'Find the answer'],
+      topic: pq.topic || 'Word Problem',
+      _source: 'chatgpt',
+    });
+  });
+
+  // Fill rest with algorithmic questions
+  const remaining = count - questions.length;
+  for (let i = 0; i < remaining; i++) {
     const topic = topics.length > 0 ? topics[i % topics.length] : pick(getTopicsForGrade(grade));
-    questions.push({ ...generateQuestion(grade, topic, difficulty), topic });
+    questions.push({ ...generateQuestion(grade, topic, difficulty), topic, _source: 'algorithmic' });
   }
   return shuffle(questions);
 }

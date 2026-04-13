@@ -34,6 +34,8 @@ function renderBadge() {
         `<button class="badge-link" onclick="showLoginModal()">Log in</button>`;
     }
   });
+  const joinCta = document.getElementById('join-cta');
+  if (joinCta) joinCta.style.display = u ? 'none' : '';
 }
 
 function logOut() {

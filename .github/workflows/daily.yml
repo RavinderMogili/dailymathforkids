@@ -1,7 +1,7 @@
 name: Daily Math
 on:
   schedule:
-    - cron: "0 18 * * *"   # 18:00 UTC = 3:00 PM Moncton (ADT, summer)
+    - cron: "0 8 * * *"    # 08:00 UTC = 5:00 AM Moncton (ADT, summer)
   workflow_dispatch: {}
 
 jobs:
@@ -38,5 +38,5 @@ jobs:
           git config user.name "github-actions"
           git config user.email "actions@users.noreply.github.com"
           git add -A
-          git commit -m "daily: generate & rebuild (3pm ADT, bilingual, hints/steps, encouragement, story)" || git commit --allow-empty -m "daily: refresh"
+          git commit -m "daily: generate & rebuild (5am ADT, bilingual, hints/steps, encouragement, story)" || git commit --allow-empty -m "daily: refresh"
           git push

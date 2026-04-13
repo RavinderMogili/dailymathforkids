@@ -50,10 +50,10 @@
   <script src="scripts/app.js"></script>
   <script src="scripts/goals.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    (function() {
       const u = getUser();
       if (u) document.getElementById('join-cta').style.display = 'none';
       renderWeeklyGoalWidget('weekly-goal-home');
-    });
+    })();
   </script>
 </body></html>
