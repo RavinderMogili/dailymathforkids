@@ -28,6 +28,7 @@
       🌟 <strong>How points work:</strong> Complete a daily quiz to earn points — 1 point per correct answer, +3 bonus for a perfect score!
       Check <a href="profile.html">📊 My Progress</a> to see how you're doing. Want more? Try <a href="practice.html">🎯 Practice Mode</a>!
     </div>
+    <div id="weekly-goal-home"></div>
     <div style="margin:12px 0" id="reminder-btn-wrap"></div>
     <section>
       <h2>Recent days</h2>
@@ -47,10 +48,12 @@
     window.DMK_ROOT = './';
   </script>
   <script src="scripts/app.js"></script>
+  <script src="scripts/goals.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const u = getUser();
       if (u) document.getElementById('join-cta').style.display = 'none';
+      renderWeeklyGoalWidget('weekly-goal-home');
     });
   </script>
 </body></html>

@@ -330,7 +330,7 @@ test.describe('Practice Mode', () => {
     await page.reload();
     await page.waitForTimeout(500);
 
-    await page.locator('.start-practice').click();
+    await page.locator('#start-practice-btn').click();
     // Quiz area should be visible
     await expect(page.locator('#practice-quiz')).toBeVisible();
     // Timer should show
@@ -349,7 +349,7 @@ test.describe('Practice Mode', () => {
     await page.reload();
     await page.waitForTimeout(500);
 
-    await page.locator('.start-practice').click();
+    await page.locator('#start-practice-btn').click();
 
     // Question text visible
     await expect(page.locator('#pq-question')).toBeVisible();
@@ -373,7 +373,7 @@ test.describe('Practice Mode', () => {
     await page.reload();
     await page.waitForTimeout(500);
 
-    await page.locator('.start-practice').click();
+    await page.locator('#start-practice-btn').click();
     // Click first choice
     await page.locator('.pq-choice').first().click();
     // Feedback should appear
@@ -394,7 +394,7 @@ test.describe('Practice Mode', () => {
     await page.waitForTimeout(500);
 
     // Select 5 questions, start
-    await page.locator('.start-practice').click();
+    await page.locator('#start-practice-btn').click();
 
     // Answer all 5 questions
     for (let i = 0; i < 5; i++) {
@@ -423,7 +423,7 @@ test.describe('Practice Mode', () => {
     await page.reload();
     await page.waitForTimeout(500);
 
-    await page.locator('.start-practice').click();
+    await page.locator('#start-practice-btn').click();
     await expect(page.locator('#practice-quiz')).toBeVisible();
 
     // Click quit

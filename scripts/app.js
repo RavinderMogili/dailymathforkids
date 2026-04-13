@@ -339,6 +339,7 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
         `</div>`;
       checkAndRevealFadedHints(quizId, answers);
       saveWrongAnswersForReview(quizId, answers);
+      if (typeof addSolvedQuestions === 'function') addSolvedQuestions(answers.length);
     }
     return data;
   } catch {

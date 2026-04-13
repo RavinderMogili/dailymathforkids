@@ -108,6 +108,7 @@
       <p id="pts-remaining" style="text-align:center;font-size:.9rem;color:var(--muted);margin-bottom:12px"></p>
       <button class="start-practice" id="start-practice-btn" onclick="startPractice()">▶ Start Practice</button>
       <button class="start-practice" id="review-btn" onclick="startReview()" style="display:none;background:linear-gradient(135deg,#fef3c7,#fde68a);color:#92400e;border:2px solid #f59e0b;margin-top:8px">🔁 Review Mistakes (<span id="review-count">0</span>)</button>
+      <div id="weekly-goal-practice"></div>
     </div>
 
     <!-- Quiz -->
@@ -182,6 +183,7 @@
 <script src="scripts/app.js"></script>
 <script src="scripts/practice-engine.js"></script>
 <script src="scripts/badges.js"></script>
+<script src="scripts/goals.js"></script>
 <script>
   // ── State ──────────────────────────────────────────────────────────────
   let practiceState = {
@@ -228,6 +230,7 @@
     }
     renderTopicChips();
     updateReviewButton();
+    if (typeof renderWeeklyGoalWidget === 'function') renderWeeklyGoalWidget('weekly-goal-practice');
   });
 
   function renderTopicChips() {
@@ -460,6 +463,9 @@
     // Save wrong answers for review
     savePracticeWrongAnswers();
 
+    // Update weekly goals
+    if (typeof addSolvedQuestions === 'function') addSolvedQuestions(practiceState.count);
+
     // Submit practice score to API (capped points)
     submitPracticeScore(practiceState.correct, practiceState.count, elapsed, pointsEarned);
   }
@@ -579,6 +585,7 @@
     document.getElementById('practice-setup').style.display = 'block';
     updatePtsRemaining();
     updateReviewButton();
+    if (typeof renderWeeklyGoalWidget === 'function') renderWeeklyGoalWidget('weekly-goal-practice');
   }
 </script>
 </body>

@@ -347,6 +347,7 @@ def generate_html_from_text(text, today):
   window.DMK_ROOT = '../';
 </script>
 <script src="../scripts/app.js"></script>
+<script src="../scripts/goals.js"></script>
 <script>
   const QUIZ_DATE = '{today}';
   let QUIZ_ID = QUIZ_DATE + '-G3';
@@ -473,6 +474,7 @@ def rebuild_index_and_sitemap():
       🌟 <strong>How points work:</strong> Complete a daily quiz to earn points — 1 point per correct answer, +3 bonus for a perfect score!
       Check the <a href="leaderboard.html">🏆 Rankings</a> or <a href="profile.html">📊 My Progress</a> to see how you're doing.
     </div>
+    <div id="weekly-goal-home"></div>
     <div style="margin:12px 0" id="reminder-btn-wrap"></div>
     <section>
       <h2>Recent days</h2>
@@ -492,10 +494,12 @@ def rebuild_index_and_sitemap():
     window.DMK_ROOT = './';
   </script>
   <script src="scripts/app.js"></script>
+  <script src="scripts/goals.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {{
       const u = getUser();
       if (u) document.getElementById('join-cta').style.display = 'none';
+      renderWeeklyGoalWidget('weekly-goal-home');
     }});
   </script>
 </body></html>"""

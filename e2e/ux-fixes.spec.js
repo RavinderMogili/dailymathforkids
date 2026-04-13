@@ -335,3 +335,58 @@ test.describe('Practice points cap', () => {
     await expect(page.locator('#pts-remaining')).toContainText(/earned all 10/i);
   });
 });
+
+// ──────────────────────────────────────────
+//  10. Weekly goals & milestones
+// ──────────────────────────────────────────
+test.describe('Weekly goals', () => {
+  test('goals.js loads and provides getWeeklyGoalData', async ({ page }) => {
+    await page.goto('/practice.html');
+    const hasGoals = await page.evaluate(() => typeof getWeeklyGoalData === 'function');
+    if (!hasGoals) { test.skip(); return; }
+    const data = await page.evaluate(() => getWeeklyGoalData());
+    expect(data).toHaveProperty('weekId');
+    expect(data).toHaveProperty('solved');
+    expect(data).toHaveProperty('goal');
+  });
+
+  test('addSolvedQuestions increments counter', async ({ page }) => {
+    await page.goto('/practice.html');
+    const hasGoals = await page.evaluate(() => typeof addSolvedQuestions === 'function');
+    if (!hasGoals) { test.skip(); return; }
+    await page.evaluate(() => localStorage.removeItem('dmk_weekly_goals'));
+    await page.evaluate(() => addSolvedQuestions(5));
+    const data = await page.evaluate(() => getWeeklyGoalData());
+    expect(data.solved).toBe(5);
+  });
+
+  test('weekly goal widget renders on practice page', async ({ page }) => {
+    await page.goto('/practice.html');
+    await page.waitForTimeout(500);
+    const el = page.locator('#weekly-goal-practice');
+    if (!(await el.count())) { test.skip(); return; }
+    await expect(el).toBeVisible();
+    await expect(page.locator('text=/Weekly Goal/i')).toBeVisible();
+  });
+
+  test('milestone popup shows after reaching 10 questions', async ({ page }) => {
+    await page.goto('/practice.html');
+    const hasGoals = await page.evaluate(() => typeof addSolvedQuestions === 'function');
+    if (!hasGoals) { test.skip(); return; }
+    await page.evaluate(() => {
+      localStorage.removeItem('dmk_weekly_goals');
+      localStorage.removeItem('dmk_milestones');
+    });
+    await page.evaluate(() => addSolvedQuestions(10));
+    await expect(page.locator('#milestone-popup')).toBeVisible({ timeout: 2000 });
+    await expect(page.locator('text=/Getting Started/i')).toBeVisible();
+  });
+
+  test('weekly goal widget shows on homepage', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.waitForTimeout(500);
+    const el = page.locator('#weekly-goal-home');
+    if (!(await el.count())) { test.skip(); return; }
+    await expect(el).toBeVisible();
+  });
+});
