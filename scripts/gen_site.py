@@ -472,7 +472,7 @@ def rebuild_index_and_sitemap():
     </section>
     <div class="points-info">
       🌟 <strong>How points work:</strong> Complete a daily quiz to earn points — 1 point per correct answer, +3 bonus for a perfect score!
-      Check the <a href="leaderboard.html">🏆 Rankings</a> or <a href="profile.html">📊 My Progress</a> to see how you're doing.
+      Check <a href="profile.html">📊 My Progress</a> to see how you're doing. Want more? Try <a href="practice.html">🎯 Practice Mode</a>!
     </div>
     <div id="weekly-goal-home"></div>
     <div style="margin:12px 0" id="reminder-btn-wrap"></div>
