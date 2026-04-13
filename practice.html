@@ -107,6 +107,7 @@
 
       <p id="pts-remaining" style="text-align:center;font-size:.9rem;color:var(--muted);margin-bottom:12px"></p>
       <button class="start-practice" id="start-practice-btn" onclick="startPractice()">▶ Start Practice</button>
+      <button class="start-practice" id="review-btn" onclick="startReview()" style="display:none;background:linear-gradient(135deg,#fef3c7,#fde68a);color:#92400e;border:2px solid #f59e0b;margin-top:8px">🔁 Review Mistakes (<span id="review-count">0</span>)</button>
     </div>
 
     <!-- Quiz -->
@@ -226,6 +227,7 @@
       practiceState.grade = parseInt(String(u.grade).replace(/\D/g, '')) || 3;
     }
     renderTopicChips();
+    updateReviewButton();
   });
 
   function renderTopicChips() {
@@ -328,6 +330,8 @@
     if (practiceState.answered) return;
     practiceState.answered = true;
 
+    // Store user's answer for review tracking
+    practiceState.questions[practiceState.current]._userAnswer = selected;
     const isCorrect = selected === correct;
     if (isCorrect) practiceState.correct++;
 
@@ -453,6 +457,9 @@
       badgeEl.style.display = 'none';
     }
 
+    // Save wrong answers for review
+    savePracticeWrongAnswers();
+
     // Submit practice score to API (capped points)
     submitPracticeScore(practiceState.correct, practiceState.count, elapsed, pointsEarned);
   }
@@ -478,6 +485,89 @@
     } catch { /* silent fail for practice */ }
   }
 
+  // ── Wrong answer tracking for review ────────────────────────────────────
+  const REVIEW_KEY = 'dmk_practice_review';
+
+  function savePracticeWrongAnswers() {
+    const items = JSON.parse(localStorage.getItem(REVIEW_KEY) || '[]');
+    practiceState.questions.forEach((q, i) => {
+      // Check if answered wrong (compare with user's pick stored during answer)
+      if (q._userAnswer && q._userAnswer !== q.answer) {
+        // Remove duplicates of same question text
+        const filtered = items.filter(x => x.question !== q.question);
+        filtered.push({
+          question: q.question,
+          answer: q.answer,
+          choices: q.choices,
+          topic: q.topic,
+          hint: q.hint || '',
+          steps: q.steps || [],
+          date: new Date().toISOString().slice(0, 10),
+          reviewCount: 0,
+        });
+        items.length = 0;
+        items.push(...filtered.slice(-50)); // Keep last 50
+      }
+    });
+    // Remove questions the user got right this time (they've learned it)
+    const rightOnes = practiceState.questions
+      .filter(q => q._userAnswer === q.answer)
+      .map(q => q.question);
+    const cleaned = items.filter(x => !rightOnes.includes(x.question));
+    localStorage.setItem(REVIEW_KEY, JSON.stringify(cleaned.slice(-50)));
+  }
+
+  function getReviewQuestions() {
+    const items = JSON.parse(localStorage.getItem(REVIEW_KEY) || '[]');
+    const today = new Date().toISOString().slice(0, 10);
+    // Show questions from previous days (spaced repetition)
+    return items.filter(x => x.date < today);
+  }
+
+  function updateReviewButton() {
+    const due = getReviewQuestions();
+    const btn = document.getElementById('review-btn');
+    const count = document.getElementById('review-count');
+    if (due.length > 0) {
+      btn.style.display = 'block';
+      count.textContent = due.length;
+    } else {
+      btn.style.display = 'none';
+    }
+  }
+
+  function startReview() {
+    const due = getReviewQuestions();
+    if (due.length === 0) return;
+
+    // Convert review items to quiz questions
+    practiceState.questions = due.slice(0, 10).map(r => ({
+      question: r.question,
+      answer: r.answer,
+      choices: r.choices || [r.answer],
+      topic: r.topic || 'Review',
+      hint: r.hint || 'Think carefully — you got this wrong before!',
+      steps: r.steps || [],
+    }));
+    practiceState.count = practiceState.questions.length;
+    practiceState.current = 0;
+    practiceState.correct = 0;
+    practiceState.answered = false;
+    practiceState.startTime = Date.now();
+
+    if (practiceState.timerInterval) clearInterval(practiceState.timerInterval);
+    practiceState.timerInterval = setInterval(() => {
+      const sec = Math.floor((Date.now() - practiceState.startTime) / 1000);
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      document.getElementById('pq-timer').textContent = '⏱ ' + m + ':' + String(s).padStart(2, '0');
+    }, 1000);
+
+    document.getElementById('practice-setup').style.display = 'none';
+    document.getElementById('practice-quiz').style.display = 'block';
+    showQuestion();
+  }
+
   function quitPractice() {
     if (practiceState.timerInterval) clearInterval(practiceState.timerInterval);
     document.getElementById('practice-quiz').style.display = 'none';
@@ -488,6 +578,7 @@
     document.getElementById('practice-results').style.display = 'none';
     document.getElementById('practice-setup').style.display = 'block';
     updatePtsRemaining();
+    updateReviewButton();
   }
 </script>
 </body>
