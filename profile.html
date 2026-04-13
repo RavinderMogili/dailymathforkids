@@ -156,6 +156,29 @@
       </div>
     </div>
 
+    <div class="profile-card" id="practice-stats-card" style="display:none">
+      <h2>🎯 Practice Mode Stats</h2>
+      <div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
+        <div class="stat-box">
+          <div class="stat-num" id="stat-practice-sessions">0</div>
+          <div class="stat-lbl">Sessions</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="stat-practice-questions">0</div>
+          <div class="stat-lbl">Questions</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="stat-practice-accuracy">—</div>
+          <div class="stat-lbl">Accuracy</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="stat-practice-pts" style="color:var(--primary)">0</div>
+          <div class="stat-lbl">Practice Pts</div>
+        </div>
+      </div>
+      <p style="margin-top:8px;text-align:center"><a href="practice.html" style="font-weight:700">🎯 Go Practice →</a></p>
+    </div>
+
     <div class="profile-card">
       <h2>Quiz History</h2>
       <div id="history-wrap">
@@ -224,6 +247,17 @@ async function loadProfile() {
       ? '💪 Good progress! Keep practising and you\'ll climb higher!'
       : '🚀 Every quiz you do helps you improve. Keep it up!';
     document.getElementById('rank-msg').textContent = msg;
+  }
+
+  // Render practice stats
+  if (data.practiceStats && data.practiceStats.sessions > 0) {
+    const ps = data.practiceStats;
+    document.getElementById('practice-stats-card').style.display = 'block';
+    document.getElementById('stat-practice-sessions').textContent = ps.sessions;
+    document.getElementById('stat-practice-questions').textContent = ps.totalQuestions;
+    const acc = ps.totalQuestions > 0 ? Math.round((ps.totalCorrect / ps.totalQuestions) * 100) : 0;
+    document.getElementById('stat-practice-accuracy').textContent = acc + '%';
+    document.getElementById('stat-practice-pts').textContent = ps.pointsEarned;
   }
 
   const shieldActive = typeof hasShield === 'function' ? hasShield() : false;
