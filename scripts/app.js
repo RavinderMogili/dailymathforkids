@@ -25,6 +25,7 @@ function renderBadge() {
       el.innerHTML =
         `<span class="badge-name">⭐ ${escHtml(u.nickname)}</span>` +
         `<a class="badge-link" href="${ROOT}profile.html">📊 My Progress</a>` +
+        `<a class="badge-link" href="${ROOT}practice.html">🎯 Practice</a>` +
         `<button class="badge-link" onclick="showGroupModal()">🤝 Group</button>` +
         `<button class="badge-link" onclick="logOut()">Log out</button>`;
     } else {

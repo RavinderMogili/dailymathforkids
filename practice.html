@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Practice Mode – Daily Math for Kids</title>
+  <meta name="description" content="Practice math at your own pace. Choose your topic, difficulty, and number of questions."/>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    .practice-setup { max-width: 600px; margin: 0 auto; }
+    .setup-card { background: var(--surface); border-radius: 16px; padding: 24px; box-shadow: var(--shadow-sm); margin-bottom: 20px; }
+    .setup-label { display: block; font-weight: 700; margin-bottom: 8px; color: var(--ink); }
+    .setup-select, .setup-btn { width: 100%; padding: 12px 16px; border-radius: 12px; font-size: 1rem; font-family: inherit; }
+    .setup-select { border: 2px solid var(--border); background: var(--surface); color: var(--ink); margin-bottom: 16px; cursor: pointer; }
+    .setup-select:focus { border-color: var(--primary); outline: none; }
+    .topic-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .topic-chip { padding: 8px 16px; border-radius: 20px; border: 2px solid var(--border); background: var(--surface); color: var(--ink); cursor: pointer; font-size: .9rem; font-family: inherit; transition: all .15s; }
+    .topic-chip:hover { border-color: var(--primary); background: var(--primary-light); }
+    .topic-chip.selected { border-color: var(--primary); background: var(--primary); color: #fff; }
+    .count-chips { display: flex; gap: 8px; margin-bottom: 16px; }
+    .count-chip { flex: 1; padding: 10px; border-radius: 12px; border: 2px solid var(--border); background: var(--surface); color: var(--ink); cursor: pointer; font-size: 1rem; font-weight: 700; font-family: inherit; text-align: center; transition: all .15s; }
+    .count-chip:hover { border-color: var(--primary); }
+    .count-chip.selected { border-color: var(--primary); background: var(--primary); color: #fff; }
+    .diff-chips { display: flex; gap: 8px; margin-bottom: 16px; }
+    .diff-chip { flex: 1; padding: 10px; border-radius: 12px; border: 2px solid var(--border); background: var(--surface); color: var(--ink); cursor: pointer; font-size: .95rem; font-weight: 700; font-family: inherit; text-align: center; transition: all .15s; }
+    .diff-chip:hover { border-color: var(--primary); }
+    .diff-chip.selected { border-color: var(--primary); background: var(--primary); color: #fff; }
+    .start-practice { display: block; width: 100%; padding: 14px; font-size: 1.1rem; font-weight: 700; background: var(--primary); color: #fff; border: none; border-radius: 12px; cursor: pointer; font-family: inherit; box-shadow: 0 4px 12px rgba(37,99,235,.3); }
+    .start-practice:hover { background: var(--primary-dark); }
+    .start-practice:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Quiz area */
+    .practice-quiz { max-width: 700px; margin: 0 auto; display: none; }
+    .pq-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding: 12px 16px; background: var(--surface); border-radius: 12px; box-shadow: var(--shadow-sm); }
+    .pq-progress { font-weight: 700; color: var(--primary); }
+    .pq-score { font-weight: 700; color: var(--success); }
+    .pq-card { background: var(--surface); border-radius: 16px; padding: 24px; box-shadow: var(--shadow-sm); margin-bottom: 16px; }
+    .pq-question { font-size: 1.2rem; font-weight: 700; margin-bottom: 16px; color: var(--ink); }
+    .pq-topic-tag { font-size: .75rem; background: var(--primary-light); color: var(--primary); padding: 2px 10px; border-radius: 10px; font-weight: 600; margin-bottom: 8px; display: inline-block; }
+    .pq-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .pq-choice { padding: 12px; border-radius: 12px; border: 2px solid var(--border); background: var(--surface); color: var(--ink); cursor: pointer; font-size: 1rem; font-family: inherit; font-weight: 600; transition: all .15s; text-align: center; }
+    .pq-choice:hover { border-color: var(--primary); background: var(--primary-light); }
+    .pq-choice.correct { border-color: var(--success); background: var(--success-light); color: var(--success); }
+    .pq-choice.wrong { border-color: var(--danger); background: var(--danger-light); color: var(--danger); }
+    .pq-choice.disabled { pointer-events: none; opacity: 0.7; }
+    .pq-audio-btns { display: flex; gap: 8px; margin-top: 12px; }
+    .pq-audio-btn { padding: 6px 14px; border-radius: 8px; border: 2px solid var(--primary); background: var(--primary); color: #fff; cursor: pointer; font-size: .85rem; font-weight: 700; font-family: inherit; }
+    .pq-audio-btn:hover { background: var(--primary-dark); }
+    .pq-hint { margin-top: 10px; }
+    .pq-hint summary { cursor: pointer; color: var(--primary); font-weight: 700; font-size: .9rem; }
+    .pq-hint .hint-body { margin-top: 6px; padding: 8px 12px; background: #fffbeb; border-radius: 8px; font-size: .9rem; color: #92400e; }
+    .pq-steps { margin-top: 6px; }
+    .pq-steps summary { cursor: pointer; color: var(--primary); font-weight: 700; font-size: .9rem; }
+    .pq-steps .steps-body { margin-top: 6px; padding: 8px 12px; background: #fffbeb; border-radius: 8px; font-size: .9rem; color: #92400e; }
+    .pq-steps .steps-body li { margin: 4px 0; }
+    .pq-feedback { margin-top: 12px; padding: 10px 14px; border-radius: 10px; font-weight: 600; font-size: .95rem; }
+    .pq-feedback.correct { background: var(--success-light); color: var(--success); }
+    .pq-feedback.wrong { background: var(--danger-light); color: var(--danger); }
+    .pq-next { display: none; margin-top: 12px; padding: 10px 20px; background: var(--primary); color: #fff; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+
+    /* Results */
+    .practice-results { max-width: 600px; margin: 0 auto; display: none; text-align: center; }
+    .results-card { background: var(--surface); border-radius: 16px; padding: 32px; box-shadow: var(--shadow-sm); }
+    .results-score { font-size: 2.5rem; font-weight: 800; color: var(--primary); }
+    .results-msg { font-size: 1.1rem; margin: 12px 0; color: var(--muted); }
+    .results-stats { display: flex; gap: 16px; justify-content: center; margin: 20px 0; }
+    .results-stat { padding: 12px 20px; background: var(--surface-2); border-radius: 12px; }
+    .results-stat-num { font-size: 1.3rem; font-weight: 800; color: var(--ink); }
+    .results-stat-lbl { font-size: .8rem; color: var(--muted); }
+    .results-btns { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+    .results-btns button, .results-btns a { padding: 12px 24px; border-radius: 12px; font-weight: 700; font-family: inherit; font-size: 1rem; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="index.html">🧮 Daily Math for Kids</a>
+    <span class="user-badge"></span>
+  </header>
+  <main class="container">
+    <h1>🎯 Practice Mode</h1>
+    <p style="color:var(--muted);margin-bottom:20px">Choose your topic, difficulty, and go! No pressure — just practice.</p>
+
+    <!-- Setup -->
+    <div class="practice-setup" id="practice-setup">
+      <div class="setup-card">
+        <span class="setup-label">📚 Pick your topics</span>
+        <p style="font-size:.85rem;color:var(--muted);margin-bottom:10px">Select one or more. If none selected, all topics will be used.</p>
+        <div class="topic-chips" id="topic-chips"></div>
+      </div>
+
+      <div class="setup-card">
+        <span class="setup-label">⚡ Difficulty</span>
+        <div class="diff-chips">
+          <button class="diff-chip selected" data-diff="easy" onclick="selectDiff(this)">😊 Easy</button>
+          <button class="diff-chip" data-diff="medium" onclick="selectDiff(this)">🤔 Medium</button>
+          <button class="diff-chip" data-diff="hard" onclick="selectDiff(this)">🔥 Hard</button>
+        </div>
+      </div>
+
+      <div class="setup-card">
+        <span class="setup-label">🔢 How many questions?</span>
+        <div class="count-chips">
+          <button class="count-chip selected" data-count="5" onclick="selectCount(this)">5</button>
+          <button class="count-chip" data-count="10" onclick="selectCount(this)">10</button>
+          <button class="count-chip" data-count="20" onclick="selectCount(this)">20</button>
+        </div>
+      </div>
+
+      <p id="pts-remaining" style="text-align:center;font-size:.9rem;color:var(--muted);margin-bottom:12px"></p>
+      <button class="start-practice" id="start-practice-btn" onclick="startPractice()">▶ Start Practice</button>
+    </div>
+
+    <!-- Quiz -->
+    <div class="practice-quiz" id="practice-quiz">
+      <div class="pq-header">
+        <span class="pq-progress" id="pq-progress">1 / 5</span>
+        <span class="pq-score" id="pq-score">✅ 0 correct</span>
+        <span style="font-weight:700;color:var(--muted);font-size:.95rem" id="pq-timer">⏱ 0:00</span>
+        <button onclick="quitPractice()" style="padding:6px 14px;border:2px solid var(--border);border-radius:8px;background:var(--surface);color:var(--ink);cursor:pointer;font-family:inherit;font-weight:600">✕ Quit</button>
+      </div>
+      <div class="pq-card" id="pq-card">
+        <div class="pq-topic-tag" id="pq-topic"></div>
+        <div class="pq-question" id="pq-question"></div>
+        <div class="pq-choices" id="pq-choices"></div>
+        <div class="pq-audio-btns">
+          <button class="pq-audio-btn" onclick="listenEN()">🎧 Listen EN</button>
+          <button class="pq-audio-btn" onclick="listenFR()">🎧 Listen FR</button>
+        </div>
+        <details class="pq-hint" id="pq-hint">
+          <summary>💡 Show hint</summary>
+          <div class="hint-body" id="pq-hint-text"></div>
+        </details>
+        <details class="pq-steps" id="pq-steps">
+          <summary>📚 Show steps</summary>
+          <div class="steps-body" id="pq-steps-text"></div>
+        </details>
+        <div class="pq-feedback" id="pq-feedback" style="display:none"></div>
+        <button class="pq-next" id="pq-next" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="practice-results" id="practice-results">
+      <div class="results-card">
+        <div class="results-score" id="results-score"></div>
+        <div class="results-msg" id="results-msg"></div>
+        <div class="results-stats">
+          <div class="results-stat">
+            <div class="results-stat-num" id="results-correct">0</div>
+            <div class="results-stat-lbl">Correct</div>
+          </div>
+          <div class="results-stat">
+            <div class="results-stat-num" id="results-total">0</div>
+            <div class="results-stat-lbl">Questions</div>
+          </div>
+          <div class="results-stat">
+            <div class="results-stat-num" id="results-time">0:00</div>
+            <div class="results-stat-lbl">Time</div>
+          </div>
+          <div class="results-stat">
+            <div class="results-stat-num" id="results-points" style="color:var(--primary)">0</div>
+            <div class="results-stat-lbl">Points Earned</div>
+          </div>
+        </div>
+        <div class="results-btns">
+          <button onclick="resetPractice()" style="background:var(--primary);color:#fff;border:none;cursor:pointer">🔄 Practice Again</button>
+          <a href="index.html" style="background:var(--surface-2);color:var(--ink);border:2px solid var(--border)">← Home</a>
+        </div>
+      </div>
+    </div>
+
+  </main>
+  <footer>© 2026 • Free math practice for kids • Moncton, NB</footer>
+
+<script>
+  window.DMK_API  = 'https://dailymathforkids-api.vercel.app';
+  window.DMK_ROOT = './';
+</script>
+<script src="scripts/app.js"></script>
+<script src="scripts/practice-engine.js"></script>
+<script>
+  // ── State ──────────────────────────────────────────────────────────────
+  let practiceState = {
+    grade: 3,
+    topics: [],
+    difficulty: 'easy',
+    count: 5,
+    questions: [],
+    current: 0,
+    correct: 0,
+    answered: false,
+    startTime: null,
+  };
+
+  // ── Init: populate topics based on user grade ─────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    const u = getUser();
+    if (u && u.grade) {
+      practiceState.grade = parseInt(String(u.grade).replace(/\D/g, '')) || 3;
+    }
+    renderTopicChips();
+  });
+
+  function renderTopicChips() {
+    const container = document.getElementById('topic-chips');
+    const topics = getTopicsForGrade(practiceState.grade);
+    container.innerHTML = topics.map(t =>
+      `<button class="topic-chip" data-topic="${t}" onclick="toggleTopic(this)">${t}</button>`
+    ).join('');
+    updatePtsRemaining();
+  }
+
+  function updatePtsRemaining() {
+    const today = new Date().toISOString().slice(0, 10);
+    const used = parseFloat(localStorage.getItem('dmk_practice_pts_' + today) || '0');
+    const remaining = Math.max(0, 10 - used);
+    const el = document.getElementById('pts-remaining');
+    if (el) el.textContent = remaining > 0
+      ? `⭐ You can earn up to ${remaining} practice points today`
+      : `✅ You've earned all 10 practice points today — keep practising for fun!`;
+  }
+
+  function toggleTopic(el) {
+    el.classList.toggle('selected');
+  }
+
+  function selectDiff(el) {
+    document.querySelectorAll('.diff-chip').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    practiceState.difficulty = el.dataset.diff;
+  }
+
+  function selectCount(el) {
+    document.querySelectorAll('.count-chip').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    practiceState.count = parseInt(el.dataset.count);
+  }
+
+  // ── Start ─────────────────────────────────────────────────────────────
+  function startPractice() {
+    const selected = [...document.querySelectorAll('.topic-chip.selected')].map(c => c.dataset.topic);
+    practiceState.topics = selected.length > 0 ? selected : getTopicsForGrade(practiceState.grade);
+    practiceState.questions = generateQuiz(practiceState.grade, practiceState.topics, practiceState.difficulty, practiceState.count);
+    practiceState.current = 0;
+    practiceState.correct = 0;
+    practiceState.answered = false;
+    practiceState.startTime = Date.now();
+    practiceState.timerInterval = setInterval(updateTimer, 1000);
+
+    document.getElementById('practice-setup').style.display = 'none';
+    document.getElementById('practice-quiz').style.display = 'block';
+    document.getElementById('practice-results').style.display = 'none';
+    showQuestion();
+  }
+
+  // ── Audio ───────────────────────────────────────────────────────────────
+  function speak(text, lang) {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang;
+    u.rate = 0.9;
+    window.speechSynthesis.speak(u);
+  }
+  function listenEN() {
+    const q = practiceState.questions[practiceState.current];
+    speak(q.question, 'en-US');
+  }
+  function listenFR() {
+    const q = practiceState.questions[practiceState.current];
+    speak(q.questionFr || q.question, 'fr-FR');
+  }
+
+  function showQuestion() {
+    const q = practiceState.questions[practiceState.current];
+    document.getElementById('pq-progress').textContent = `${practiceState.current + 1} / ${practiceState.count}`;
+    document.getElementById('pq-score').textContent = `✅ ${practiceState.correct} correct`;
+    document.getElementById('pq-topic').textContent = q.topic;
+    document.getElementById('pq-question').textContent = q.question;
+    document.getElementById('pq-feedback').style.display = 'none';
+    document.getElementById('pq-next').style.display = 'none';
+    practiceState.answered = false;
+
+    // Populate hint
+    document.getElementById('pq-hint-text').textContent = q.hint || '';
+    document.getElementById('pq-hint').removeAttribute('open');
+
+    // Populate steps
+    const stepsHtml = (q.steps || []).map(s => `<li>${s}</li>`).join('');
+    document.getElementById('pq-steps-text').innerHTML = `<ul style="margin:0;padding-left:18px">${stepsHtml}</ul>`;
+    document.getElementById('pq-steps').removeAttribute('open');
+
+    const choicesEl = document.getElementById('pq-choices');
+    choicesEl.innerHTML = q.choices.map(c =>
+      `<button class="pq-choice" onclick="selectAnswer(this, '${c.replace(/'/g, "\\'")}', '${q.answer.replace(/'/g, "\\'")}')">${c}</button>`
+    ).join('');
+  }
+
+  function selectAnswer(el, selected, correct) {
+    if (practiceState.answered) return;
+    practiceState.answered = true;
+
+    const isCorrect = selected === correct;
+    if (isCorrect) practiceState.correct++;
+
+    // Highlight choices
+    document.querySelectorAll('.pq-choice').forEach(btn => {
+      btn.classList.add('disabled');
+      if (btn.textContent === correct) btn.classList.add('correct');
+      if (btn === el && !isCorrect) btn.classList.add('wrong');
+    });
+
+    // Show feedback
+    const fb = document.getElementById('pq-feedback');
+    fb.style.display = 'block';
+    fb.className = 'pq-feedback ' + (isCorrect ? 'correct' : 'wrong');
+    fb.textContent = isCorrect
+      ? pick(['Correct! 🎉', 'Nice one! ⭐', 'You got it! 💪', 'Perfect! ✨'])
+      : `The answer is ${correct}`;
+
+    // Show next button or finish
+    const nextBtn = document.getElementById('pq-next');
+    if (practiceState.current < practiceState.count - 1) {
+      nextBtn.textContent = 'Next →';
+    } else {
+      nextBtn.textContent = 'See Results 🏁';
+    }
+    nextBtn.style.display = 'inline-block';
+  }
+
+  function nextQuestion() {
+    practiceState.current++;
+    if (practiceState.current >= practiceState.count) {
+      showResults();
+    } else {
+      showQuestion();
+    }
+  }
+
+  function updateTimer() {
+    const elapsed = Math.round((Date.now() - practiceState.startTime) / 1000);
+    const m = Math.floor(elapsed / 60), s = elapsed % 60;
+    const el = document.getElementById('pq-timer');
+    if (el) el.textContent = '⏱ ' + m + ':' + String(s).padStart(2, '0');
+  }
+
+  function showResults() {
+    if (practiceState.timerInterval) clearInterval(practiceState.timerInterval);
+    const elapsed = Math.round((Date.now() - practiceState.startTime) / 1000);
+    const m = Math.floor(elapsed / 60), s = elapsed % 60;
+    const pct = Math.round((practiceState.correct / practiceState.count) * 100);
+
+    document.getElementById('practice-quiz').style.display = 'none';
+    document.getElementById('practice-results').style.display = 'block';
+
+    document.getElementById('results-score').textContent = `${practiceState.correct} / ${practiceState.count}`;
+    document.getElementById('results-correct').textContent = practiceState.correct;
+    document.getElementById('results-total').textContent = practiceState.count;
+    document.getElementById('results-time').textContent = m + ':' + String(s).padStart(2, '0');
+
+    const msg = pct === 100 ? 'Perfect! You nailed every question! 🎉'
+      : pct >= 80 ? 'Amazing work! Almost perfect! ⭐'
+      : pct >= 60 ? 'Great effort! Keep practising! 💪'
+      : pct >= 40 ? 'Good try! Practice makes perfect! 📚'
+      : 'Keep going! Every practice makes you stronger! 🚀';
+    // Half points: 0.5 per correct, capped at 10 pts/day (20 correct answers)
+    const today = new Date().toISOString().slice(0, 10);
+    const capKey = 'dmk_practice_pts_' + today;
+    const usedToday = parseFloat(localStorage.getItem(capKey) || '0');
+    const maxDaily = 10;
+    const rawPts = practiceState.correct * 0.5;
+    const remaining = Math.max(0, maxDaily - usedToday);
+    const pointsEarned = Math.min(rawPts, remaining);
+    localStorage.setItem(capKey, String(usedToday + pointsEarned));
+
+    const ptsText = pointsEarned > 0 ? '+' + pointsEarned + ' pts' : '0 pts';
+    document.getElementById('results-points').textContent = ptsText;
+    if (remaining <= 0) {
+      document.getElementById('results-points').textContent = '0 pts';
+      document.getElementById('results-msg').textContent = msg + ' (Daily practice points reached — keep practising for fun!)';
+    } else if (pointsEarned < rawPts) {
+      document.getElementById('results-points').textContent = '+' + pointsEarned + ' pts';
+      document.getElementById('results-msg').textContent = msg + ' (You hit today\'s 10-point practice cap!)';
+    } else {
+      document.getElementById('results-msg').textContent = msg;
+    }
+
+    // Submit practice score to API (capped points)
+    submitPracticeScore(practiceState.correct, practiceState.count, elapsed, pointsEarned);
+  }
+
+  async function submitPracticeScore(correct, total, timeSeconds, pointsEarned) {
+    const u = typeof getUser === 'function' ? getUser() : null;
+    if (!u) return;
+    const api = window.DMK_API || '';
+    try {
+      await fetch(`${api}/api/practice-submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: u.userId,
+          correct,
+          total,
+          difficulty: practiceState.difficulty,
+          topics: practiceState.topics,
+          timeSeconds,
+          pointsEarned,
+        }),
+      });
+    } catch { /* silent fail for practice */ }
+  }
+
+  function quitPractice() {
+    if (practiceState.timerInterval) clearInterval(practiceState.timerInterval);
+    document.getElementById('practice-quiz').style.display = 'none';
+    document.getElementById('practice-setup').style.display = 'block';
+  }
+
+  function resetPractice() {
+    document.getElementById('practice-results').style.display = 'none';
+    document.getElementById('practice-setup').style.display = 'block';
+    updatePtsRemaining();
+  }
+</script>
+</body>
+</html>
