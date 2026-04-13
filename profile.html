@@ -142,6 +142,20 @@
       </div>
     </div>
 
+    <div class="profile-card" id="rank-card" style="display:none">
+      <h2>📊 Your Position in Grade <span id="rank-grade"></span></h2>
+      <div id="rank-wrap" style="margin-top:12px">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+          <div style="flex:1;background:#e2e8f0;border-radius:12px;height:28px;overflow:hidden;position:relative">
+            <div id="rank-bar" style="height:100%;border-radius:12px;background:linear-gradient(90deg,#2563eb,#60a5fa);transition:width .6s ease;min-width:24px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px">
+              <span id="rank-bar-text" style="color:#fff;font-weight:700;font-size:.8rem;white-space:nowrap"></span>
+            </div>
+          </div>
+        </div>
+        <p id="rank-msg" style="font-size:.95rem;color:var(--muted,#64748b);margin:0"></p>
+      </div>
+    </div>
+
     <div class="profile-card">
       <h2>Quiz History</h2>
       <div id="history-wrap">
@@ -192,6 +206,25 @@ async function loadProfile() {
   document.getElementById('stat-streak').textContent    = streak;
   document.getElementById('stat-perfect').textContent   =
     subs.filter(s => s.score !== null && s.score === 5).length;
+
+  // Render rank progress bar
+  if (data.gradeRank && data.gradeTotal) {
+    const rankCard = document.getElementById('rank-card');
+    rankCard.style.display = 'block';
+    document.getElementById('rank-grade').textContent = currentGrade;
+    const pct = Math.round(((data.gradeTotal - data.gradeRank + 1) / data.gradeTotal) * 100);
+    const barWidth = Math.max(pct, 8);
+    document.getElementById('rank-bar').style.width = barWidth + '%';
+    document.getElementById('rank-bar-text').textContent = 'Top ' + (100 - pct + 1) + '%';
+    const msg = pct >= 80
+      ? '🏆 Amazing! You\'re one of the top students in your grade!'
+      : pct >= 50
+      ? '⭐ Great job! You\'re ahead of more than half your grade. Keep going!'
+      : pct >= 25
+      ? '💪 Good progress! Keep practising and you\'ll climb higher!'
+      : '🚀 Every quiz you do helps you improve. Keep it up!';
+    document.getElementById('rank-msg').textContent = msg;
+  }
 
   const shieldActive = typeof hasShield === 'function' ? hasShield() : false;
   const shieldEl = document.getElementById('stat-shield');

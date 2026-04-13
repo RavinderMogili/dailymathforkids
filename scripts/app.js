@@ -25,7 +25,6 @@ function renderBadge() {
       el.innerHTML =
         `<span class="badge-name">⭐ ${escHtml(u.nickname)}</span>` +
         `<a class="badge-link" href="${ROOT}profile.html">📊 My Progress</a>` +
-        `<a class="badge-link" href="${ROOT}leaderboard.html">🏆 Rankings</a>` +
         `<button class="badge-link" onclick="showGroupModal()">🤝 Group</button>` +
         `<button class="badge-link" onclick="logOut()">Log out</button>`;
     } else {
@@ -81,7 +80,7 @@ function injectModals() {
           <small class="opt-label" style="margin-top:2px">📧 We’ll send a weekly progress report. Never shared or used for marketing.</small>
         </label>
         <p id="reg-msg" class="form-msg" aria-live="polite"></p>
-        <p class="privacy-note">🔒 Only your nickname and grade are shown publicly (if you opt into rankings).</p>
+        <p class="privacy-note">🔒 Only your nickname and grade are stored. Your progress is private.</p>
         <button type="submit" class="btn-primary">Join for Free! 🎉</button>
       </form>
       <p class="modal-note">Already joined? <button class="link-btn" onclick="showLoginModal()">Log in with nickname</button></p>
