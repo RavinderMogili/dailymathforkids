@@ -5,7 +5,7 @@ export default defineConfig({
   timeout: 30000,
   retries: 1,
   use: {
-    baseURL: 'https://ravindermogili.github.io/dailymathforkids',
+    baseURL: 'https://dailymathforkids.com',
     headless: true,
     screenshot: 'only-on-failure',
   },

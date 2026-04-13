@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const SITE = 'https://ravindermogili.github.io/dailymathforkids';
+const SITE = 'https://dailymathforkids.com';
 const API  = 'https://dailymathforkids-api.vercel.app';
 
 // Use a unique test nickname to avoid collisions
@@ -19,7 +19,7 @@ test.describe('Homepage', () => {
   test('has navigation links', async ({ page }) => {
     await page.goto(`${SITE}/index.html`);
     await expect(page.locator('a[href*="profile"]')).toBeVisible();
-    await expect(page.locator('a[href*="leaderboard"]')).toBeVisible();
+    await expect(page.locator('a[href*="practice"]')).toBeVisible();
   });
 
   test('has register/login buttons or links', async ({ page }) => {
@@ -82,13 +82,9 @@ test.describe('Registration', () => {
   test('register modal opens and validates inputs', async ({ page }) => {
     await page.goto(`${SITE}/daily/2026-04-11.html`);
 
-    // Click register/sign-up link
-    const regBtn = page.locator('text=/register|sign up|join now/i').first();
-    if (await regBtn.isVisible()) {
-      await regBtn.click();
-      // Modal should appear
-      await expect(page.locator('#reg-modal, [id*="reg"]')).toBeVisible({ timeout: 3000 });
-    }
+    // Open register modal via JS (button may use onclick handler)
+    await page.evaluate(() => { if (typeof showRegModal === 'function') showRegModal(); });
+    await expect(page.locator('#reg-modal')).toBeVisible({ timeout: 3000 });
   });
 
   test('API rejects empty registration', async ({ request }) => {
@@ -255,32 +251,194 @@ test.describe('Quiz Submission API', () => {
 // ──────────────────────────────────────────
 //  8. Leaderboard
 // ──────────────────────────────────────────
-test.describe('Leaderboard', () => {
-  test('page loads', async ({ page }) => {
+test.describe('Leaderboard (hidden)', () => {
+  test('leaderboard page redirects to home', async ({ page }) => {
     await page.goto(`${SITE}/leaderboard.html`);
-    await expect(page.locator('body')).toContainText(/leaderboard|ranking/i);
+    await page.waitForURL(/index\.html/);
+    await expect(page).toHaveURL(/index\.html/);
+  });
+});
+
+test.describe('Practice Mode', () => {
+  test('practice page loads', async ({ page }) => {
+    await page.goto(`${SITE}/practice.html`);
+    await expect(page.locator('body')).toContainText(/Practice Mode/i);
   });
 
-  test('API returns leaderboard data', async ({ request }) => {
-    const res = await request.get(`${API}/api/leaderboard`);
-    expect(res.status()).toBe(200);
-    const body = await res.json();
-    expect(Array.isArray(body.leaderboard)).toBe(true);
+  test('shows topic chips for default grade', async ({ page }) => {
+    await page.goto(`${SITE}/practice.html`);
+    const chips = page.locator('.topic-chip');
+    await expect(chips.first()).toBeVisible({ timeout: 5000 });
+    const count = await chips.count();
+    expect(count).toBeGreaterThanOrEqual(3);
   });
 
-  test('API filters by grade', async ({ request }) => {
-    const res = await request.get(`${API}/api/leaderboard?grade=G3`);
-    const body = await res.json();
-    body.leaderboard.forEach(entry => {
-      expect(entry.grade).toBe('G3');
+  test('topic chips change when user grade changes', async ({ page }) => {
+    await page.goto(`${SITE}/practice.html`);
+    // Inject G10 user
+    await page.evaluate(() => {
+      localStorage.setItem('dmk_user', JSON.stringify({
+        userId: 'test-uuid', nickname: 'TestKid', grade: 'G10'
+      }));
     });
+    await page.reload();
+    await page.waitForTimeout(500);
+    // G10 should have Trigonometry chip
+    await expect(page.locator('.topic-chip', { hasText: 'Trigonometry' })).toBeVisible({ timeout: 3000 });
   });
 
-  test('speed leaderboard works', async ({ request }) => {
-    const res = await request.get(`${API}/api/leaderboard?type=speed`);
-    expect(res.status()).toBe(200);
-    const body = await res.json();
-    expect(Array.isArray(body.leaderboard)).toBe(true);
+  test('shows difficulty and count options', async ({ page }) => {
+    await page.goto(`${SITE}/practice.html`);
+    await expect(page.locator('.diff-chip').first()).toBeVisible();
+    await expect(page.locator('.count-chip').first()).toBeVisible();
+    // Check all 3 difficulty levels
+    await expect(page.locator('.diff-chip')).toHaveCount(3);
+    // Check all 3 count options
+    await expect(page.locator('.count-chip')).toHaveCount(3);
+  });
+
+  test('difficulty selection works', async ({ page }) => {
+    await page.goto(`${SITE}/practice.html`);
+    const hardChip = page.locator('.diff-chip', { hasText: /hard/i });
+    await hardChip.click();
+    await expect(hardChip).toHaveClass(/selected/);
+    // Easy should no longer be selected
+    const easyChip = page.locator('.diff-chip', { hasText: /easy/i });
+    await expect(easyChip).not.toHaveClass(/selected/);
+  });
+
+  test('count selection works', async ({ page }) => {
+    await page.goto(`${SITE}/practice.html`);
+    const tenChip = page.locator('.count-chip', { hasText: '10' });
+    await tenChip.click();
+    await expect(tenChip).toHaveClass(/selected/);
+  });
+
+  test('shows daily points remaining message', async ({ page }) => {
+    await page.goto(`${SITE}/practice.html`);
+    await page.waitForTimeout(500);
+    await expect(page.locator('#pts-remaining')).toContainText(/practice points/i);
+  });
+
+  test('Start Practice launches quiz with timer', async ({ page }) => {
+    await page.goto(`${SITE}/practice.html`);
+    await page.evaluate(() => {
+      localStorage.setItem('dmk_user', JSON.stringify({
+        userId: 'test-uuid', nickname: 'TestKid', grade: 'G3'
+      }));
+    });
+    await page.reload();
+    await page.waitForTimeout(500);
+
+    await page.locator('.start-practice').click();
+    // Quiz area should be visible
+    await expect(page.locator('#practice-quiz')).toBeVisible();
+    // Timer should show
+    await expect(page.locator('#pq-timer')).toBeVisible();
+    // Progress should show 1 / 5
+    await expect(page.locator('#pq-progress')).toContainText('1 / 5');
+  });
+
+  test('quiz shows question with choices, hint, steps, and audio buttons', async ({ page }) => {
+    await page.goto(`${SITE}/practice.html`);
+    await page.evaluate(() => {
+      localStorage.setItem('dmk_user', JSON.stringify({
+        userId: 'test-uuid', nickname: 'TestKid', grade: 'G3'
+      }));
+    });
+    await page.reload();
+    await page.waitForTimeout(500);
+
+    await page.locator('.start-practice').click();
+
+    // Question text visible
+    await expect(page.locator('#pq-question')).toBeVisible();
+    // 4 choices
+    await expect(page.locator('.pq-choice')).toHaveCount(4);
+    // Listen EN & FR buttons
+    await expect(page.locator('button', { hasText: 'Listen EN' })).toBeVisible();
+    await expect(page.locator('button', { hasText: 'Listen FR' })).toBeVisible();
+    // Hint and Steps collapsibles
+    await expect(page.locator('summary', { hasText: 'Show hint' })).toBeVisible();
+    await expect(page.locator('summary', { hasText: 'Show steps' })).toBeVisible();
+  });
+
+  test('selecting an answer shows feedback and Next button', async ({ page }) => {
+    await page.goto(`${SITE}/practice.html`);
+    await page.evaluate(() => {
+      localStorage.setItem('dmk_user', JSON.stringify({
+        userId: 'test-uuid', nickname: 'TestKid', grade: 'G3'
+      }));
+    });
+    await page.reload();
+    await page.waitForTimeout(500);
+
+    await page.locator('.start-practice').click();
+    // Click first choice
+    await page.locator('.pq-choice').first().click();
+    // Feedback should appear
+    await expect(page.locator('#pq-feedback')).toBeVisible();
+    // Next button should appear
+    await expect(page.locator('#pq-next')).toBeVisible();
+  });
+
+  test('completing quiz shows results with score, time, and points', async ({ page }) => {
+    await page.goto(`${SITE}/practice.html`);
+    await page.evaluate(() => {
+      localStorage.setItem('dmk_user', JSON.stringify({
+        userId: 'test-uuid', nickname: 'TestKid', grade: 'G3'
+      }));
+      localStorage.removeItem('dmk_practice_pts_' + new Date().toISOString().slice(0, 10));
+    });
+    await page.reload();
+    await page.waitForTimeout(500);
+
+    // Select 5 questions, start
+    await page.locator('.start-practice').click();
+
+    // Answer all 5 questions
+    for (let i = 0; i < 5; i++) {
+      await page.locator('.pq-choice').first().click();
+      await page.waitForTimeout(200);
+      const nextBtn = page.locator('#pq-next');
+      if (await nextBtn.isVisible()) await nextBtn.click();
+      await page.waitForTimeout(200);
+    }
+
+    // Results should appear
+    await expect(page.locator('#practice-results')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('#results-score')).toBeVisible();
+    await expect(page.locator('#results-time')).toBeVisible();
+    await expect(page.locator('#results-points')).toBeVisible();
+    await expect(page.locator('#results-msg')).toBeVisible();
+  });
+
+  test('Quit button returns to setup', async ({ page }) => {
+    await page.goto(`${SITE}/practice.html`);
+    await page.evaluate(() => {
+      localStorage.setItem('dmk_user', JSON.stringify({
+        userId: 'test-uuid', nickname: 'TestKid', grade: 'G3'
+      }));
+    });
+    await page.reload();
+    await page.waitForTimeout(500);
+
+    await page.locator('.start-practice').click();
+    await expect(page.locator('#practice-quiz')).toBeVisible();
+
+    // Click quit
+    await page.locator('button', { hasText: 'Quit' }).click();
+    // Setup should be back
+    await expect(page.locator('#practice-setup')).toBeVisible();
+    await expect(page.locator('#practice-quiz')).toBeHidden();
+  });
+
+  test('practice submit API endpoint exists', async ({ request }) => {
+    const res = await request.post(`${API}/api/practice-submit`, {
+      data: {},
+    });
+    // Should return 400 for missing fields, not 404
+    expect(res.status()).toBe(400);
   });
 });
 
@@ -295,13 +453,47 @@ test.describe('Profile Page', () => {
 
   test('shows login prompt when not logged in', async ({ page }) => {
     await page.goto(`${SITE}/profile.html`);
-    // Clear any stored user
     await page.evaluate(() => localStorage.removeItem('dmk_user'));
     await page.reload();
-    // Should show some prompt to log in or register
     const body = await page.locator('body').textContent();
-    // Profile page should at least render without crashing
     expect(body.length).toBeGreaterThan(0);
+  });
+
+  test('shows badges section', async ({ page }) => {
+    await page.goto(`${SITE}/profile.html`);
+    await page.evaluate(() => {
+      localStorage.setItem('dmk_user', JSON.stringify({
+        userId: 'test-uuid', nickname: 'TestKid', grade: 'G3'
+      }));
+    });
+    await page.reload();
+    await page.waitForTimeout(2000);
+    await expect(page.locator('#badges-card')).toBeVisible();
+    await expect(page.locator('text=/My Badges/i')).toBeVisible();
+  });
+
+  test('shows rank progress bar section', async ({ page }) => {
+    await page.goto(`${SITE}/profile.html`);
+    await page.evaluate(() => {
+      localStorage.setItem('dmk_user', JSON.stringify({
+        userId: 'test-uuid', nickname: 'TestKid', grade: 'G3'
+      }));
+    });
+    await page.reload();
+    await page.waitForTimeout(2000);
+    await expect(page.locator('#rank-card')).toBeAttached();
+  });
+
+  test('practice stats card exists in DOM', async ({ page }) => {
+    await page.goto(`${SITE}/profile.html`);
+    await page.evaluate(() => {
+      localStorage.setItem('dmk_user', JSON.stringify({
+        userId: 'test-uuid', nickname: 'TestKid', grade: 'G3'
+      }));
+    });
+    await page.reload();
+    await page.waitForTimeout(2000);
+    await expect(page.locator('#practice-stats-card')).toBeAttached();
   });
 });
 
@@ -349,7 +541,7 @@ test.describe('Groups', () => {
 //  11. No JS errors on pages
 // ──────────────────────────────────────────
 test.describe('No Console Errors', () => {
-  for (const pg of ['index.html', 'profile.html', 'leaderboard.html', 'daily/2026-04-11.html']) {
+  for (const pg of ['index.html', 'profile.html', 'practice.html', 'daily/2026-04-11.html']) {
     test(`${pg} loads without JS errors`, async ({ page }) => {
       const errors = [];
       page.on('pageerror', err => errors.push(err.message));
