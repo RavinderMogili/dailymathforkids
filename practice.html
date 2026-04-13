@@ -161,8 +161,10 @@
             <div class="results-stat-lbl">Points Earned</div>
           </div>
         </div>
+        <div id="badge-notification" style="display:none;margin:16px 0;padding:14px;background:linear-gradient(135deg,#fffbeb,#fef3c7);border-radius:12px;border:2px solid #f59e0b"></div>
         <div class="results-btns">
           <button onclick="resetPractice()" style="background:var(--primary);color:#fff;border:none;cursor:pointer">🔄 Practice Again</button>
+          <a href="profile.html" style="background:var(--surface-2);color:var(--ink);border:2px solid var(--border)">📊 My Badges</a>
           <a href="index.html" style="background:var(--surface-2);color:var(--ink);border:2px solid var(--border)">← Home</a>
         </div>
       </div>
@@ -177,6 +179,7 @@
 </script>
 <script src="scripts/app.js"></script>
 <script src="scripts/practice-engine.js"></script>
+<script src="scripts/badges.js"></script>
 <script>
   // ── State ──────────────────────────────────────────────────────────────
   let practiceState = {
@@ -382,6 +385,26 @@
       document.getElementById('results-msg').textContent = msg + ' (You hit today\'s 10-point practice cap!)';
     } else {
       document.getElementById('results-msg').textContent = msg;
+    }
+
+    // Check badges
+    const beforeBadges = getEarnedBadges().map(b => b.id);
+    updateBadgeStats({
+      correct: practiceState.correct,
+      total: practiceState.count,
+      topics: practiceState.topics,
+      difficulty: practiceState.difficulty,
+      timeSeconds: elapsed,
+    });
+    const afterBadges = getEarnedBadges();
+    const newBadges = afterBadges.filter(b => !beforeBadges.includes(b.id));
+    const badgeEl = document.getElementById('badge-notification');
+    if (newBadges.length > 0) {
+      badgeEl.style.display = 'block';
+      badgeEl.innerHTML = '<p style="font-weight:700;margin:0 0 6px">🎖️ New Badge Earned!</p>' +
+        newBadges.map(b => `<p style="margin:4px 0;font-size:1.1rem">${b.icon} <strong>${b.name}</strong> — ${b.desc}</p>`).join('');
+    } else {
+      badgeEl.style.display = 'none';
     }
 
     // Submit practice score to API (capped points)

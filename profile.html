@@ -179,6 +179,12 @@
       <p style="margin-top:8px;text-align:center"><a href="practice.html" style="font-weight:700">🎯 Go Practice →</a></p>
     </div>
 
+    <div class="profile-card" id="badges-card">
+      <h2>🎖️ My Badges</h2>
+      <div id="badges-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:12px"></div>
+      <p id="badges-empty" style="color:var(--muted);text-align:center;display:none">No badges yet — <a href="practice.html">start practising</a> to earn them!</p>
+    </div>
+
     <div class="profile-card">
       <h2>Quiz History</h2>
       <div id="history-wrap">
@@ -196,6 +202,7 @@
   window.DMK_ROOT = './';
 </script>
 <script src="scripts/app.js"></script>
+<script src="scripts/badges.js"></script>
 <script>
 async function loadProfile() {
   const u = getUser();
@@ -270,6 +277,33 @@ async function loadProfile() {
     const shieldBadge = shieldActive ? ' 🛡️' : '';
     document.getElementById('streak-badge-wrap').innerHTML =
       `<span class="streak-badge">🔥 ${streak}-day streak! Keep it up!${shieldBadge}</span>`;
+  }
+
+  // Render badges
+  if (typeof getAllBadges === 'function') {
+    const allBadges = getAllBadges();
+    const grid = document.getElementById('badges-grid');
+    const earned = allBadges.filter(b => b.earned);
+    if (earned.length === 0) {
+      document.getElementById('badges-empty').style.display = 'block';
+      grid.innerHTML = allBadges.map(b =>
+        `<div style="text-align:center;padding:12px;border-radius:12px;background:var(--surface-2);opacity:.4">
+          <div style="font-size:2rem">${b.icon}</div>
+          <div style="font-size:.8rem;font-weight:700;color:var(--muted);margin-top:4px">${b.name}</div>
+          <div style="font-size:.7rem;color:var(--muted)">${b.desc}</div>
+        </div>`
+      ).join('');
+    } else {
+      document.getElementById('badges-empty').style.display = 'none';
+      grid.innerHTML = allBadges.map(b =>
+        `<div style="text-align:center;padding:12px;border-radius:12px;background:${b.earned ? 'linear-gradient(135deg,#fffbeb,#fef3c7)' : 'var(--surface-2)'};border:2px solid ${b.earned ? '#f59e0b' : 'transparent'};opacity:${b.earned ? '1' : '.4'}">
+          <div style="font-size:2rem">${b.icon}</div>
+          <div style="font-size:.8rem;font-weight:700;color:${b.earned ? 'var(--ink)' : 'var(--muted)'};margin-top:4px">${b.name}</div>
+          <div style="font-size:.7rem;color:var(--muted)">${b.desc}</div>
+          ${b.earned ? '<div style="font-size:.7rem;color:#16a34a;font-weight:700;margin-top:2px">✅ Earned!</div>' : ''}
+        </div>`
+      ).join('');
+    }
   }
 
   if (subs.length === 0) {
