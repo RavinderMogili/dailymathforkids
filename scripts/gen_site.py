@@ -385,6 +385,7 @@ def generate_html_from_text(text, today):
   document.addEventListener('DOMContentLoaded', () => {{
     showGradeProblems();
     buildQuizInputs();
+    resumeOrLockQuiz();
     renderFeelingsCheckin('quiz-feelings');
     renderReviewSection('review-section');
     renderReminderButton('reminder-btn-wrap');
@@ -419,6 +420,7 @@ def generate_html_from_text(text, today):
     if (ok) {{
       dmkTimer.reset();
       markDayDone(qid);
+      setQuizState(qid, 'done');
       const streak = calcStreak(qid);
       const streakEl = document.getElementById('streak-msg');
       streakEl.textContent = streak > 1

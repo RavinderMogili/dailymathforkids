@@ -251,17 +251,28 @@ function _retryPendingSubmit() {
 const dmkTimer = {
   _start: null,
   _seconds: null,
-  begin() { if (!this._start) this._start = Date.now(); },
+  begin() {
+    if (!this._start) {
+      this._start = Date.now();
+      store.set('dmk_timer_start', this._start);
+    }
+  },
+  restore() {
+    const saved = store.get('dmk_timer_start', null);
+    if (saved) { this._start = saved; return true; }
+    return false;
+  },
   stop() {
     if (this._start && this._seconds === null)
       this._seconds = Math.round((Date.now() - this._start) / 1000);
+    store.set('dmk_timer_start', null);
     return this._seconds;
   },
   elapsed() {
     if (this._seconds !== null) return this._seconds;
     return this._start ? Math.round((Date.now() - this._start) / 1000) : 0;
   },
-  reset() { this._start = null; this._seconds = null; },
+  reset() { this._start = null; this._seconds = null; store.set('dmk_timer_start', null); },
   fmt(s) { const m = Math.floor(s/60), sec = s%60; return m+':'+String(sec).padStart(2,'0'); },
 };
 
@@ -538,14 +549,26 @@ function showGradeProblems() {
   startBtn.style.display = 'block';
 }
 
+function getQuizState(qid) {
+  return store.get('dmk_quiz_state_' + qid, null);
+}
+function setQuizState(qid, state) {
+  store.set('dmk_quiz_state_' + qid, state);
+}
+
 function startTest() {
-  // Require login before starting
   const u = getUser();
   if (!u) {
     showRegModal();
     return;
   }
   const code = window.DMK_ACTIVE_GRADE || 'G3';
+  const qid = window.QUIZ_ID || (typeof QUIZ_ID !== 'undefined' ? QUIZ_ID : '');
+  setQuizState(qid, 'started');
+  _revealTest(code);
+}
+
+function _revealTest(code) {
   const section = document.querySelector(`.grade-section[data-grade="${code}"]`);
   if (section) {
     section.style.filter = 'none';
@@ -557,6 +580,35 @@ function startTest() {
   const helloEl = document.getElementById('hello');
   if (helloEl) helloEl.textContent = `Grade ${code.replace('G', '')} problems — select your answers and submit!`;
   if (typeof _startTimerUI === 'function') _startTimerUI();
+}
+
+function _lockQuizDone(code) {
+  const section = document.querySelector(`.grade-section[data-grade="${code}"]`);
+  if (section) {
+    section.style.filter = 'none';
+    section.style.pointerEvents = 'none';
+    section.style.userSelect = 'none';
+    section.style.opacity = '0.6';
+  }
+  const startBtn = document.getElementById('start-test-btn');
+  if (startBtn) startBtn.style.display = 'none';
+  const helloEl = document.getElementById('hello');
+  if (helloEl) helloEl.innerHTML = '✅ You already completed this quiz! <a href="../index.html">Back to Home</a>';
+  const submitBtn = document.querySelector('#quiz button[type="submit"]');
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.style.opacity = '0.5'; submitBtn.textContent = 'Already Submitted'; }
+}
+
+function resumeOrLockQuiz() {
+  const qid = window.QUIZ_ID || (typeof QUIZ_ID !== 'undefined' ? QUIZ_ID : '');
+  if (!qid) return;
+  const code = qid.replace(/^.*-(G\d+)$/, '$1');
+  const state = getQuizState(qid);
+  if (state === 'done') {
+    _lockQuizDone(code);
+  } else if (state === 'started') {
+    dmkTimer.restore();
+    _revealTest(code);
+  }
 }
 
 function lockAnswersAfterSubmit() {
