@@ -36,7 +36,16 @@ HELPERS_JS = r"""
     li.dataset.question  = en;
 
     const titleMatch = li.innerHTML.match(/<strong>(.*?)<\/strong>/);
-    const titleHtml  = titleMatch ? '<strong>' + titleMatch[1] + '</strong>' : '';
+    let titleText = titleMatch ? titleMatch[1] : '';
+    let difficulty = 'easy';
+    if (titleText.match(/\[Hard\]/i)) { difficulty = 'hard'; titleText = titleText.replace(/\[Hard\]\s*/i, ''); }
+    else if (titleText.match(/\[Medium\]/i)) { difficulty = 'medium'; titleText = titleText.replace(/\[Medium\]\s*/i, ''); }
+    else if (titleText.match(/\[Easy\]/i)) { difficulty = 'easy'; titleText = titleText.replace(/\[Easy\]\s*/i, ''); }
+    li.dataset.difficulty = difficulty;
+    const diffBadge = difficulty === 'hard' ? '<span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:.75rem;font-weight:700;background:#fee2e2;color:#dc2626;margin-right:6px">\uD83D\uDD25 Hard</span>'
+      : difficulty === 'medium' ? '<span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:.75rem;font-weight:700;background:#fef3c7;color:#d97706;margin-right:6px">\u26A1 Medium</span>'
+      : '<span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:.75rem;font-weight:700;background:#d1fae5;color:#059669;margin-right:6px">\uD83D\uDFE2 Easy</span>';
+    const titleHtml  = '<strong>' + diffBadge + titleText + '</strong>';
 
     function speak(t, lang) {
       const u = new SpeechSynthesisUtterance(t);
@@ -68,7 +77,8 @@ HELPERS_JS = r"""
         ).join('') + '</div>'
       : '';
 
-    li.innerHTML = titleHtml + '<p style="margin:6px 0 4px">' + (en || '') + '</p>' + choicesHtml;
+    const ptsLabel = difficulty === 'hard' ? '3 pts' : difficulty === 'medium' ? '2 pts' : '1 pt';
+    li.innerHTML = titleHtml + ' <span style="font-size:.75rem;color:var(--muted)">' + ptsLabel + '</span>' + '<p style="margin:6px 0 4px">' + (en || '') + '</p>' + choicesHtml;
 
     li.querySelectorAll('.mc-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -179,7 +189,9 @@ CANADIAN MATH CURRICULUM GUIDE — use this to calibrate each problem:
   G12 (Grade 12): advanced functions (polynomial/rational/trig), derivatives intro (rates of change), combinations and permutations, vectors intro, probability distributions"""
 
     prompt = f"""You are creating daily math problems for Canadian students in Grades 1–12.
-Generate exactly 5 problems for EACH grade from G1 to G12. That is 60 problems total.
+For Grades G1–G5: generate exactly 10 problems each (4 Easy, 4 Medium, 2 Hard).
+For Grades G6–G12: generate exactly 15 problems each (5 Easy, 6 Medium, 4 Hard).
+Order them Easy first, then Medium, then Hard. Mark each with [Easy], [Medium], or [Hard] in the title.
 """
     prompt += grade_curriculum
     prompt += f"""
@@ -196,7 +208,7 @@ Use EXACTLY this format — no deviations:
 # Daily Math - {today}
 
 ## G1
-1. **Title**
+1. **[Easy] Title**
    - EN: problem in English
    - FR: same problem in French
    - Choices: A) [wrong]  B) [correct]  C) [wrong]  D) [wrong]
@@ -205,42 +217,42 @@ Use EXACTLY this format — no deviations:
      - step 1
      - step 2
    - Answer: [number only — must match one of the Choices values exactly]
-2. **Title**
+2. **[Easy] Title**
    ...
-[problems 3-5 for G1]
+[continue with 4 Easy, 4 Medium, 2 Hard = 10 problems for G1]
 
 ## G2
-[5 problems]
+[10 problems: 4 Easy, 4 Medium, 2 Hard]
 
 ## G3
-[5 problems]
+[10 problems: 4 Easy, 4 Medium, 2 Hard]
 
 ## G4
-[5 problems]
+[10 problems: 4 Easy, 4 Medium, 2 Hard]
 
 ## G5
-[5 problems]
+[10 problems: 4 Easy, 4 Medium, 2 Hard]
 
 ## G6
-[5 problems]
+[15 problems: 5 Easy, 6 Medium, 4 Hard]
 
 ## G7
-[5 problems]
+[15 problems: 5 Easy, 6 Medium, 4 Hard]
 
 ## G8
-[5 problems]
+[15 problems: 5 Easy, 6 Medium, 4 Hard]
 
 ## G9
-[5 problems]
+[15 problems: 5 Easy, 6 Medium, 4 Hard]
 
 ## G10
-[5 problems]
+[15 problems: 5 Easy, 6 Medium, 4 Hard]
 
 ## G11
-[5 problems]
+[15 problems: 5 Easy, 6 Medium, 4 Hard]
 
 ## G12
-[5 problems]
+[15 problems: 5 Easy, 6 Medium, 4 Hard]
 
 ## Today's Encouragement
 One cheerful sentence (10–16 words, English only). No emojis.
@@ -256,7 +268,7 @@ A 3–4 sentence story about a child helping someone in Canada (English, Grade 3
         resp = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=8000,
+            max_tokens=16000,
         )
         text = resp.choices[0].message.content.strip()
         if not text:
@@ -327,13 +339,7 @@ def generate_html_from_text(text, today):
   <div id="quiz-timer" style="display:none;font-size:1.1rem;font-weight:700;color:var(--primary);margin-bottom:8px">&#9201; <span id="timer-display">0:00</span></div>
   <p id="hello">Log in and select your grade &#8212; problems will appear above!</p>
   <form id="quiz" aria-label="Enter answers">
-    <ol>
-      <li style="display:none"><input name="q1" type="hidden"></li>
-      <li style="display:none"><input name="q2" type="hidden"></li>
-      <li style="display:none"><input name="q3" type="hidden"></li>
-      <li style="display:none"><input name="q4" type="hidden"></li>
-      <li style="display:none"><input name="q5" type="hidden"></li>
-    </ol>
+    <ol id="quiz-inputs"></ol>
     <button type="submit">Submit &amp; Earn Points &#127775;</button>
   </form>
   <p id="result"></p>
@@ -363,8 +369,22 @@ def generate_html_from_text(text, today):
       dispEl.textContent = dmkTimer.fmt(dmkTimer.elapsed());
     }}, 1000);
   }}
+  function buildQuizInputs() {{
+    const grade = (window.QUIZ_ID || QUIZ_ID).replace(/^.*-(G\d+)$/, '$1');
+    const section = document.querySelector('.grade-section[data-grade="' + grade + '"]');
+    const count = section ? section.querySelectorAll('.problems-list > li').length : 5;
+    const ol = document.getElementById('quiz-inputs');
+    ol.innerHTML = '';
+    for (let i = 1; i <= count; i++) {{
+      const li = document.createElement('li');
+      li.style.display = 'none';
+      li.innerHTML = '<input name="q' + i + '" type="hidden">';
+      ol.appendChild(li);
+    }}
+  }}
   document.addEventListener('DOMContentLoaded', () => {{
     showGradeProblems();
+    buildQuizInputs();
     renderFeelingsCheckin('quiz-feelings');
     renderReviewSection('review-section');
     renderReminderButton('reminder-btn-wrap');
@@ -377,12 +397,15 @@ def generate_html_from_text(text, today):
     const grade = (window.QUIZ_ID || QUIZ_ID).replace(/^.*-(G\d+)$/, '$1');
     const section = document.querySelector('.grade-section[data-grade="' + grade + '"]');
     const lis = section ? section.querySelectorAll('.problems-list > li') : [];
-    ['q1','q2','q3','q4','q5'].forEach((k, i) => {{
+    const qCount = lis.length || 5;
+    const qKeys = [];
+    for (let i = 1; i <= qCount; i++) qKeys.push('q' + i);
+    qKeys.forEach((k, i) => {{
       const sel = lis[i] ? (lis[i].dataset.selected || '') : '';
       const input = document.querySelector('input[name="' + k + '"]');
       if (input) input.value = sel;
     }});
-    const answers = ['q1','q2','q3','q4','q5'].map(k => {{
+    const answers = qKeys.map(k => {{
       const inp = document.querySelector('input[name="' + k + '"]');
       return inp ? inp.value.trim() : '';
     }});
@@ -402,26 +425,30 @@ def generate_html_from_text(text, today):
         ? '\U0001F525 ' + streak + '-day streak! Keep it up!'
         : '\u2B50 Day 1 \u2014 great start!';
 
-      const grade = qid.replace(/^.*-(G\d+)$/, '$1');
-      const section = document.querySelector('.grade-section[data-grade="' + grade + '"]');
       const feedbackEl = document.getElementById('corrective-feedback');
       if (section && feedbackEl) {{
-        const lis = section.querySelectorAll('.problems-list > li');
         let html = '<h3 style="margin-bottom:10px">Your Results</h3><ol style="list-style:none;padding:0;margin:0">';
+        let totalPts = 0, earnedPts = 0;
         answers.forEach((userAns, i) => {{
           const li = lis[i];
           const correct = li ? (li.dataset.answer || '').trim() : '';
           const q = li ? (li.dataset.question || '') : '';
+          const diff = li ? (li.dataset.difficulty || 'easy') : 'easy';
+          const pts = diff === 'hard' ? 3 : diff === 'medium' ? 2 : 1;
+          totalPts += pts;
           const isRight = userAns.trim().toLowerCase() === correct.toLowerCase();
+          if (isRight) earnedPts += pts;
+          const badge = diff === 'hard' ? '\U0001F525' : diff === 'medium' ? '\u26A1' : '\U0001F7E2';
           html += '<li style="margin:8px 0;padding:10px 14px;border-radius:10px;background:' +
             (isRight ? 'var(--success-light)' : 'var(--danger-light)') + ';border:1px solid ' +
             (isRight ? 'var(--success)' : 'var(--danger)') + '">';
-          html += (isRight ? '&#9989;' : '&#10060;') + ' <strong>Q' + (i+1) + ':</strong> ' + (q || '(question ' + (i+1) + ')') + '<br>';
-          html += 'Your answer: <strong>' + (userAns || '—') + '</strong>';
+          html += (isRight ? '&#9989;' : '&#10060;') + ' ' + badge + ' <strong>Q' + (i+1) + ' (' + pts + 'pt):</strong> ' + (q || '(question ' + (i+1) + ')') + '<br>';
+          html += 'Your answer: <strong>' + (userAns || '\u2014') + '</strong>';
           if (!isRight) html += ' &nbsp;&middot;&nbsp; Correct: <strong style="color:var(--success)">' + (correct || '?') + '</strong>';
           html += '</li>';
         }});
         html += '</ol>';
+        html += '<p style="margin-top:12px;font-size:1.1rem;font-weight:700">\U0001F3AF Weighted score: ' + earnedPts + ' / ' + totalPts + ' points</p>';
         feedbackEl.innerHTML = html;
         feedbackEl.scrollIntoView({{behavior:'smooth', block:'nearest'}});
       }}
