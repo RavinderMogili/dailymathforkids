@@ -270,51 +270,31 @@ function _retryPendingSubmit() {
 
 // ── Speed timer ─────────────────────────────────────────────────────────────
 
-function getQuizTimeLimit() {
-  const code = window.DMK_ACTIVE_GRADE || 'G3';
-  const num = parseInt(code.replace('G', ''), 10) || 3;
-  return num <= 5 ? 600 : 900;
-}
-
 const dmkTimer = {
   _start: null,
   _seconds: null,
-  _limit: null,
-  begin(limit) {
+  begin() {
     if (!this._start) {
       this._start = Date.now();
-      this._limit = limit || getQuizTimeLimit();
       store.set('dmk_timer_start', this._start);
-      store.set('dmk_timer_limit', this._limit);
     }
   },
   restore() {
     const saved = store.get('dmk_timer_start', null);
-    const limit = store.get('dmk_timer_limit', null);
-    if (saved) { this._start = saved; this._limit = limit || getQuizTimeLimit(); return true; }
+    if (saved) { this._start = saved; return true; }
     return false;
   },
   stop() {
     if (this._start && this._seconds === null)
       this._seconds = Math.round((Date.now() - this._start) / 1000);
     store.set('dmk_timer_start', null);
-    store.set('dmk_timer_limit', null);
     return this._seconds;
   },
   elapsed() {
     if (this._seconds !== null) return this._seconds;
     return this._start ? Math.round((Date.now() - this._start) / 1000) : 0;
   },
-  remaining() {
-    if (!this._limit) return Infinity;
-    return Math.max(0, this._limit - this.elapsed());
-  },
-  isExpired() { return this._limit && this.elapsed() >= this._limit; },
-  reset() {
-    this._start = null; this._seconds = null; this._limit = null;
-    store.set('dmk_timer_start', null);
-    store.set('dmk_timer_limit', null);
-  },
+  reset() { this._start = null; this._seconds = null; store.set('dmk_timer_start', null); },
   fmt(s) { const m = Math.floor(s/60), sec = s%60; return m+':'+String(sec).padStart(2,'0'); },
 };
 
@@ -648,10 +628,23 @@ function _revealTest(code) {
   const startBtn = document.getElementById('start-test-btn');
   if (startBtn) startBtn.style.display = 'none';
   const helloEl = document.getElementById('hello');
-  const limit = dmkTimer._limit || getQuizTimeLimit();
-  const mins = Math.floor(limit / 60);
-  if (helloEl) helloEl.textContent = `Grade ${code.replace('G', '')} — ${mins} minutes to finish. Select your answers and submit!`;
+  if (helloEl) helloEl.textContent = `Grade ${code.replace('G', '')} — select your answers and submit!`;
+  _showQuizBanner();
   if (typeof _startTimerUI === 'function') _startTimerUI();
+}
+
+function _showQuizBanner() {
+  if (document.getElementById('quiz-active-banner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'quiz-active-banner';
+  banner.style.cssText = 'background:#fef3c7;border:1px solid #f59e0b;border-radius:10px;padding:12px 18px;margin:12px 0;font-size:.92rem;color:#92400e;line-height:1.5';
+  banner.innerHTML =
+    '<strong>\u26A0\uFE0F Quiz in progress</strong><br>' +
+    '\u2022 Your answers will be <strong>auto-submitted</strong> if you leave this page or log out.<br>' +
+    '\u2022 You can safely <strong>refresh</strong> the page \u2014 your progress and timer will resume.<br>' +
+    '\u2022 Take your time, no rush! \uD83D\uDE0A';
+  const quizBox = document.getElementById('quiz-box');
+  if (quizBox) quizBox.parentNode.insertBefore(banner, quizBox);
 }
 
 function _lockQuizDone(code) {
@@ -671,6 +664,7 @@ function _lockQuizDone(code) {
 }
 
 function resumeOrLockQuiz() {
+  if (!getUser()) return;
   const qid = window.QUIZ_ID || (typeof QUIZ_ID !== 'undefined' ? QUIZ_ID : '');
   if (!qid) return;
   const code = qid.replace(/^.*-(G\d+)$/, '$1');
@@ -679,10 +673,6 @@ function resumeOrLockQuiz() {
     _lockQuizDone(code);
   } else if (state === 'started') {
     dmkTimer.restore();
-    if (dmkTimer.isExpired()) {
-      _autoSubmitQuiz();
-      return;
-    }
     _revealTest(code);
   }
 }
@@ -701,8 +691,17 @@ function checkForActiveQuizRedirect() {
   if (hasActive) {
     const banner = document.createElement('div');
     banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#dc2626;color:#fff;padding:14px 20px;text-align:center;font-weight:700;font-size:1.1rem;box-shadow:0 4px 12px rgba(0,0,0,.2)';
-    banner.innerHTML = '\u23F0 You have an active quiz in progress! <a href="' + url + '" style="color:#fff;text-decoration:underline;margin-left:8px">Go back to finish it</a>';
+    banner.innerHTML = '\u23F0 You left your quiz! Your answers are being submitted\u2026 <a href="' + url + '" style="color:#fff;text-decoration:underline;margin-left:8px">Go back to quiz</a>';
     document.body.prepend(banner);
+    keys.forEach(k => {
+      if (localStorage.getItem(k) === '"started"') {
+        const qid = k.replace('dmk_quiz_state_', '');
+        setQuizState(qid, 'done');
+      }
+    });
+    store.set('dmk_active_quiz_url', null);
+    dmkTimer.stop();
+    dmkTimer.reset();
   }
 }
 

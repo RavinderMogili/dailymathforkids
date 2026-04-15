@@ -1,12 +1,13 @@
 import { test, expect } from '@playwright/test';
 
-const QUIZ_PAGE = '/daily/2026-04-11.html';
+const QUIZ_PAGE = '/daily/' + new Date().toISOString().slice(0, 10) + '.html';
 
 function injectUser(page, grade = 'G3') {
   return page.evaluate((g) => {
     localStorage.setItem('dmk_user', JSON.stringify({
       userId: 'test-uuid', nickname: 'TestKid', grade: g
     }));
+    Object.keys(localStorage).filter(k => k.startsWith('dmk_quiz_state_') || k.startsWith('dmk_timer') || k === 'dmk_active_quiz_url').forEach(k => localStorage.removeItem(k));
   }, grade);
 }
 

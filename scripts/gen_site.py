@@ -363,22 +363,11 @@ def generate_html_from_text(text, today):
     const dispEl  = document.getElementById('timer-display');
     if (!timerEl || !dispEl) return;
     dmkTimer.begin();
-    const rem = dmkTimer.remaining();
-    dispEl.textContent = dmkTimer.fmt(rem);
+    dispEl.textContent = dmkTimer.fmt(dmkTimer.elapsed());
     timerEl.style.display = 'block';
     if (_timerTick) return;
     _timerTick = setInterval(() => {{
-      const r = dmkTimer.remaining();
-      dispEl.textContent = dmkTimer.fmt(r);
-      if (r <= 60) timerEl.style.color = '#dc2626';
-      if (r <= 10) timerEl.style.animation = 'none';
-      if (r <= 0) {{
-        clearInterval(_timerTick);
-        _timerTick = null;
-        dispEl.textContent = '0:00';
-        timerEl.innerHTML = '\\u23F0 <span style=\"color:#dc2626;font-weight:800\">Time\\'s up! Auto-submitting...</span>';
-        setTimeout(() => {{ _autoSubmitQuiz(); }}, 1000);
-      }}
+      dispEl.textContent = dmkTimer.fmt(dmkTimer.elapsed());
     }}, 1000);
   }}
   function buildQuizInputs() {{
@@ -402,7 +391,8 @@ def generate_html_from_text(text, today):
     renderReviewSection('review-section');
     renderReminderButton('reminder-btn-wrap');
     document.addEventListener('click', function _startClick(e) {{
-      if (e.target.closest('#start-test-btn')) {{ startTest(); document.removeEventListener('click', _startClick); }}
+      if (e.target.closest('#start-test-btn') && getUser()) {{ startTest(); document.removeEventListener('click', _startClick); }}
+      else if (e.target.closest('#start-test-btn')) {{ startTest(); }}
     }});
   }});
   document.getElementById('quiz').addEventListener('submit', async function(e) {{

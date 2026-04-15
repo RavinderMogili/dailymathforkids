@@ -145,13 +145,15 @@ test.describe('Start Test Button', () => {
   });
 
   test('questions become visible after login + start test (simulated)', async ({ page }) => {
-    await page.goto(`${SITE}/daily/2026-04-11.html`);
+    const today = new Date().toISOString().slice(0, 10);
+    await page.goto(`${SITE}/daily/${today}.html`);
 
     // Simulate login by injecting user into localStorage
     await page.evaluate((nick) => {
       localStorage.setItem('dmk_user', JSON.stringify({
         userId: 'test-uuid', nickname: nick, grade: 'G3'
       }));
+      Object.keys(localStorage).filter(k => k.startsWith('dmk_quiz_state_') || k.startsWith('dmk_timer') || k === 'dmk_active_quiz_url').forEach(k => localStorage.removeItem(k));
     }, TEST_NICK);
 
     // Reload to trigger showGradeProblems with logged-in user
