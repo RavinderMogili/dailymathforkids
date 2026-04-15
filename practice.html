@@ -107,7 +107,11 @@
 
       <p id="pts-remaining" style="text-align:center;font-size:.9rem;color:var(--muted);margin-bottom:12px"></p>
       <button class="start-practice" id="start-practice-btn" onclick="startPractice()">▶ Start Practice</button>
-      <button class="start-practice" id="review-btn" onclick="startReview()" style="display:none;background:linear-gradient(135deg,#fef3c7,#fde68a);color:#92400e;border:2px solid #f59e0b;margin-top:8px">🔁 Review Mistakes (<span id="review-count">0</span>)</button>
+      <button class="start-practice" id="review-btn" onclick="startReview()" style="background:linear-gradient(135deg,#fef3c7,#fde68a);color:#92400e;border:2px solid #f59e0b;margin-top:8px">🔁 Review Mistakes (<span id="review-count">0</span>)</button>
+      <details id="mistake-history" style="margin-top:14px;text-align:left">
+        <summary style="cursor:pointer;font-weight:700;color:var(--primary);font-size:1rem;padding:8px 0">📋 Mistake History</summary>
+        <div id="mistake-history-list" style="margin-top:8px"></div>
+      </details>
       <div id="weekly-goal-practice"></div>
     </div>
 
@@ -165,6 +169,7 @@
           </div>
         </div>
         <div id="badge-notification" style="display:none;margin:16px 0;padding:14px;background:linear-gradient(135deg,#fffbeb,#fef3c7);border-radius:12px;border:2px solid #f59e0b"></div>
+        <div id="results-review-prompt" style="display:none;margin:16px 0;padding:14px;background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:12px;border:2px solid #f59e0b;text-align:center"></div>
         <div class="results-btns">
           <button onclick="resetPractice()" style="background:var(--primary);color:#fff;border:none;cursor:pointer">🔄 Practice Again</button>
           <a href="profile.html" style="background:var(--surface-2);color:var(--ink);border:2px solid var(--border)">📊 My Badges</a>
@@ -462,6 +467,18 @@
 
     // Save wrong answers for review
     savePracticeWrongAnswers();
+    updateReviewButton();
+
+    // Show review prompt on results screen
+    const wrongCount = practiceState.questions.filter(q => q._userAnswer && q._userAnswer !== q.answer).length;
+    const reviewPrompt = document.getElementById('results-review-prompt');
+    if (wrongCount > 0 && reviewPrompt) {
+      reviewPrompt.style.display = 'block';
+      reviewPrompt.innerHTML = '<strong>🔁 You got ' + wrongCount + ' wrong</strong> — ' +
+        '<button onclick="resetPractice(); startReview()" style="margin-left:8px;padding:8px 20px;background:#f59e0b;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-family:inherit">Review Mistakes Now</button>';
+    } else if (reviewPrompt) {
+      reviewPrompt.style.display = 'none';
+    }
 
     // Update weekly goals
     if (typeof addSolvedQuestions === 'function') addSolvedQuestions(practiceState.count);
@@ -532,12 +549,46 @@
     const due = getReviewQuestions();
     const btn = document.getElementById('review-btn');
     const count = document.getElementById('review-count');
-    if (due.length > 0) {
-      btn.style.display = 'block';
-      count.textContent = due.length;
-    } else {
-      btn.style.display = 'none';
+    count.textContent = due.length;
+    btn.disabled = due.length === 0;
+    btn.style.opacity = due.length === 0 ? '0.6' : '1';
+    btn.style.cursor = due.length === 0 ? 'default' : 'pointer';
+    renderMistakeHistory();
+  }
+
+  function renderMistakeHistory() {
+    const el = document.getElementById('mistake-history-list');
+    if (!el) return;
+    const items = JSON.parse(localStorage.getItem(REVIEW_KEY) || '[]');
+    if (items.length === 0) {
+      el.innerHTML = '<p style="color:var(--muted);font-size:.9rem;padding:4px 0">No mistakes yet — great job!</p>';
+      return;
     }
+    // Group by date, newest first
+    const grouped = {};
+    items.forEach(item => {
+      const d = item.date || 'Unknown';
+      if (!grouped[d]) grouped[d] = [];
+      grouped[d].push(item);
+    });
+    const dates = Object.keys(grouped).sort().reverse();
+    const today = new Date().toISOString().slice(0, 10);
+    let html = '';
+    dates.forEach(date => {
+      const label = date === today ? 'Today' : date;
+      html += '<div style="margin-bottom:12px">';
+      html += '<div style="font-weight:700;font-size:.9rem;color:var(--primary);margin-bottom:4px;border-bottom:1px solid var(--border);padding-bottom:4px">' + label + '</div>';
+      grouped[date].forEach(item => {
+        const topicBadge = item.topic ? '<span style="display:inline-block;padding:1px 8px;border-radius:10px;font-size:.72rem;font-weight:600;background:#ede9fe;color:#7c3aed;margin-right:6px">' + item.topic + '</span>' : '';
+        html += '<div style="padding:6px 10px;margin:4px 0;background:var(--surface);border-radius:8px;border:1px solid var(--border);font-size:.88rem">';
+        html += topicBadge + '<strong>Q:</strong> ' + (item.question || '?');
+        html += ' <span style="color:var(--success);font-weight:600">→ ' + (item.answer || '?') + '</span>';
+        html += '</div>';
+      });
+      html += '</div>';
+    });
+    html += '<button onclick="if(confirm(\'Clear all mistake history?\')){ localStorage.removeItem(\'' + REVIEW_KEY + '\'); updateReviewButton(); }" style="margin-top:6px;padding:6px 14px;font-size:.8rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;cursor:pointer;color:var(--muted);font-family:inherit">🗑 Clear History</button>';
+    el.innerHTML = html;
   }
 
   function startReview() {
