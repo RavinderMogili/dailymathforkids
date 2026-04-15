@@ -971,20 +971,16 @@ function _beaconSubmit() {
 
 function _setupQuizLeaveGuard() {
   if (typeof QUIZ_DATE === 'undefined') return;
-  window.addEventListener('beforeunload', (e) => {
+  // Catch link clicks that navigate away from the quiz page.
+  // We intentionally do NOT use beforeunload because it also fires on
+  // refresh, which should safely resume the quiz instead of submitting.
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('a[href]');
+    if (!link) return;
     const qid = _getActiveQuizId();
     if (qid && getQuizState(qid) === 'started') {
       _beaconSubmit();
     }
-  });
-  // Also catch "Back" button clicks that don't trigger beforeunload on mobile
-  document.querySelectorAll('a[href]').forEach(a => {
-    a.addEventListener('click', () => {
-      const qid = _getActiveQuizId();
-      if (qid && getQuizState(qid) === 'started') {
-        _beaconSubmit();
-      }
-    });
   });
 }
 

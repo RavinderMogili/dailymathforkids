@@ -525,9 +525,7 @@
 
   function getReviewQuestions() {
     const items = JSON.parse(localStorage.getItem(REVIEW_KEY) || '[]');
-    const today = new Date().toISOString().slice(0, 10);
-    // Show questions from previous days (spaced repetition)
-    return items.filter(x => x.date < today);
+    return items;
   }
 
   function updateReviewButton() {
