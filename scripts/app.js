@@ -39,9 +39,28 @@ function renderBadge() {
 }
 
 function logOut() {
+  const activeQuiz = _getActiveQuizId();
+  if (activeQuiz && getQuizState(activeQuiz) === 'started') {
+    const ok = confirm('You have an active quiz in progress! If you log out, your answers will be auto-submitted. Continue?');
+    if (!ok) return;
+    _autoSubmitQuiz();
+  }
   store.set('dmk_user', null);
   store.set('dmk_group', null);
   renderBadge();
+}
+
+function _getActiveQuizId() {
+  if (typeof QUIZ_DATE === 'undefined') return null;
+  const code = window.DMK_ACTIVE_GRADE || 'G3';
+  return QUIZ_DATE + '-' + code;
+}
+
+function _autoSubmitQuiz() {
+  const form = document.getElementById('quiz');
+  if (form) {
+    form.dispatchEvent(new Event('submit', { cancelable: true }));
+  }
 }
 
 function escHtml(s) {
@@ -191,6 +210,7 @@ async function submitReg(e) {
     store.set('dmk_review', []); store.set('doneDays', {});
     hideRegModal(); renderBadge();
     if (typeof showGradeProblems === 'function') showGradeProblems();
+    if (typeof resumeOrLockQuiz === 'function') resumeOrLockQuiz();
     loadUserGroup();
     _retryPendingSubmit();
   } catch {
@@ -199,6 +219,7 @@ async function submitReg(e) {
     store.set('dmk_review', []); store.set('doneDays', {});
     hideRegModal(); renderBadge();
     if (typeof showGradeProblems === 'function') showGradeProblems();
+    if (typeof resumeOrLockQuiz === 'function') resumeOrLockQuiz();
     _retryPendingSubmit();
   }
 }
@@ -230,6 +251,7 @@ async function submitLogin(e) {
     store.set('dmk_review', []); store.set('doneDays', {});
     hideLoginModal(); renderBadge();
     if (typeof showGradeProblems === 'function') showGradeProblems();
+    if (typeof resumeOrLockQuiz === 'function') resumeOrLockQuiz();
     loadUserGroup();
     _retryPendingSubmit();
   } catch {
@@ -248,31 +270,51 @@ function _retryPendingSubmit() {
 
 // ── Speed timer ─────────────────────────────────────────────────────────────
 
+function getQuizTimeLimit() {
+  const code = window.DMK_ACTIVE_GRADE || 'G3';
+  const num = parseInt(code.replace('G', ''), 10) || 3;
+  return num <= 5 ? 600 : 900;
+}
+
 const dmkTimer = {
   _start: null,
   _seconds: null,
-  begin() {
+  _limit: null,
+  begin(limit) {
     if (!this._start) {
       this._start = Date.now();
+      this._limit = limit || getQuizTimeLimit();
       store.set('dmk_timer_start', this._start);
+      store.set('dmk_timer_limit', this._limit);
     }
   },
   restore() {
     const saved = store.get('dmk_timer_start', null);
-    if (saved) { this._start = saved; return true; }
+    const limit = store.get('dmk_timer_limit', null);
+    if (saved) { this._start = saved; this._limit = limit || getQuizTimeLimit(); return true; }
     return false;
   },
   stop() {
     if (this._start && this._seconds === null)
       this._seconds = Math.round((Date.now() - this._start) / 1000);
     store.set('dmk_timer_start', null);
+    store.set('dmk_timer_limit', null);
     return this._seconds;
   },
   elapsed() {
     if (this._seconds !== null) return this._seconds;
     return this._start ? Math.round((Date.now() - this._start) / 1000) : 0;
   },
-  reset() { this._start = null; this._seconds = null; store.set('dmk_timer_start', null); },
+  remaining() {
+    if (!this._limit) return Infinity;
+    return Math.max(0, this._limit - this.elapsed());
+  },
+  isExpired() { return this._limit && this.elapsed() >= this._limit; },
+  reset() {
+    this._start = null; this._seconds = null; this._limit = null;
+    store.set('dmk_timer_start', null);
+    store.set('dmk_timer_limit', null);
+  },
   fmt(s) { const m = Math.floor(s/60), sec = s%60; return m+':'+String(sec).padStart(2,'0'); },
 };
 
@@ -287,8 +329,13 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
     return false;
   }
 
+  if (isQuizExpired()) {
+    resultEl.innerHTML = '\uD83D\uDD12 This quiz has expired \u2014 only today\'s quiz can be submitted for points. <a href="../index.html">Go to today\'s quiz!</a>';
+    return false;
+  }
+
   if (!API) {
-    resultEl.textContent = 'Practice recorded! Keep going! 🌟';
+    resultEl.textContent = 'Practice recorded! Keep going! &#x1F600;';
     return true;
   }
 
@@ -513,16 +560,30 @@ function gradeToCode(grade) {
   return m ? 'G' + m[1] : 'G3';
 }
 
+function isQuizExpired() {
+  if (typeof QUIZ_DATE === 'undefined') return false;
+  const today = new Date().toISOString().slice(0, 10);
+  return QUIZ_DATE !== today;
+}
+
 function showGradeProblems() {
   const u    = getUser();
   const code = gradeToCode(u ? u.grade : store.get('dmk_lvl') || 'G3');
   window.DMK_ACTIVE_GRADE = code;
+  const expired = isQuizExpired();
   document.querySelectorAll('.grade-section').forEach(el => {
     if (el.dataset.grade === code) {
       el.style.display = 'block';
-      el.style.filter = 'blur(6px)';
-      el.style.pointerEvents = 'none';
-      el.style.userSelect = 'none';
+      if (expired) {
+        el.style.filter = 'none';
+        el.style.pointerEvents = 'auto';
+        el.style.userSelect = 'auto';
+        el.style.opacity = '1';
+      } else {
+        el.style.filter = 'blur(6px)';
+        el.style.pointerEvents = 'none';
+        el.style.userSelect = 'none';
+      }
     } else {
       el.style.display = 'none';
     }
@@ -531,6 +592,14 @@ function showGradeProblems() {
   const notice = document.getElementById('grade-notice');
   if (notice) notice.textContent = `Grade ${code.replace('G', '')} problems`;
   const helloEl = document.getElementById('hello');
+
+  if (expired) {
+    if (helloEl) helloEl.innerHTML = '\uD83D\uDD12 This quiz has expired. You can review the questions, but only today\'s quiz earns points. <a href="../index.html">Go to today\'s quiz!</a>';
+    const submitBtn = document.querySelector('#quiz button[type="submit"]');
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.style.opacity = '0.5'; submitBtn.textContent = 'Quiz Expired'; }
+    return;
+  }
+
   if (helloEl && u) helloEl.textContent = `Grade ${code.replace('G', '')} problems — press Start Test to begin!`;
   if (helloEl && !u) helloEl.textContent = 'Sign up or log in to start the quiz!';
 
@@ -565,6 +634,7 @@ function startTest() {
   const code = window.DMK_ACTIVE_GRADE || 'G3';
   const qid = window.QUIZ_ID || (typeof QUIZ_ID !== 'undefined' ? QUIZ_ID : '');
   setQuizState(qid, 'started');
+  store.set('dmk_active_quiz_url', window.location.href);
   _revealTest(code);
 }
 
@@ -578,7 +648,9 @@ function _revealTest(code) {
   const startBtn = document.getElementById('start-test-btn');
   if (startBtn) startBtn.style.display = 'none';
   const helloEl = document.getElementById('hello');
-  if (helloEl) helloEl.textContent = `Grade ${code.replace('G', '')} problems — select your answers and submit!`;
+  const limit = dmkTimer._limit || getQuizTimeLimit();
+  const mins = Math.floor(limit / 60);
+  if (helloEl) helloEl.textContent = `Grade ${code.replace('G', '')} — ${mins} minutes to finish. Select your answers and submit!`;
   if (typeof _startTimerUI === 'function') _startTimerUI();
 }
 
@@ -607,7 +679,30 @@ function resumeOrLockQuiz() {
     _lockQuizDone(code);
   } else if (state === 'started') {
     dmkTimer.restore();
+    if (dmkTimer.isExpired()) {
+      _autoSubmitQuiz();
+      return;
+    }
     _revealTest(code);
+  }
+}
+
+function checkForActiveQuizRedirect() {
+  if (typeof QUIZ_DATE !== 'undefined') return;
+  const url = store.get('dmk_active_quiz_url', null);
+  if (!url) return;
+  const today = new Date().toISOString().slice(0, 10);
+  if (!url.includes(today)) {
+    store.set('dmk_active_quiz_url', null);
+    return;
+  }
+  const keys = Object.keys(localStorage).filter(k => k.startsWith('dmk_quiz_state_') && k.includes(today));
+  const hasActive = keys.some(k => localStorage.getItem(k) === '"started"');
+  if (hasActive) {
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#dc2626;color:#fff;padding:14px 20px;text-align:center;font-weight:700;font-size:1.1rem;box-shadow:0 4px 12px rgba(0,0,0,.2)';
+    banner.innerHTML = '\u23F0 You have an active quiz in progress! <a href="' + url + '" style="color:#fff;text-decoration:underline;margin-left:8px">Go back to finish it</a>';
+    document.body.prepend(banner);
   }
 }
 
@@ -831,4 +926,5 @@ document.addEventListener('DOMContentLoaded', () => {
   injectModals();
   renderBadge();
   checkDailyReminder();
+  checkForActiveQuizRedirect();
 });

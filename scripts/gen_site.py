@@ -336,7 +336,7 @@ def generate_html_from_text(text, today):
 <div id="quiz-feelings"></div>
 <section class="hero" id="quiz-box">
   <h2>Test Yourself! &#128221;</h2>
-  <div id="quiz-timer" style="display:none;font-size:1.1rem;font-weight:700;color:var(--primary);margin-bottom:8px">&#9201; <span id="timer-display">0:00</span></div>
+  <div id="quiz-timer" style="display:none;font-size:1.1rem;font-weight:700;color:var(--primary);margin-bottom:8px">&#9201; <span id="timer-display"></span></div>
   <p id="hello">Log in and select your grade &#8212; problems will appear above!</p>
   <form id="quiz" aria-label="Enter answers">
     <ol id="quiz-inputs"></ol>
@@ -363,10 +363,22 @@ def generate_html_from_text(text, today):
     const dispEl  = document.getElementById('timer-display');
     if (!timerEl || !dispEl) return;
     dmkTimer.begin();
+    const rem = dmkTimer.remaining();
+    dispEl.textContent = dmkTimer.fmt(rem);
     timerEl.style.display = 'block';
     if (_timerTick) return;
     _timerTick = setInterval(() => {{
-      dispEl.textContent = dmkTimer.fmt(dmkTimer.elapsed());
+      const r = dmkTimer.remaining();
+      dispEl.textContent = dmkTimer.fmt(r);
+      if (r <= 60) timerEl.style.color = '#dc2626';
+      if (r <= 10) timerEl.style.animation = 'none';
+      if (r <= 0) {{
+        clearInterval(_timerTick);
+        _timerTick = null;
+        dispEl.textContent = '0:00';
+        timerEl.innerHTML = '\\u23F0 <span style=\"color:#dc2626;font-weight:800\">Time\\'s up! Auto-submitting...</span>';
+        setTimeout(() => {{ _autoSubmitQuiz(); }}, 1000);
+      }}
     }}, 1000);
   }}
   function buildQuizInputs() {{
@@ -421,6 +433,7 @@ def generate_html_from_text(text, today):
       dmkTimer.reset();
       markDayDone(qid);
       setQuizState(qid, 'done');
+      store.set('dmk_active_quiz_url', null);
       const streak = calcStreak(qid);
       const streakEl = document.getElementById('streak-msg');
       streakEl.textContent = streak > 1

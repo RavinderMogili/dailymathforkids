@@ -1800,7 +1800,7 @@
 <div id="quiz-feelings"></div>
 <section class="hero" id="quiz-box">
   <h2>Test Yourself! &#128221;</h2>
-  <div id="quiz-timer" style="display:none;font-size:1.1rem;font-weight:700;color:var(--primary);margin-bottom:8px">&#9201; <span id="timer-display">0:00</span></div>
+  <div id="quiz-timer" style="display:none;font-size:1.1rem;font-weight:700;color:var(--primary);margin-bottom:8px">&#9201; <span id="timer-display"></span></div>
   <p id="hello">Log in and select your grade &#8212; problems will appear above!</p>
   <form id="quiz" aria-label="Enter answers">
     <ol id="quiz-inputs"></ol>
@@ -1827,6 +1827,7 @@
     const dispEl  = document.getElementById('timer-display');
     if (!timerEl || !dispEl) return;
     dmkTimer.begin();
+    dispEl.textContent = dmkTimer.fmt(dmkTimer.elapsed());
     timerEl.style.display = 'block';
     if (_timerTick) return;
     _timerTick = setInterval(() => {
