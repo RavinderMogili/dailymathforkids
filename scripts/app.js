@@ -38,16 +38,21 @@ function renderBadge() {
   if (joinCta) joinCta.style.display = u ? 'none' : '';
 }
 
-function logOut() {
+async function logOut() {
   const activeQuiz = _getActiveQuizId();
   if (activeQuiz && getQuizState(activeQuiz) === 'started') {
     const ok = confirm('You have an active quiz in progress! If you log out, your answers will be auto-submitted. Continue?');
     if (!ok) return;
-    _autoSubmitQuiz();
+    // Submit answers BEFORE clearing user so the API call has valid credentials
+    await _autoSubmitAndFinish(activeQuiz);
   }
   store.set('dmk_user', null);
   store.set('dmk_group', null);
   renderBadge();
+  // Reload page to fully reset quiz UI (re-blur questions, hide banner)
+  if (typeof QUIZ_DATE !== 'undefined') {
+    window.location.reload();
+  }
 }
 
 function _getActiveQuizId() {
@@ -56,11 +61,33 @@ function _getActiveQuizId() {
   return QUIZ_DATE + '-' + code;
 }
 
-function _autoSubmitQuiz() {
-  const form = document.getElementById('quiz');
-  if (form) {
-    form.dispatchEvent(new Event('submit', { cancelable: true }));
+async function _autoSubmitAndFinish(qid) {
+  const u = getUser();
+  if (!u || !qid) return;
+  // Collect selected answers from the DOM
+  const code = qid.replace(/^.*-(G\d+)$/, '$1');
+  const section = document.querySelector(`.grade-section[data-grade="${code}"]`);
+  const lis = section ? section.querySelectorAll('.problems-list > li') : [];
+  const answers = [];
+  for (let i = 0; i < lis.length; i++) {
+    answers.push(lis[i].dataset.selected || '');
   }
+  const secs = dmkTimer.stop();
+  // Submit to API
+  const resultEl = document.getElementById('result');
+  if (resultEl) resultEl.textContent = 'Auto-submitting your answers\u2026';
+  try {
+    await submitQuizAnswers(qid, answers, resultEl || document.createElement('p'), secs || null);
+  } catch (e) { /* best effort */ }
+  // Clean up state
+  dmkTimer.reset();
+  setQuizState(qid, 'done');
+  store.set('dmk_active_quiz_url', null);
+}
+
+function _autoSubmitQuiz() {
+  const qid = _getActiveQuizId();
+  if (qid) _autoSubmitAndFinish(qid);
 }
 
 function escHtml(s) {
@@ -918,6 +945,49 @@ function renderReminderButton(containerId) {
     `</button>`;
 }
 
+// ── Auto-submit on page leave (quiz pages only) ─────────────────────────────
+
+function _beaconSubmit() {
+  const qid = _getActiveQuizId();
+  if (!qid || getQuizState(qid) !== 'started') return;
+  const u = getUser();
+  if (!u) return;
+  const code = qid.replace(/^.*-(G\d+)$/, '$1');
+  const section = document.querySelector(`.grade-section[data-grade="${code}"]`);
+  const lis = section ? section.querySelectorAll('.problems-list > li') : [];
+  const answers = [];
+  for (let i = 0; i < lis.length; i++) answers.push(lis[i].dataset.selected || '');
+  const secs = dmkTimer.stop();
+  setQuizState(qid, 'done');
+  store.set('dmk_active_quiz_url', null);
+  dmkTimer.reset();
+  if (typeof API !== 'undefined' && API) {
+    navigator.sendBeacon(
+      `${API}/api/submit`,
+      new Blob([JSON.stringify({ userId: u.userId, quizId: qid, answers, timeSeconds: secs })], { type: 'application/json' })
+    );
+  }
+}
+
+function _setupQuizLeaveGuard() {
+  if (typeof QUIZ_DATE === 'undefined') return;
+  window.addEventListener('beforeunload', (e) => {
+    const qid = _getActiveQuizId();
+    if (qid && getQuizState(qid) === 'started') {
+      _beaconSubmit();
+    }
+  });
+  // Also catch "Back" button clicks that don't trigger beforeunload on mobile
+  document.querySelectorAll('a[href]').forEach(a => {
+    a.addEventListener('click', () => {
+      const qid = _getActiveQuizId();
+      if (qid && getQuizState(qid) === 'started') {
+        _beaconSubmit();
+      }
+    });
+  });
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -926,4 +996,5 @@ document.addEventListener('DOMContentLoaded', () => {
   renderBadge();
   checkDailyReminder();
   checkForActiveQuizRedirect();
+  _setupQuizLeaveGuard();
 });
