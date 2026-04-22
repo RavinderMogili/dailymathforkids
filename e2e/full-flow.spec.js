@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+const { findLatestQuizPage } = require('./helpers');
 
 const SITE = 'https://dailymathforkids.com';
 const API  = 'https://dailymathforkids-api.vercel.app';
@@ -144,9 +145,9 @@ test.describe('Start Test Button', () => {
     expect(count).toBeGreaterThan(0);
   });
 
-  test('questions become visible after login + start test (simulated)', async ({ page }) => {
-    const today = new Date().toISOString().slice(0, 10);
-    await page.goto(`${SITE}/daily/${today}.html`);
+  test('questions become visible after login + start test (simulated)', async ({ page, request }) => {
+    const quizPage = await findLatestQuizPage(request);
+    await page.goto(`${SITE}${quizPage}`);
 
     // Simulate login by injecting user into localStorage
     await page.evaluate((nick) => {

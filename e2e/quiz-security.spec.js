@@ -1,7 +1,13 @@
 import { test, expect } from '@playwright/test';
+const { findLatestQuizPage } = require('./helpers');
 
-const TODAY = new Date().toISOString().slice(0, 10);
-const QUIZ_PAGE = '/daily/' + TODAY + '.html';
+let QUIZ_PAGE;
+let TODAY;
+
+test.beforeAll(async ({ request }) => {
+  QUIZ_PAGE = await findLatestQuizPage(request);
+  TODAY = QUIZ_PAGE.replace('/daily/', '').replace('.html', '');
+});
 
 function injectUser(page, grade = 'G3') {
   return page.evaluate((g) => {
