@@ -49,10 +49,8 @@ async function logOut() {
   store.set('dmk_user', null);
   store.set('dmk_group', null);
   renderBadge();
-  // Reload page to fully reset quiz UI (re-blur questions, hide banner)
-  if (typeof QUIZ_DATE !== 'undefined') {
-    window.location.reload();
-  }
+  // Reload page to fully reset UI (re-blur quiz, hide profile data, etc.)
+  window.location.reload();
 }
 
 function _getActiveQuizId() {
