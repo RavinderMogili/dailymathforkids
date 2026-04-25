@@ -506,6 +506,7 @@
         }),
       });
     } catch { /* silent fail for practice */ }
+    if (typeof bumpSessionCount === 'function') bumpSessionCount();
   }
 
   // ── Wrong answer tracking for review ────────────────────────────────────

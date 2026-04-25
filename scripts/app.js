@@ -408,6 +408,7 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
       saveWrongAnswersForReview(quizId, answers);
       if (typeof addSolvedQuestions === 'function') addSolvedQuestions(answers.length);
     }
+    bumpSessionCount();
     return data;
   } catch {
     resultEl.textContent = 'Could not reach the server. Keep practising!';
@@ -982,6 +983,101 @@ function _setupQuizLeaveGuard() {
       _beaconSubmit();
     }
   });
+}
+
+// ── Parent email prompt (Duolingo-style: ask after 3rd session) ─────────────
+
+function bumpSessionCount() {
+  const n = store.get('dmk_sessions', 0) + 1;
+  store.set('dmk_sessions', n);
+  if (n >= 3) maybeShowEmailPrompt();
+}
+
+function maybeShowEmailPrompt() {
+  const u = getUser();
+  if (!u) return;
+  if (u.parent_email) return;                      // already have email
+  if (store.get('dmk_email_prompt_done')) return;   // user dismissed permanently
+  if (store.get('dmk_email_prompt_later')) {         // user said "maybe later"
+    const laterAt = store.get('dmk_email_prompt_later');
+    if (Date.now() - laterAt < 3 * 86400000) return; // wait 3 days before asking again
+  }
+  setTimeout(() => _showEmailPromptModal(), 1500);  // slight delay so results show first
+}
+
+function _showEmailPromptModal() {
+  if (document.getElementById('email-prompt-modal')) return;
+  const u = getUser();
+  const name = u ? u.nickname : 'there';
+  document.body.insertAdjacentHTML('beforeend', `
+  <div id="email-prompt-modal" class="modal-overlay" style="display:flex;z-index:9999">
+    <div class="modal-card" style="max-width:420px;text-align:center">
+      <h2 style="margin:0 0 8px;font-size:1.3rem">Great job, ${escHtml(name)}! 🎉</h2>
+      <p style="color:var(--muted);margin:0 0 16px;font-size:.92rem">Want your parents to see how well you're doing?</p>
+      <p style="font-size:.88rem;margin:0 0 14px">Add their email and we'll send a <strong>weekly progress report</strong> showing your scores, streaks, and achievements.</p>
+      <form id="email-prompt-form" onsubmit="submitEmailPrompt(event)" novalidate style="margin-bottom:14px">
+        <input id="email-prompt-input" class="form-input" type="email" placeholder="parent@example.com" maxlength="100" style="margin-bottom:10px;text-align:center" autocomplete="email"/>
+        <p id="email-prompt-msg" class="form-msg" aria-live="polite"></p>
+        <button type="submit" class="btn-primary" style="width:100%">📧 Send My Progress to Parent</button>
+      </form>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button onclick="emailPromptLater()" class="btn-secondary" style="font-size:.82rem;padding:6px 16px">Maybe Later</button>
+        <button onclick="emailPromptNever()" style="font-size:.82rem;padding:6px 16px;background:none;border:1px solid var(--border);border-radius:8px;cursor:pointer;color:var(--muted);font-family:inherit">No Thanks</button>
+      </div>
+      <p style="font-size:.72rem;color:var(--muted);margin:12px 0 0">🔒 Never shared or used for marketing. Only progress reports.</p>
+    </div>
+  </div>`);
+  setTimeout(() => {
+    const inp = document.getElementById('email-prompt-input');
+    if (inp) inp.focus();
+  }, 100);
+}
+
+function _hideEmailPromptModal() {
+  const m = document.getElementById('email-prompt-modal');
+  if (m) m.remove();
+}
+
+async function submitEmailPrompt(e) {
+  e.preventDefault();
+  const email = document.getElementById('email-prompt-input').value.trim();
+  const msg = document.getElementById('email-prompt-msg');
+  if (!email || !email.includes('@')) {
+    msg.textContent = 'Please enter a valid email address.';
+    msg.className = 'form-msg error';
+    return;
+  }
+  const u = getUser();
+  if (!u) return;
+  msg.textContent = 'Saving…';
+  msg.className = 'form-msg';
+  try {
+    const res = await fetch(`${API}/api/update-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: u.userId, parent_email: email }),
+    });
+    if (!res.ok) throw new Error('Failed');
+    u.parent_email = email;
+    saveUser(u);
+    store.set('dmk_email_prompt_done', true);
+    msg.textContent = 'Saved! Your parent will get weekly updates. 🎉';
+    msg.className = 'form-msg success';
+    setTimeout(_hideEmailPromptModal, 1500);
+  } catch {
+    msg.textContent = 'Could not save — try again later.';
+    msg.className = 'form-msg error';
+  }
+}
+
+function emailPromptLater() {
+  store.set('dmk_email_prompt_later', Date.now());
+  _hideEmailPromptModal();
+}
+
+function emailPromptNever() {
+  store.set('dmk_email_prompt_done', true);
+  _hideEmailPromptModal();
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
