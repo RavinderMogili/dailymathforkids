@@ -238,6 +238,7 @@ async function submitReg(e) {
     if (typeof resumeOrLockQuiz === 'function') resumeOrLockQuiz();
     loadUserGroup();
     _retryPendingSubmit();
+    if (typeof loadProfile === 'function') window.location.reload();
   } catch {
     // Network error — continue as guest so the student can still practice offline
     saveUser({ userId: crypto.randomUUID(), nickname, grade, school, city, parent_email, guest: true });
@@ -279,6 +280,8 @@ async function submitLogin(e) {
     if (typeof resumeOrLockQuiz === 'function') resumeOrLockQuiz();
     loadUserGroup();
     _retryPendingSubmit();
+    // Reload profile page so it picks up the logged-in user
+    if (typeof loadProfile === 'function') window.location.reload();
   } catch {
     msg.textContent = 'Could not connect. Please try again.';
     msg.className = 'form-msg error';
