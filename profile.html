@@ -106,6 +106,13 @@
         <button onclick="saveGrade()">Save</button>
         <span id="grade-save-msg"></span>
       </div>
+      <div id="parent-email-row" class="grade-change-row" style="margin-top:10px">
+        <label for="parent-email-input">📧 Parent email:</label>
+        <input id="parent-email-input" type="email" placeholder="parent@example.com" maxlength="100" style="min-height:36px;padding:4px 10px;border-radius:8px;border:1px solid var(--border,#e0e0e0);font-family:inherit;font-size:.95rem;flex:1;max-width:280px"/>
+        <button onclick="saveParentEmail()">Save</button>
+        <span id="email-save-msg" style="font-size:.85rem;font-weight:600"></span>
+      </div>
+      <div id="email-note" style="margin-top:4px;font-size:.78rem;color:var(--muted,#64748b)">📬 We send a weekly progress report to this email. Never shared or used for marketing.</div>
       <div class="stat-row">
         <div class="stat-box">
           <div class="stat-num" id="stat-total-pts">—</div>
@@ -227,6 +234,9 @@ async function loadProfile() {
     [currentGrade ? 'Grade ' + currentGrade : '', data.school].filter(Boolean).join(' · ');
   const gradeSelect = document.getElementById('grade-select');
   if (gradeSelect) gradeSelect.value = String(currentGrade).replace(/\D/g, '') || '3';
+
+  const emailInput = document.getElementById('parent-email-input');
+  if (emailInput) emailInput.value = u.parent_email || '';
 
   const subs = data.submissions || [];
   const streak = calcCurrentStreak(subs);
@@ -359,6 +369,41 @@ function calcCurrentStreak(subs) {
     else break;
   }
   return streak;
+}
+
+async function saveParentEmail() {
+  const u = getUser();
+  if (!u) return;
+  const email = document.getElementById('parent-email-input').value.trim();
+  const msgEl = document.getElementById('email-save-msg');
+  if (email && !email.includes('@')) {
+    msgEl.textContent = 'Please enter a valid email.';
+    msgEl.style.color = '#dc2626';
+    return;
+  }
+  msgEl.textContent = 'Saving…';
+  msgEl.style.color = 'var(--muted)';
+  try {
+    const api = window.DMK_API || '';
+    const res = await fetch(`${api}/api/update-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: u.userId, parent_email: email }),
+    });
+    if (!res.ok) throw new Error('Server error');
+    u.parent_email = email || null;
+    saveUser(u);
+    if (typeof store !== 'undefined') store.set('dmk_email_prompt_done', !!email);
+    msgEl.style.color = 'var(--success, #16a34a)';
+    msgEl.textContent = email ? '✓ Email saved!' : '✓ Email removed';
+    setTimeout(() => { msgEl.textContent = ''; }, 3000);
+  } catch {
+    u.parent_email = email || null;
+    saveUser(u);
+    msgEl.style.color = 'var(--success, #16a34a)';
+    msgEl.textContent = '✓ Saved locally';
+    setTimeout(() => { msgEl.textContent = ''; }, 3000);
+  }
 }
 
 async function saveGrade() {
