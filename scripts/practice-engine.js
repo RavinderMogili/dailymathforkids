@@ -2,12 +2,12 @@
 // Generates math questions algorithmically based on grade, topic, difficulty.
 
 const TOPICS_BY_GRADE = {
-  1: ['Addition & Subtraction', 'Place Value', 'Counting', 'Measurement', 'Geometry', 'Word Problems'],
-  2: ['Addition & Subtraction', 'Place Value', 'Measurement', 'Money', 'Geometry', 'Word Problems'],
-  3: ['Multiplication & Division', 'Fractions', 'Place Value', 'Measurement', 'Geometry', 'Word Problems'],
-  4: ['Multi-digit Arithmetic', 'Fractions', 'Decimals', 'Measurement', 'Geometry', 'Word Problems'],
-  5: ['Decimals', 'Fractions', 'Order of Operations', 'Volume', 'Coordinate Plane', 'Word Problems'],
-  6: ['Ratios & Proportions', 'Integers', 'Expressions & Equations', 'Area & Surface Area', 'Statistics', 'Word Problems'],
+  1: ['Addition & Subtraction', 'Place Value', 'Counting', 'Comparing Numbers', 'Patterns', 'Telling Time', 'Measurement', 'Geometry', 'Word Problems'],
+  2: ['Addition & Subtraction', 'Place Value', 'Comparing Numbers', 'Patterns', 'Telling Time', 'Measurement', 'Money', 'Geometry', 'Word Problems'],
+  3: ['Multiplication & Division', 'Fractions', 'Place Value', 'Elapsed Time', 'Perimeter', 'Measurement', 'Geometry', 'Word Problems'],
+  4: ['Multi-digit Arithmetic', 'Fractions', 'Decimals', 'Factors & Multiples', 'Angles', 'Measurement', 'Geometry', 'Word Problems'],
+  5: ['Decimals', 'Fractions', 'Percentages', 'Order of Operations', 'Volume', 'Metric Conversions', 'Coordinate Plane', 'Word Problems'],
+  6: ['Ratios & Proportions', 'Percent & Discount', 'Integers', 'Expressions & Equations', 'Area & Surface Area', 'Statistics', 'Word Problems'],
   7: ['Proportional Relationships', 'Operations with Rationals', 'Expressions & Equations', 'Geometry', 'Probability & Statistics', 'Word Problems'],
   8: ['Linear Equations', 'Functions', 'Exponents & Roots', 'Pythagorean Theorem', 'Transformations', 'Word Problems'],
   9: ['Linear Functions', 'Quadratic Equations', 'Polynomials', 'Inequalities', 'Data Analysis', 'Word Problems'],
@@ -121,6 +121,229 @@ function genGeometry12(grade, difficulty) {
     return { question: `How many sides does a ${s.name} have?`, answer: String(s.sides), choices: makeChoices(s.sides, 4, () => randInt(2, 8)) };
   } else {
     return { question: `Which shape has ${s.sides} sides?`, answer: s.name, choices: shuffle(shapes.filter(x => x.sides > 0).slice(0, 4).map(x => x.name)) };
+  }
+}
+
+// ── Grade 1-2: Comparing Numbers ───────────────────────────────────────
+function genComparing(grade, difficulty) {
+  if (difficulty === 'easy') {
+    const a = randInt(1, 20), b = randInt(1, 20);
+    const ans = a > b ? '>' : a < b ? '<' : '=';
+    return { question: `Compare: ${a} ___ ${b}`, answer: ans, choices: shuffle(['>', '<', '=', a > b ? '<' : '>']) };
+  } else if (difficulty === 'medium') {
+    const a = randInt(10, 100), b = randInt(10, 100);
+    const ans = a > b ? '>' : a < b ? '<' : '=';
+    return { question: `Compare: ${a} ___ ${b}`, answer: ans, choices: shuffle(['>', '<', '=', a > b ? '<' : '>']) };
+  } else {
+    const nums = [randInt(10, 99), randInt(10, 99), randInt(10, 99)];
+    const sorted = [...nums].sort((a, b) => a - b);
+    const askType = pick(['smallest', 'largest']);
+    const ans = askType === 'smallest' ? sorted[0] : sorted[sorted.length - 1];
+    return { question: `Which is the ${askType}? ${nums.join(', ')}`, answer: String(ans), choices: shuffle(nums.map(String).concat([String(randInt(10, 99))])).slice(0, 4) };
+  }
+}
+
+// ── Grade 1-2: Patterns ────────────────────────────────────────────────
+function genPatterns(grade, difficulty) {
+  if (difficulty === 'easy') {
+    const step = pick([1, 2, 5, 10]);
+    const start = randInt(0, 10) * step;
+    const seq = [start, start + step, start + 2 * step, start + 3 * step];
+    const ans = start + 4 * step;
+    return { question: `What comes next? ${seq.join(', ')}, ?`, answer: String(ans), choices: makeChoices(ans, 4, () => ans + randInt(-2, 2) * step) };
+  } else if (difficulty === 'medium') {
+    const shapes = ['🔴', '🔵', '🟢', '🟡', '⭐', '🔺'];
+    const a = pick(shapes), b = pick(shapes.filter(s => s !== a));
+    const pattern = [a, b, a, b, a, b];
+    const ans = a;
+    return { question: `What comes next? ${pattern.join(' ')} ?`, answer: ans, choices: shuffle([a, b, pick(shapes.filter(s => s !== a && s !== b)), pick(shapes.filter(s => s !== a))]) };
+  } else {
+    const step = pick([3, 4, 6, 7]);
+    const start = randInt(1, 5) * step;
+    const seq = [start, start + step, start + 2 * step, start + 3 * step, start + 4 * step];
+    const ans = start + 5 * step;
+    return { question: `Find the pattern and next number: ${seq.join(', ')}, ?`, answer: String(ans), choices: makeChoices(ans, 4, () => ans + randInt(-2, 3) * step) };
+  }
+}
+
+// ── Grade 1-2: Telling Time ────────────────────────────────────────────
+function genTellingTime(grade, difficulty) {
+  if (difficulty === 'easy') {
+    const hr = randInt(1, 12);
+    return { question: `A clock shows ${hr}:00. What time is it?`, answer: `${hr}:00`, choices: makeChoices(`${hr}:00`, 4, () => `${randInt(1, 12)}:00`) };
+  } else if (difficulty === 'medium') {
+    const hr = randInt(1, 12);
+    const min = pick([0, 15, 30, 45]);
+    const display = `${hr}:${String(min).padStart(2, '0')}`;
+    return { question: `A clock shows ${display}. What time is it?`, answer: display, choices: makeChoices(display, 4, () => `${randInt(1, 12)}:${pick(['00', '15', '30', '45'])}`) };
+  } else {
+    const hr = randInt(1, 12);
+    const min = pick([5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]);
+    const display = `${hr}:${String(min).padStart(2, '0')}`;
+    const askType = pick(['read', 'minutes']);
+    if (askType === 'read') {
+      return { question: `What time does the clock show? ${display}`, answer: display, choices: makeChoices(display, 4, () => `${randInt(1, 12)}:${String(pick([5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55])).padStart(2, '0')}`) };
+    } else {
+      return { question: `How many minutes past ${hr} o'clock is ${display}?`, answer: String(min), choices: makeChoices(min, 4, () => pick([5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55])) };
+    }
+  }
+}
+
+// ── Grade 3: Elapsed Time ──────────────────────────────────────────────
+function genElapsedTime(grade, difficulty) {
+  if (difficulty === 'easy') {
+    const startHr = randInt(1, 10);
+    const elapsed = pick([1, 2, 3]);
+    const endHr = startHr + elapsed;
+    return { question: `School starts at ${startHr}:00 and ends at ${endHr}:00. How many hours?`, answer: String(elapsed), choices: makeChoices(elapsed, 4, () => randInt(1, 6)) };
+  } else if (difficulty === 'medium') {
+    const startHr = randInt(1, 10);
+    const startMin = pick([0, 15, 30]);
+    const addMin = pick([15, 30, 45, 60]);
+    let endMin = startMin + addMin;
+    let endHr = startHr + Math.floor(endMin / 60);
+    endMin = endMin % 60;
+    const start = `${startHr}:${String(startMin).padStart(2, '0')}`;
+    const end = `${endHr}:${String(endMin).padStart(2, '0')}`;
+    return { question: `Start: ${start}. End: ${end}. How many minutes passed?`, answer: String(addMin), choices: makeChoices(addMin, 4, () => pick([15, 30, 45, 60, 90])) };
+  } else {
+    const startHr = randInt(8, 11);
+    const startMin = pick([0, 10, 15, 20, 30]);
+    const addHr = randInt(1, 3);
+    const addMin = pick([10, 15, 20, 25, 30, 45]);
+    let endMin = startMin + addMin;
+    let endHr = startHr + addHr + Math.floor(endMin / 60);
+    endMin = endMin % 60;
+    const end = `${endHr}:${String(endMin).padStart(2, '0')}`;
+    const totalMin = addHr * 60 + addMin;
+    return { question: `From ${startHr}:${String(startMin).padStart(2, '0')} to ${end}. How many minutes total?`, answer: String(totalMin), choices: makeChoices(totalMin, 4, () => totalMin + randInt(-20, 20)) };
+  }
+}
+
+// ── Grade 3+: Perimeter ────────────────────────────────────────────────
+function genPerimeter(grade, difficulty) {
+  if (difficulty === 'easy') {
+    const side = randInt(2, 12);
+    const ans = side * 4;
+    return { question: `A square has a side of ${side} cm. What is its perimeter?`, answer: String(ans) + ' cm', choices: makeChoices(ans + ' cm', 4, () => (randInt(2, 12) * 4) + ' cm') };
+  } else if (difficulty === 'medium') {
+    const l = randInt(3, 15), w = randInt(2, 10);
+    const ans = 2 * (l + w);
+    return { question: `A rectangle is ${l} cm long and ${w} cm wide. What is the perimeter?`, answer: String(ans) + ' cm', choices: makeChoices(ans + ' cm', 4, () => (2 * (randInt(3, 15) + randInt(2, 10))) + ' cm') };
+  } else {
+    const a = randInt(3, 10), b = randInt(3, 10), c = randInt(3, 10);
+    const ans = a + b + c;
+    return { question: `A triangle has sides ${a} cm, ${b} cm, and ${c} cm. What is the perimeter?`, answer: String(ans) + ' cm', choices: makeChoices(ans + ' cm', 4, () => (randInt(3, 10) + randInt(3, 10) + randInt(3, 10)) + ' cm') };
+  }
+}
+
+// ── Grade 4: Factors & Multiples ───────────────────────────────────────
+function genFactorsMultiples(grade, difficulty) {
+  if (difficulty === 'easy') {
+    const n = pick([6, 8, 10, 12, 15, 18, 20, 24]);
+    const factor = pick([2, 3, 4, 5, 6]);
+    const isFactor = n % factor === 0;
+    return { question: `Is ${factor} a factor of ${n}?`, answer: isFactor ? 'Yes' : 'No', choices: ['Yes', 'No', 'Maybe', 'Not sure'] };
+  } else if (difficulty === 'medium') {
+    const n = pick([3, 4, 5, 6, 7, 8, 9]);
+    const mult = randInt(2, 10);
+    const ans = n * mult;
+    return { question: `What is the ${mult}${mult === 2 ? 'nd' : mult === 3 ? 'rd' : 'th'} multiple of ${n}?`, answer: String(ans), choices: makeChoices(ans, 4, () => n * randInt(2, 10)) };
+  } else {
+    const a = pick([4, 6, 8, 9, 10, 12]);
+    const b = pick([4, 6, 8, 9, 10, 12].filter(x => x !== a));
+    const lcm = (a * b) / gcd(a, b);
+    return { question: `What is the LCM of ${a} and ${b}?`, answer: String(lcm), choices: makeChoices(lcm, 4, () => pick([a, b]) * randInt(2, 6)) };
+  }
+}
+
+// ── Grade 4: Angles ────────────────────────────────────────────────────
+function genAngles(grade, difficulty) {
+  if (difficulty === 'easy') {
+    const angle = pick([30, 45, 60, 90, 120, 150, 180]);
+    const type = angle < 90 ? 'acute' : angle === 90 ? 'right' : angle < 180 ? 'obtuse' : 'straight';
+    return { question: `An angle of ${angle}° is called?`, answer: type, choices: shuffle(['acute', 'right', 'obtuse', 'straight']) };
+  } else if (difficulty === 'medium') {
+    const angle = randInt(10, 170);
+    const complement = 180 - angle;
+    return { question: `Two angles on a straight line. One is ${angle}°. What is the other?`, answer: String(complement) + '°', choices: makeChoices(complement + '°', 4, () => randInt(10, 170) + '°') };
+  } else {
+    const angle = randInt(10, 80);
+    const complement = 90 - angle;
+    return { question: `Two complementary angles. One is ${angle}°. What is the other?`, answer: String(complement) + '°', choices: makeChoices(complement + '°', 4, () => randInt(10, 80) + '°') };
+  }
+}
+
+// ── Grade 5: Percentages ───────────────────────────────────────────────
+function genPercentages(grade, difficulty) {
+  if (difficulty === 'easy') {
+    const pct = pick([10, 25, 50]);
+    const total = pick([20, 40, 50, 80, 100, 200]);
+    const ans = total * pct / 100;
+    return { question: `What is ${pct}% of ${total}?`, answer: String(ans), choices: makeChoices(ans, 4, () => total * pick([10, 25, 50]) / 100) };
+  } else if (difficulty === 'medium') {
+    const pct = pick([5, 10, 15, 20, 25, 30, 40, 50, 75]);
+    const total = pick([40, 60, 80, 100, 120, 200]);
+    const ans = total * pct / 100;
+    return { question: `What is ${pct}% of ${total}?`, answer: String(ans), choices: makeChoices(ans, 4, () => round2(total * randInt(5, 75) / 100)) };
+  } else {
+    const part = pick([10, 15, 20, 25, 30, 40]);
+    const total = pick([50, 80, 100, 200]);
+    const ans = round2(part / total * 100);
+    return { question: `${part} is what percent of ${total}?`, answer: ans + '%', choices: makeChoices(ans + '%', 4, () => round2(randInt(5, 80)) + '%') };
+  }
+}
+
+// ── Grade 5: Metric Conversions ────────────────────────────────────────
+function genMetricConversions(grade, difficulty) {
+  if (difficulty === 'easy') {
+    const cm = pick([100, 200, 300, 500, 1000]);
+    const ans = cm / 100;
+    return { question: `Convert ${cm} cm to meters.`, answer: String(ans) + ' m', choices: makeChoices(ans + ' m', 4, () => (pick([100, 200, 300, 500, 1000]) / 100) + ' m') };
+  } else if (difficulty === 'medium') {
+    const askType = pick(['kg', 'mm']);
+    if (askType === 'kg') {
+      const g = pick([500, 1000, 1500, 2000, 2500, 3000]);
+      const ans = g / 1000;
+      return { question: `Convert ${g} grams to kilograms.`, answer: String(ans) + ' kg', choices: makeChoices(ans + ' kg', 4, () => (pick([500, 1000, 1500, 2000, 2500, 3000]) / 1000) + ' kg') };
+    } else {
+      const cm = pick([1, 2, 3, 5, 10, 15]);
+      const ans = cm * 10;
+      return { question: `Convert ${cm} cm to millimeters.`, answer: String(ans) + ' mm', choices: makeChoices(ans + ' mm', 4, () => (pick([1, 2, 3, 5, 10, 15]) * 10) + ' mm') };
+    }
+  } else {
+    const askType = pick(['L', 'km']);
+    if (askType === 'L') {
+      const ml = pick([250, 500, 750, 1000, 1500, 2000]);
+      const ans = ml / 1000;
+      return { question: `Convert ${ml} mL to liters.`, answer: String(ans) + ' L', choices: makeChoices(ans + ' L', 4, () => (pick([250, 500, 750, 1000, 1500, 2000]) / 1000) + ' L') };
+    } else {
+      const m = pick([500, 1000, 1500, 2000, 5000]);
+      const ans = m / 1000;
+      return { question: `Convert ${m} meters to kilometers.`, answer: String(ans) + ' km', choices: makeChoices(ans + ' km', 4, () => (pick([500, 1000, 1500, 2000, 5000]) / 1000) + ' km') };
+    }
+  }
+}
+
+// ── Grade 6: Percent & Discount ────────────────────────────────────────
+function genPercentDiscount(grade, difficulty) {
+  if (difficulty === 'easy') {
+    const price = pick([10, 20, 30, 40, 50]);
+    const pct = pick([10, 20, 25, 50]);
+    const discount = price * pct / 100;
+    const ans = price - discount;
+    return { question: `A $${price} item is ${pct}% off. What is the sale price?`, answer: '$' + ans, choices: makeChoices('$' + ans, 4, () => '$' + (price - price * pick([10, 20, 25, 50]) / 100)) };
+  } else if (difficulty === 'medium') {
+    const price = pick([25, 40, 60, 80, 100, 120]);
+    const pct = pick([5, 10, 15, 20, 25, 30]);
+    const discount = price * pct / 100;
+    return { question: `A $${price} item has a ${pct}% discount. How much do you save?`, answer: '$' + discount, choices: makeChoices('$' + discount, 4, () => '$' + round2(price * randInt(5, 30) / 100)) };
+  } else {
+    const original = pick([40, 50, 60, 80, 100]);
+    const sale = pick([30, 36, 45, 48, 60, 70, 75]);
+    const saved = original - sale;
+    const ans = round2(saved / original * 100);
+    return { question: `Original price: $${original}. Sale price: $${sale}. What percent off?`, answer: ans + '%', choices: makeChoices(ans + '%', 4, () => round2(randInt(5, 50)) + '%') };
   }
 }
 
@@ -464,6 +687,16 @@ const GENERATORS = {
   'Addition & Subtraction': genAddSub,
   'Place Value': genPlaceValue,
   'Counting': genCounting,
+  'Comparing Numbers': genComparing,
+  'Patterns': genPatterns,
+  'Telling Time': genTellingTime,
+  'Elapsed Time': genElapsedTime,
+  'Perimeter': genPerimeter,
+  'Factors & Multiples': genFactorsMultiples,
+  'Angles': genAngles,
+  'Percentages': genPercentages,
+  'Metric Conversions': genMetricConversions,
+  'Percent & Discount': genPercentDiscount,
   'Measurement': genMeasurement12,
   'Geometry': (g, d) => g <= 3 ? genGeometry12(g, d) : genArea(g, d),
   'Money': genMoney,
@@ -512,6 +745,16 @@ const HINTS = {
   'Addition & Subtraction': q => q.question.includes('+') ? 'Add the numbers together. Try breaking them into tens and ones.' : 'Subtract the smaller number from the larger one.',
   'Place Value': () => 'Look at each digit\'s position: ones, tens, hundreds from right to left.',
   'Counting': () => 'Find the pattern: what number is being added each time?',
+  'Comparing Numbers': () => 'Look at the digits from left to right. The first digit that is different tells you which is bigger.',
+  'Patterns': () => 'Look at how each item changes from one to the next. What stays the same?',
+  'Telling Time': () => 'The short hand shows the hour. The long hand shows the minutes. Each number on the clock is 5 minutes.',
+  'Elapsed Time': () => 'Count the hours first, then the remaining minutes.',
+  'Perimeter': () => 'Add up all the sides. For a rectangle: P = 2 × (length + width).',
+  'Factors & Multiples': q => q.question.includes('factor') ? 'A factor divides evenly with no remainder.' : q.question.includes('LCM') ? 'LCM is the smallest number both can divide into evenly.' : 'Multiples are what you get when you multiply by 1, 2, 3, 4...',
+  'Angles': q => q.question.includes('complementary') ? 'Complementary angles add up to 90°.' : q.question.includes('straight') ? 'Angles on a straight line add up to 180°.' : 'Acute < 90°, Right = 90°, Obtuse > 90°, Straight = 180°.',
+  'Percentages': () => 'Percent means "out of 100". To find 10%, divide by 10. To find 50%, divide by 2.',
+  'Metric Conversions': () => 'Remember: 100 cm = 1 m, 1000 m = 1 km, 1000 g = 1 kg, 1000 mL = 1 L.',
+  'Percent & Discount': () => 'Find the discount amount first (price × percent ÷ 100), then subtract from the original price.',
   'Measurement': () => 'Compare the numbers. The larger number means longer or bigger.',
   'Geometry': q => q.question.includes('sides') ? 'Count the straight edges of the shape.' : 'Think about the properties of each shape.',
   'Money': () => 'Add up all the coin values. 1¢, 5¢ (nickel), 10¢ (dime), 25¢ (quarter).',
@@ -580,6 +823,50 @@ function generateSteps(q) {
     'Step 1: Try plugging the value directly into the expression',
     'Step 2: If that works, that\'s your limit'
   ];
+  if (text.match(/Compare:/i)) return [
+    'Step 1: Look at both numbers carefully',
+    'Step 2: Decide which one is bigger, or if they are equal'
+  ];
+  if (text.match(/pattern|comes next/i)) return [
+    'Step 1: Look at how the numbers or shapes change each time',
+    'Step 2: Apply the same change to find what comes next'
+  ];
+  if (text.match(/clock|time|hour|minutes past/i)) return [
+    'Step 1: The short hand shows the hour',
+    'Step 2: The long hand shows minutes — each number is 5 minutes'
+  ];
+  if (text.match(/elapsed|starts at|Start:|From.*to/i)) return [
+    'Step 1: Count the full hours between start and end',
+    'Step 2: Then count any remaining minutes'
+  ];
+  if (text.match(/perimeter/i)) return [
+    'Step 1: Identify all the sides of the shape',
+    'Step 2: Add them all together to get the perimeter'
+  ];
+  if (text.match(/factor of/i)) return [
+    'Step 1: Divide the bigger number by the smaller one',
+    'Step 2: If there is no remainder, it is a factor'
+  ];
+  if (text.match(/multiple of|LCM/i)) return [
+    'Step 1: List the multiples of each number',
+    'Step 2: Find the smallest number that appears in both lists'
+  ];
+  if (text.match(/angle|°/i)) return [
+    'Step 1: Remember: acute < 90°, right = 90°, obtuse > 90°',
+    'Step 2: Angles on a straight line add up to 180°, complementary add to 90°'
+  ];
+  if (text.match(/percent|%/i)) return [
+    'Step 1: Percent means "out of 100"',
+    'Step 2: Multiply the total by the percent, then divide by 100'
+  ];
+  if (text.match(/Convert/i)) return [
+    'Step 1: Remember the conversion factor (e.g., 100 cm = 1 m)',
+    'Step 2: Multiply or divide by that factor'
+  ];
+  if (text.match(/sale price|discount|% off/i)) return [
+    'Step 1: Calculate the discount: price × percent ÷ 100',
+    'Step 2: Subtract the discount from the original price'
+  ];
   if (text.match(/triangle|sides|shape/i)) return [
     'Step 1: Think about the properties of the shape mentioned',
     'Step 2: Use what you know about that shape to find the answer'
@@ -597,11 +884,45 @@ function generateSteps(q) {
 // ── French translation helper ───────────────────────────────────────────
 function translateToFrench(question) {
   return question
+    .replace(/What is the sale price\?/gi, 'Quel est le prix soldé ?')
+    .replace(/What is the perimeter\?/gi, 'Quel est le périmètre ?')
+    .replace(/What time does the clock show\?/gi, 'Quelle heure affiche l\'horloge ?')
+    .replace(/What time is it\?/gi, 'Quelle heure est-il ?')
     .replace(/What is/gi, 'Quel est')
     .replace(/What comes next\?/gi, 'Quel est le prochain nombre ?')
+    .replace(/What percent off\?/gi, 'Quel pourcentage de réduction ?')
     .replace(/How many sides does a/gi, 'Combien de côtés a un')
+    .replace(/How many minutes past/gi, 'Combien de minutes après')
+    .replace(/How many minutes/gi, 'Combien de minutes')
+    .replace(/How many hours\?/gi, 'Combien d\'heures ?')
     .replace(/How many/gi, 'Combien')
+    .replace(/How much do you save\?/gi, 'Combien économisez-vous ?')
     .replace(/How much is/gi, 'Combien font')
+    .replace(/Which is the smallest\?/gi, 'Lequel est le plus petit ?')
+    .replace(/Which is the largest\?/gi, 'Lequel est le plus grand ?')
+    .replace(/Find the pattern and next number/gi, 'Trouvez le motif et le prochain nombre')
+    .replace(/An angle of/gi, 'Un angle de')
+    .replace(/is called\?/gi, 's\'appelle ?')
+    .replace(/Two complementary angles/gi, 'Deux angles complémentaires')
+    .replace(/Two angles on a straight line/gi, 'Deux angles sur une ligne droite')
+    .replace(/Convert/gi, 'Convertissez')
+    .replace(/to meters/gi, 'en mètres')
+    .replace(/to kilograms/gi, 'en kilogrammes')
+    .replace(/to millimeters/gi, 'en millimètres')
+    .replace(/to liters/gi, 'en litres')
+    .replace(/to kilometers/gi, 'en kilomètres')
+    .replace(/Is .+ a factor of/gi, 'Est-ce un facteur de')
+    .replace(/What is the LCM of/gi, 'Quel est le PPCM de')
+    .replace(/multiple of/gi, 'multiple de')
+    .replace(/percent of/gi, 'pour cent de')
+    .replace(/School starts at/gi, 'L\'école commence à')
+    .replace(/and ends at/gi, 'et finit à')
+    .replace(/Start:/gi, 'Début :')
+    .replace(/End:/gi, 'Fin :')
+    .replace(/passed\?/gi, 'écoulées ?')
+    .replace(/Original price/gi, 'Prix original')
+    .replace(/Sale price/gi, 'Prix soldé')
+    .replace(/discount/gi, 'réduction')
     .replace(/Which shape has/gi, 'Quelle forme a')
     .replace(/Which is longer\?/gi, 'Lequel est plus long ?')
     .replace(/Find the mean/gi, 'Trouvez la moyenne')
