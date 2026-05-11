@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Rankings – Daily Math for Kids</title>
+  <title>Leaderboard – Daily Math for Kids</title>
   <meta name="description" content="See the top math students! Filter by grade and track your progress."/>
-  <meta property="og:title" content="Rankings – Daily Math for Kids"/>
-  <meta property="og:description" content="See the top math stars! Leaderboard ranked by points and speed."/>
+  <meta property="og:title" content="Leaderboard – Daily Math for Kids"/>
+  <meta property="og:description" content="See the top math stars! Leaderboard sorted by points and speed."/>
   <meta property="og:image" content="https://dailymathforkids.com/assets/og-image.svg"/>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧮</text></svg>"/>
   <link rel="stylesheet" href="styles.css"/>
@@ -17,7 +17,7 @@
     <span class="user-badge"></span>
   </header>
   <main class="container">
-    <h1>🏆 Rankings</h1>
+    <h1>🏆 Leaderboard</h1>
     <p style="color:var(--muted)">Top math stars earning points through daily practice!</p>
 
     <div class="points-info">
@@ -81,8 +81,8 @@
     <div id="board-points">
       <div class="board-wrap">
         <table class="board-table">
-          <thead><tr><th>Rank</th><th>Name</th><th>Grade</th><th>Points</th><th>Days</th></tr></thead>
-          <tbody id="board-body"><tr><td colspan="5" class="loading-msg">Loading rankings…</td></tr></tbody>
+          <thead><tr><th>Name</th><th>Grade</th><th>Points</th><th>Days</th></tr></thead>
+          <tbody id="board-body"><tr><td colspan="4" class="loading-msg">Loading…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -91,13 +91,13 @@
       <p style="color:var(--muted);font-size:.9rem">⚡ Only <strong>perfect scores (5/5)</strong> qualify. Today's fastest completions:</p>
       <div class="board-wrap">
         <table class="board-table">
-          <thead><tr><th>Rank</th><th>Name</th><th>Grade</th><th>Time</th><th>Date</th></tr></thead>
-          <tbody id="speed-board-body"><tr><td colspan="5" class="loading-msg">Loading…</td></tr></tbody>
+          <thead><tr><th>Name</th><th>Grade</th><th>Time</th><th>Date</th></tr></thead>
+          <tbody id="speed-board-body"><tr><td colspan="4" class="loading-msg">Loading…</td></tr></tbody>
         </table>
       </div>
     </div>
 
-    <div id="my-rank-box"    class="my-rank-box" style="display:none"></div>
+    <div id="my-rank-box" class="my-rank-box" style="display:none"></div>
     <div id="my-speed-box" class="my-rank-box" style="display:none"></div>
 
     <p class="privacy-note" style="margin-top:16px">
@@ -118,12 +118,6 @@
   </script>
   <script src="scripts/app.js"></script>
   <script>
-    function rankEmoji(r) {
-      if (r === 1) return '🥇';
-      if (r === 2) return '🥈';
-      if (r === 3) return '🥉';
-      return r;
-    }
 
     async function loadBoard() {
       const tbody    = document.getElementById('board-body');
@@ -131,12 +125,12 @@
       const city     = document.getElementById('city-filter').value;
       const myRankEl = document.getElementById('my-rank-box');
 
-      tbody.innerHTML = '<tr><td colspan="5" class="loading-msg">Loading…</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="4" class="loading-msg">Loading…</td></tr>';
       myRankEl.style.display = 'none';
 
       const api = (window.DMK_API || '').replace(/\/$/, '');
       if (!api || api.includes('YOUR_BACKEND_URL')) {
-        tbody.innerHTML = '<tr><td colspan="5" class="empty-msg">Rankings will appear once the backend is connected.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="empty-msg">Leaderboard will appear once the backend is connected.</td></tr>';
         return;
       }
 
@@ -150,7 +144,7 @@
         const rows = data.leaderboard || [];
 
         if (!rows.length) {
-          tbody.innerHTML = '<tr><td colspan="5" class="empty-msg">No students yet — be the first! 🌟</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="4" class="empty-msg">No students yet — be the first! 🌟</td></tr>';
           return;
         }
 
@@ -158,7 +152,6 @@
         tbody.innerHTML = rows.map(r => {
           const isMe = u && r.nickname === u.nickname;
           return `<tr class="${isMe ? 'my-row' : ''}">
-            <td><span class="rank-medal">${rankEmoji(r.rank)}</span></td>
             <td>${isMe ? '⭐ ' : ''}${escHtml(r.nickname)}</td>
             <td>${escHtml(r.grade || '–')}</td>
             <td><span class="pts-chip">${r.total_points} pts</span></td>
@@ -170,17 +163,14 @@
           const me = rows.find(r => r.nickname === u.nickname);
           if (me) {
             myRankEl.innerHTML =
-              `🎯 <strong>Your rank:</strong> #${me.rank} &nbsp;|&nbsp; ` +
+              `🎯 <strong>Your stats:</strong> ` +
               `<strong>${me.total_points} points</strong> &nbsp;|&nbsp; ` +
               `${me.days_played} days completed`;
-            myRankEl.style.display = 'block';
-          } else {
-            myRankEl.innerHTML = `You're not in the current filter — try "All Grades" to find yourself!`;
             myRankEl.style.display = 'block';
           }
         }
       } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="5" class="empty-msg">Could not load rankings. Please try again later.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" class="empty-msg">Could not load data. Please try again later.</td></tr>`;
       }
     }
 
@@ -209,7 +199,7 @@
       const tbody  = document.getElementById('speed-board-body');
       const grade  = document.getElementById('speed-grade-filter').value;
       const myEl   = document.getElementById('my-speed-box');
-      tbody.innerHTML = '<tr><td colspan="5" class="loading-msg">Loading…</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="4" class="loading-msg">Loading…</td></tr>';
       myEl.style.display = 'none';
       const api = (window.DMK_API || '').replace(/\/$/, '');
       const today = new Date().toISOString().slice(0,10);
@@ -220,14 +210,13 @@
         const data = await res.json();
         const rows = data.leaderboard || [];
         if (!rows.length) {
-          tbody.innerHTML = '<tr><td colspan="5" class="empty-msg">No speed entries yet today — be the first with a perfect score! ⚡</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="4" class="empty-msg">No speed entries yet today — be the first with a perfect score! ⚡</td></tr>';
           return;
         }
         const u = getUser();
         tbody.innerHTML = rows.map(r => {
           const isMe = u && r.nickname === u.nickname;
           return `<tr class="${isMe ? 'my-row' : ''}">
-            <td><span class="rank-medal">${rankEmoji(r.rank)}</span></td>
             <td>${isMe ? '⭐ ' : ''}${escHtml(r.nickname)}</td>
             <td>${escHtml(r.grade || '–')}</td>
             <td><strong>${fmtTime(r.timeSeconds)}</strong></td>
@@ -237,12 +226,12 @@
         if (u) {
           const me = rows.find(r => r.nickname === u.nickname);
           if (me) {
-            myEl.innerHTML = `⚡ <strong>Your speed rank:</strong> #${me.rank} &nbsp;|&nbsp; <strong>${fmtTime(me.timeSeconds)}</strong>`;
+            myEl.innerHTML = `⚡ <strong>Your best time:</strong> <strong>${fmtTime(me.timeSeconds)}</strong>`;
             myEl.style.display = 'block';
           }
         }
       } catch {
-        tbody.innerHTML = '<tr><td colspan="5" class="empty-msg">Could not load speed rankings.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="empty-msg">Could not load speed data.</td></tr>';
       }
     }
 
