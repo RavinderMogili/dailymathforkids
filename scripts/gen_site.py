@@ -145,7 +145,7 @@ def safe_generate_today():
         return
 
     os.environ["OPENAI_API_KEY"] = api_key
-    client = OpenAI()
+    client = OpenAI(timeout=120, max_retries=5)
 
     today = datetime.date.today().isoformat()
     slug = today
@@ -568,7 +568,7 @@ def generate_practice_pool():
     pool_path = data_dir / "practice-pool.json"
 
     os.environ["OPENAI_API_KEY"] = api_key
-    client = OpenAI()
+    client = OpenAI(timeout=120, max_retries=5)
 
     grade_curriculum = """
 CANADIAN MATH CURRICULUM — calibrate each problem to these standards:
