@@ -145,7 +145,7 @@ def safe_generate_today():
         return
 
     os.environ["OPENAI_API_KEY"] = api_key
-    client = OpenAI(timeout=120, max_retries=5)
+    client = OpenAI(timeout=300, max_retries=5)
 
     today = datetime.date.today().isoformat()
     slug = today
@@ -290,6 +290,10 @@ A 3–4 sentence story about a child helping someone in Canada (English, Grade 3
     except Exception as e:
         import traceback
         traceback.print_exc()
+        # Don't fail the workflow on transient API timeouts — next run will retry
+        if 'timeout' in str(e).lower() or 'connection' in str(e).lower():
+            print(f"WARN: OpenAI temporarily unavailable ({e}). Will retry next scheduled run.")
+            return
         print(f"ERROR: generation failed: {e}", file=sys.stderr)
         sys.exit(1)
 
@@ -568,7 +572,7 @@ def generate_practice_pool():
     pool_path = data_dir / "practice-pool.json"
 
     os.environ["OPENAI_API_KEY"] = api_key
-    client = OpenAI(timeout=120, max_retries=5)
+    client = OpenAI(timeout=300, max_retries=5)
 
     grade_curriculum = """
 CANADIAN MATH CURRICULUM — calibrate each problem to these standards:
