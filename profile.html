@@ -316,6 +316,31 @@ async function loadProfile() {
     }
   }
 
+  // Prize check: 300+ points
+  const totalPts = (data.totalPoints ?? 0) + ((data.practiceStats && data.practiceStats.pointsEarned) || 0);
+  const hasEmail = !!(u.parent_email || emailInput.value.trim());
+  if (totalPts >= 300 && !sessionStorage.getItem('prize_popup_dismissed')) {
+    const prizeDiv = document.createElement('div');
+    prizeDiv.id = 'prize-popup';
+    prizeDiv.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+    prizeDiv.innerHTML = hasEmail
+      ? `<div style="background:#fff;border-radius:20px;padding:32px;max-width:420px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.2)">
+          <div style="font-size:3rem">🎉🏆</div>
+          <h2 style="margin:12px 0 8px;color:#16a34a">Congratulations!</h2>
+          <p style="font-size:1rem;color:#333">You earned <strong>${totalPts} points</strong>! You qualify for a <strong>$10 Walmart gift card!</strong></p>
+          <p style="font-size:.9rem;color:#666;margin-top:8px">We'll send the gift card to your parent's email. Stay tuned!</p>
+          <button onclick="document.getElementById('prize-popup').remove();sessionStorage.setItem('prize_popup_dismissed','1')" style="margin-top:16px;padding:12px 28px;border-radius:12px;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;font-weight:700;font-size:1rem;border:none;cursor:pointer">Awesome! 🎁</button>
+        </div>`
+      : `<div style="background:#fff;border-radius:20px;padding:32px;max-width:420px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.2)">
+          <div style="font-size:3rem">🎉🏆</div>
+          <h2 style="margin:12px 0 8px;color:#f59e0b">You did it!</h2>
+          <p style="font-size:1rem;color:#333">You earned <strong>${totalPts} points</strong>! You qualify for a <strong>$10 Walmart gift card!</strong></p>
+          <p style="font-size:.95rem;color:#dc2626;font-weight:600;margin-top:10px">⬇️ Please add your parent's email below so we can send your gift card!</p>
+          <button onclick="document.getElementById('prize-popup').remove();sessionStorage.setItem('prize_popup_dismissed','1');document.getElementById('parent-email-input').focus()" style="margin-top:16px;padding:12px 28px;border-radius:12px;background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;font-weight:700;font-size:1rem;border:none;cursor:pointer">Add Email to Claim 📧</button>
+        </div>`;
+    document.body.appendChild(prizeDiv);
+  }
+
   if (subs.length === 0) {
     document.getElementById('history-wrap').innerHTML =
       '<p class="empty-msg">No quizzes completed yet — go solve today\'s problems!</p>';
