@@ -22,10 +22,11 @@ jobs:
       - name: Install deps
         run: |
           pip install --upgrade pip
-          pip install "openai==1.43.0" "httpx>=0.25,<1" "httpcore>=0.17,<1" markdown2
+          pip install "openai==1.43.0" "anthropic>=0.30" "httpx>=0.25,<1" "httpcore>=0.17,<1" markdown2
 
       - name: Generate today's page (and rebuild index+sitemap)
         env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}

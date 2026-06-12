@@ -6,6 +6,11 @@ try:
 except Exception:
     OpenAI = None
 
+try:
+    import anthropic
+except Exception:
+    anthropic = None
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DAILY_DIR = ROOT / "daily"
 DAILY_DIR.mkdir(parents=True, exist_ok=True)
@@ -138,14 +143,40 @@ def upsert_quiz_to_supabase(quiz_id, questions, answers):
         print(f"WARN: Could not save quiz {quiz_id}: {e}")
 
 
-def safe_generate_today():
-    api_key = os.environ.get("OPENAI_API_KEY", "").strip()
-    if not OpenAI or not api_key:
-        print("INFO: Skipping OpenAI generation (SDK or API key missing).")
-        return
+def call_llm(prompt):
+    """Call Claude Sonnet 4 if available, otherwise fall back to OpenAI gpt-4o."""
+    anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+    openai_key = os.environ.get("OPENAI_API_KEY", "").strip()
 
-    os.environ["OPENAI_API_KEY"] = api_key
-    client = OpenAI(timeout=300, max_retries=5)
+    if anthropic and anthropic_key:
+        print("INFO: Using Claude Sonnet 4 for generation (high math accuracy).")
+        client = anthropic.Anthropic(api_key=anthropic_key, timeout=300.0, max_retries=5)
+        msg = client.messages.create(
+            model="claude-sonnet-4-latest",
+            max_tokens=16000,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        return msg.content[0].text.strip()
+    elif OpenAI and openai_key:
+        print("INFO: Using OpenAI gpt-4o for generation (Anthropic key not found).")
+        os.environ["OPENAI_API_KEY"] = openai_key
+        client = OpenAI(timeout=300, max_retries=5)
+        resp = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=16000,
+        )
+        return resp.choices[0].message.content.strip()
+    else:
+        return None
+
+
+def safe_generate_today():
+    anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+    openai_key = os.environ.get("OPENAI_API_KEY", "").strip()
+    if not (anthropic and anthropic_key) and not (OpenAI and openai_key):
+        print("INFO: Skipping generation (no API key found for Anthropic or OpenAI).")
+        return
 
     today = datetime.date.today().isoformat()
     slug = today
@@ -265,14 +296,9 @@ A 3–4 sentence story about a child helping someone in Canada (English, Grade 3
 """
 
     try:
-        resp = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=16000,
-        )
-        text = resp.choices[0].message.content.strip()
+        text = call_llm(prompt)
         if not text:
-            print("WARN: OpenAI returned empty text; skipping page write.")
+            print("WARN: LLM returned empty text; skipping page write.")
             return
         md_path.write_text(text + "\n", encoding="utf-8")
 
@@ -562,17 +588,15 @@ def generate_practice_pool():
 
     import json
 
-    api_key = os.environ.get("OPENAI_API_KEY", "").strip()
-    if not OpenAI or not api_key:
-        print("INFO: Skipping practice pool generation (SDK or API key missing).")
+    anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+    openai_key = os.environ.get("OPENAI_API_KEY", "").strip()
+    if not (anthropic and anthropic_key) and not (OpenAI and openai_key):
+        print("INFO: Skipping practice pool generation (no API key found).")
         return
 
     data_dir = ROOT / "data"
     data_dir.mkdir(parents=True, exist_ok=True)
     pool_path = data_dir / "practice-pool.json"
-
-    os.environ["OPENAI_API_KEY"] = api_key
-    client = OpenAI(timeout=300, max_retries=5)
 
     grade_curriculum = """
 CANADIAN MATH CURRICULUM — calibrate each problem to these standards:
@@ -624,12 +648,10 @@ RULES:
 """
 
     try:
-        resp = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=6000,
-        )
-        raw = resp.choices[0].message.content.strip()
+        raw = call_llm(prompt)
+        if not raw:
+            print("WARN: LLM returned empty for practice pool.")
+            return
         # Strip markdown code fences if present
         raw = re.sub(r'^```(?:json)?\s*', '', raw)
         raw = re.sub(r'\s*```$', '', raw)
