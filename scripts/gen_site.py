@@ -149,10 +149,10 @@ def call_llm(prompt):
     openai_key = os.environ.get("OPENAI_API_KEY", "").strip()
 
     if anthropic and anthropic_key:
-        print("INFO: Using Claude Sonnet 4 for generation (high math accuracy).")
+        print("INFO: Using Claude Sonnet 4.6 for generation (high math accuracy).")
         client = anthropic.Anthropic(api_key=anthropic_key, timeout=300.0, max_retries=5)
         msg = client.messages.create(
-            model="claude-sonnet-4-20250514",
+            model="claude-sonnet-4-6",
             max_tokens=16000,
             messages=[{"role": "user", "content": prompt}],
         )
