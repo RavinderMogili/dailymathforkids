@@ -152,7 +152,7 @@ def call_llm(prompt):
         print("INFO: Using Claude Sonnet 4 for generation (high math accuracy).")
         client = anthropic.Anthropic(api_key=anthropic_key, timeout=300.0, max_retries=5)
         msg = client.messages.create(
-            model="claude-sonnet-4-latest",
+            model="claude-sonnet-4-20250514",
             max_tokens=16000,
             messages=[{"role": "user", "content": prompt}],
         )
