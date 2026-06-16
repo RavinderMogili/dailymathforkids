@@ -536,6 +536,12 @@ def rebuild_index_and_sitemap():
       🌟 <strong>How points work:</strong> Complete a daily quiz to earn points — 1 point per correct answer, +3 bonus for a perfect score!
       Check <a href="profile.html">📊 My Progress</a> to see how you're doing. Want more? Try <a href="practice.html">🎯 Practice Mode</a>!
     </div>
+    <div style="background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;border-radius:16px;padding:18px 20px;margin:16px 0;text-align:center;box-shadow:0 4px 15px rgba(239,68,68,.3)">
+      <div style="font-size:1.5rem">🎁</div>
+      <strong style="font-size:1.1rem">Prize Challenge!</strong>
+      <p style="margin:6px 0 0;font-size:.95rem">Every student who earns <strong>300 points</strong> wins a <strong>$10 Walmart gift card!</strong> 🏆</p>
+      <p style="margin:4px 0 0;font-size:.82rem;opacity:.9">Earn points by doing daily quizzes &amp; practice sessions. Check your points on <a href="profile.html" style="color:#fff;font-weight:700">My Profile</a>.</p>
+    </div>
     <div id="weekly-goal-home"></div>
     <div style="margin:12px 0" id="reminder-btn-wrap"></div>
     <section>
