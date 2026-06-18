@@ -317,7 +317,7 @@ async function loadProfile() {
   }
 
   // Prize check: 300+ points
-  const totalPts = (data.totalPoints ?? 0) + ((data.practiceStats && data.practiceStats.pointsEarned) || 0);
+  const totalPts = data.totalPoints ?? 0;
   const hasEmail = !!(u.parent_email || emailInput.value.trim());
   if (totalPts >= 300 && !sessionStorage.getItem('prize_popup_dismissed')) {
     const prizeDiv = document.createElement('div');
