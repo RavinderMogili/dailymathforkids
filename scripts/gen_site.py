@@ -515,7 +515,7 @@ def rebuild_index_and_sitemap():
 <head>
   <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>{TITLE} – Free Practice for Moncton Students</title>
-  <meta name="description" content="Free daily math practice for kids in Grades 1–8. Earn points, build streaks, and see your ranking!"/>
+  <meta name="description" content="Free daily math practice for kids in Grades 1–12. Earn points, build streaks, and see your ranking!"/>
   <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
