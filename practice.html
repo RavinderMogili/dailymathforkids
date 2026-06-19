@@ -174,6 +174,7 @@
         <div id="badge-notification" style="display:none;margin:16px 0;padding:14px;background:linear-gradient(135deg,#fffbeb,#fef3c7);border-radius:12px;border:2px solid #f59e0b"></div>
         <div id="results-review-prompt" style="display:none;margin:16px 0;padding:14px;background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:12px;border:2px solid #f59e0b;text-align:center"></div>
         <div class="results-btns">
+          <button id="share-practice-btn" onclick="sharePracticeScore()" style="background:#10b981;color:#fff;border:none;cursor:pointer;font-weight:700">📤 Share My Score</button>
           <button onclick="resetPractice()" style="background:var(--primary);color:#fff;border:none;cursor:pointer">🔄 Practice Again</button>
           <a href="profile.html" style="background:var(--surface-2);color:var(--ink);border:2px solid var(--border)">📊 My Badges</a>
           <a href="index.html" style="background:var(--surface-2);color:var(--ink);border:2px solid var(--border)">← Home</a>
@@ -631,6 +632,28 @@
     if (practiceState.timerInterval) clearInterval(practiceState.timerInterval);
     document.getElementById('practice-quiz').style.display = 'none';
     document.getElementById('practice-setup').style.display = 'block';
+  }
+
+  function sharePracticeScore() {
+    const correct = document.getElementById('results-correct').textContent;
+    const total = document.getElementById('results-total').textContent;
+    const user = (typeof getUser === 'function') ? getUser() : null;
+    const nick = user ? user.nickname : 'I';
+    const pct = Math.round((parseInt(correct) / parseInt(total)) * 100);
+    const emoji = pct === 100 ? '🏆' : pct >= 80 ? '🌟' : '💪';
+    const shareText = `${emoji} ${nick} scored ${correct}/${total} (${pct}%) in Math Practice on Daily Math for Kids!`;
+    const shareUrl = 'https://dailymathforkids.com/practice.html';
+    const btn = document.getElementById('share-practice-btn');
+    if (navigator.share) {
+      navigator.share({ title: 'Daily Math for Kids', text: shareText, url: shareUrl }).catch(() => {});
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(shareText + '\nTry it free: ' + shareUrl).then(() => {
+        btn.textContent = '✅ Copied!';
+        btn.style.background = '#059669';
+      });
+    } else {
+      prompt('Copy and share:', shareText + '\nTry it free: ' + shareUrl);
+    }
   }
 
   function resetPractice() {

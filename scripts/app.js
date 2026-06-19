@@ -748,15 +748,37 @@ function showCompletionAndRedirect(score) {
   const overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,.6);display:flex;align-items:center;justify-content:center;z-index:2000;padding:16px';
   const perfect = score === 5;
+  const user = (typeof getUser === 'function') ? getUser() : null;
+  const nick = user ? user.nickname : 'I';
+  const shareText = perfect
+    ? `🎉 ${nick} got a PERFECT SCORE on today's Daily Math quiz! 5/5 🏆`
+    : `✅ ${nick} scored ${score}/5 on today's Daily Math quiz! 💪`;
+  const shareUrl = 'https://dailymathforkids.com';
   overlay.innerHTML = `
     <div style="background:#fff;border-radius:20px;padding:32px 28px;max-width:420px;width:100%;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.2)">
       <div style="font-size:3rem;margin-bottom:12px">${perfect ? '🎉' : '✅'}</div>
       <h2 style="margin:0 0 8px;font-size:1.5rem">${perfect ? 'Perfect Score!' : 'Quiz Complete!'}</h2>
       <p style="color:#64748b;margin:0 0 16px">${perfect ? 'Amazing! You got all 5 correct!' : 'Great effort! Every problem you try makes your brain stronger. Come back tomorrow! 💪'}</p>
       <p style="font-size:1.1rem;font-weight:700;color:#2563eb;margin:0 0 20px">+${score} point${score !== 1 ? 's' : ''}${perfect ? ' + 3 bonus!' : ''}</p>
+      <button id="share-score-btn" style="display:inline-block;background:#10b981;color:#fff;padding:12px 32px;border-radius:999px;font-weight:700;border:none;cursor:pointer;font-size:1rem;margin-bottom:12px">📤 Share My Score</button>
+      <br>
       <a href="${ROOT || './'}index.html" style="display:inline-block;background:#2563eb;color:#fff;padding:12px 32px;border-radius:999px;font-weight:700;text-decoration:none;font-size:1rem">Back to Home</a>
     </div>`;
   document.body.appendChild(overlay);
+
+  document.getElementById('share-score-btn').addEventListener('click', function() {
+    const text = shareText + '\nTry it free: ' + shareUrl;
+    if (navigator.share) {
+      navigator.share({ title: 'Daily Math for Kids', text: shareText, url: shareUrl }).catch(() => {});
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        this.textContent = '✅ Copied!';
+        this.style.background = '#059669';
+      });
+    } else {
+      prompt('Copy and share:', text);
+    }
+  });
 }
 
 // ── Hint reveal ──────────────────────────────────────────────────────────────────
