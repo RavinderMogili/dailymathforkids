@@ -65,9 +65,11 @@ HELPERS_JS = r"""
     const tag = li.closest('.grade-section')?.dataset.grade || '';
     const bar = document.createElement('div');
     bar.style.cssText = 'margin:8px 0;display:flex;flex-wrap:wrap;gap:6px;align-items:flex-start';
+    const qIdx = Array.from(li.parentElement.children).indexOf(li) + 1;
     bar.innerHTML =
       '<button type="button" class="tts-en" style="min-height:32px;padding:4px 10px;font-size:.82rem">&#127911; Listen EN</button>' +
       '<button type="button" class="tts-fr" style="min-height:32px;padding:4px 10px;font-size:.82rem">&#127911; Listen FR</button>' +
+      '<button type="button" class="report-q-btn" data-qnum="' + qIdx + '" style="min-height:32px;padding:4px 10px;font-size:.82rem;background:#fff3f3;color:#dc2626;border:1px solid #fca5a5;border-radius:6px;cursor:pointer" title="Report wrong answer or issue">&#9873; Report</button>' +
       (hint ? '<details style="width:100%;margin-top:4px"><summary style="cursor:pointer;font-weight:700;color:var(--warn)">&#128161; Show hint</summary><p style="margin:6px 0 0;padding:8px;background:var(--warn-light);border-radius:8px">' + hint + '</p></details>' : '') +
       (stepsHtml ? '<details style="width:100%;margin-top:4px"><summary style="cursor:pointer;font-weight:700;color:var(--primary)">&#128218; Show steps</summary>' + stepsHtml + '</details>' : '');
 
@@ -103,6 +105,36 @@ HELPERS_JS = r"""
 
     bar.querySelector('.tts-en').onclick = () => speak(en, 'en-CA');
     bar.querySelector('.tts-fr').onclick = () => speak(fr, 'fr-CA');
+    const reportBtn = bar.querySelector('.report-q-btn');
+    if (reportBtn) {
+      reportBtn.onclick = () => {
+        const qNum = reportBtn.dataset.qnum;
+        const quizId = document.querySelector('[data-quiz-id]')?.dataset.quizId || window.location.pathname.split('/').pop().replace('.html','');
+        const reason = prompt('What\'s wrong with this question?\n(e.g., "wrong answer", "confusing wording", "too hard for this grade")');
+        if (!reason) return;
+        const api = (window.DMK_API || '').replace(/\/$/, '');
+        if (!api) return;
+        const u = (typeof getUser === 'function') ? getUser() : null;
+        fetch(api + '/api/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: u ? u.userId : null,
+            category: 'wrong_answer',
+            message: 'Question #' + qNum + ': ' + en + '\nReported issue: ' + reason,
+            pageUrl: window.location.href,
+            quizId: quizId,
+            questionNum: parseInt(qNum),
+          }),
+        }).then(() => {
+          reportBtn.textContent = '\u2705 Reported';
+          reportBtn.disabled = true;
+          reportBtn.style.background = '#d1fae5';
+          reportBtn.style.color = '#059669';
+          reportBtn.style.borderColor = '#6ee7b7';
+        }).catch(() => alert('Could not send report. Try again.'));
+      };
+    }
   });
 })();
 
@@ -491,6 +523,7 @@ def generate_html_from_text(text, today):
   }});
 </script>
 {HELPERS_JS}
+<script src="../scripts/feedback-widget.js"></script>
 </body></html>"""
     return page_html
 
@@ -570,6 +603,7 @@ def rebuild_index_and_sitemap():
       renderWeeklyGoalWidget('weekly-goal-home');
     }})();
   </script>
+<script src="scripts/feedback-widget.js"></script>
 </body></html>"""
     (ROOT / "index.html").write_text(index_html, encoding="utf-8")
 
