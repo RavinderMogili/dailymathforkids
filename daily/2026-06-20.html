@@ -1418,7 +1418,7 @@
             (isRight ? 'var(--success)' : 'var(--danger)') + '">';
           html += (isRight ? '&#9989;' : '&#10060;') + ' ' + badge + ' <strong>Q' + (i+1) + ' (' + pts + 'pt):</strong> ' + (q || '(question ' + (i+1) + ')') + '<br>';
           html += 'Your answer: <strong>' + (userAns || '—') + '</strong>';
-          if (!isRight) html += ' &nbsp;&middot;&nbsp; Correct: <strong style="color:var(--success)">' + (correct || '?') + '</strong>';
+          if (!isRight) html += ' &nbsp;&middot;&nbsp; <span style="color:#6366f1;font-size:.85rem">Click 🧑‍🏫 Need Help? on this question to learn the method!</span>';
           html += '</li>';
         });
         html += '</ol>';

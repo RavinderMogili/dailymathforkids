@@ -349,10 +349,10 @@
     const isCorrect = selected === correct;
     if (isCorrect) practiceState.correct++;
 
-    // Highlight choices
+    // Highlight choices — only show correct if they got it right
     document.querySelectorAll('.pq-choice').forEach(btn => {
       btn.classList.add('disabled');
-      if (btn.textContent === correct) btn.classList.add('correct');
+      if (isCorrect && btn.textContent === correct) btn.classList.add('correct');
       if (btn === el && !isCorrect) btn.classList.add('wrong');
     });
 
@@ -376,7 +376,7 @@
         'Almost! Each attempt makes you smarter! ⭐',
         'Don\'t worry — practice is how champions are made! 🏆',
       ]);
-      fb.innerHTML = `The answer is <strong>${correct}</strong><br><span style="font-size:.85rem;color:var(--primary)">${mindset}</span>`;
+      fb.innerHTML = `Not quite right. Use 🧑‍🏫 <strong>Need Help?</strong> to learn the method!<br><span style="font-size:.85rem;color:var(--primary)">${mindset}</span>`;
     }
 
     // Reveal steps now that student has answered

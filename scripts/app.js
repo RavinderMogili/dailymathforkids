@@ -391,7 +391,7 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
           const mindset = mindsetMsgs[Math.floor(Math.random() * mindsetMsgs.length)];
           const detail = r.correct
             ? `<span style="color:green">Q${r.question}: Correct!</span>`
-            : `<span style="color:red">Q${r.question}: Your answer: <strong>${r.given || '(blank)'}</strong> — Correct: <strong>${r.expected}</strong></span> <span style="font-size:.8rem;color:#2563eb">${mindset}</span>`;
+            : `<span style="color:red">Q${r.question}: Not quite right.</span> <span style="font-size:.8rem;color:#6366f1">Use 🧑‍🏫 Need Help? to learn the method! ${mindset}</span>`;
           feedbackHtml += `<p style="margin:0.3rem 0">${icon} ${detail}</p>`;
         });
         feedbackHtml += '</div>';

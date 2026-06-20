@@ -285,9 +285,9 @@ Use EXACTLY this format — no deviations:
    - FR: same problem in French
    - Choices: A) [wrong]  B) [correct]  C) [wrong]  D) [wrong]
    - Hint: Teach the METHOD using a DIFFERENT example with DIFFERENT numbers (IXL-style). NEVER use the same numbers as the actual problem. Example: if the problem is "5 × 4 = ?", the hint should be "Multiplication means groups. For example, 3 × 6 = 6 + 6 + 6 = 18. Now try applying the same idea!" — always use a simpler analogous case so students learn the concept and apply it themselves.
-   - Steps:
-     - step 1 (show the full worked solution — students only see this AFTER answering)
-     - step 2
+   - Steps: Show a SIMILAR worked example using COMPLETELY DIFFERENT numbers — NEVER solve the actual problem. Example: if the problem is "7 × 8 = ?", the steps should solve a DIFFERENT multiplication like "3 × 5 = 5 + 5 + 5 = 15" and explain the concept. This teaches the METHOD so students can apply it themselves.
+     - step 1 (analogous example with different numbers)
+     - step 2 (explain the concept/method)
    - Answer: [number only — must match one of the Choices values exactly]
 2. **[Easy] Title**
    ...
@@ -520,7 +520,7 @@ def generate_html_from_text(text, today):
             (isRight ? 'var(--success)' : 'var(--danger)') + '">';
           html += (isRight ? '&#9989;' : '&#10060;') + ' ' + badge + ' <strong>Q' + (i+1) + ' (' + pts + 'pt):</strong> ' + (q || '(question ' + (i+1) + ')') + '<br>';
           html += 'Your answer: <strong>' + (userAns || '\u2014') + '</strong>';
-          if (!isRight) html += ' &nbsp;&middot;&nbsp; Correct: <strong style="color:var(--success)">' + (correct || '?') + '</strong>';
+          if (!isRight) html += ' &nbsp;&middot;&nbsp; <span style="color:#6366f1;font-size:.85rem">Click \U0001F9D1\u200D\U0001F3EB Need Help? on this question to learn the method!</span>';
           html += '</li>';
         }});
         html += '</ol>';
