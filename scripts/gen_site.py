@@ -275,9 +275,9 @@ Use EXACTLY this format — no deviations:
    - EN: problem in English
    - FR: same problem in French
    - Choices: A) [wrong]  B) [correct]  C) [wrong]  D) [wrong]
-   - Hint: a short METHOD hint — tell the student what strategy or approach to use (e.g., "Try grouping" or "Use place value") — NEVER include numbers from the answer or restate the problem with the answer embedded
+   - Hint: Teach the METHOD using a DIFFERENT example with DIFFERENT numbers (IXL-style). NEVER use the same numbers as the actual problem. Example: if the problem is "5 × 4 = ?", the hint should be "Multiplication means groups. For example, 3 × 6 = 6 + 6 + 6 = 18. Now try applying the same idea!" — always use a simpler analogous case so students learn the concept and apply it themselves.
    - Steps:
-     - step 1 (show the method/working — it's OK to show the full solution here since students only see this AFTER answering)
+     - step 1 (show the full worked solution — students only see this AFTER answering)
      - step 2
    - Answer: [number only — must match one of the Choices values exactly]
 2. **[Easy] Title**
