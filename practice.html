@@ -327,10 +327,11 @@
     document.getElementById('pq-hint-text').textContent = q.hint || '';
     document.getElementById('pq-hint').removeAttribute('open');
 
-    // Populate steps
+    // Populate steps (hidden until answered)
     const stepsHtml = (q.steps || []).map(s => `<li>${s}</li>`).join('');
     document.getElementById('pq-steps-text').innerHTML = `<ul style="margin:0;padding-left:18px">${stepsHtml}</ul>`;
     document.getElementById('pq-steps').removeAttribute('open');
+    document.getElementById('pq-steps').style.display = 'none';
 
     const choicesEl = document.getElementById('pq-choices');
     choicesEl.innerHTML = q.choices.map(c =>
@@ -376,6 +377,9 @@
       ]);
       fb.innerHTML = `The answer is <strong>${correct}</strong><br><span style="font-size:.85rem;color:var(--primary)">${mindset}</span>`;
     }
+
+    // Reveal steps now that student has answered
+    document.getElementById('pq-steps').style.display = '';
 
     // Show fun fact
     const factEl = document.getElementById('pq-funfact');
