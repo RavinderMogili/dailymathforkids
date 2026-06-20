@@ -275,9 +275,9 @@ Use EXACTLY this format — no deviations:
    - EN: problem in English
    - FR: same problem in French
    - Choices: A) [wrong]  B) [correct]  C) [wrong]  D) [wrong]
-   - Hint: one short hint (do not give away the answer)
+   - Hint: a short METHOD hint — tell the student what strategy or approach to use (e.g., "Try grouping" or "Use place value") — NEVER include numbers from the answer or restate the problem with the answer embedded
    - Steps:
-     - step 1
+     - step 1 (show the method/working — it's OK to show the full solution here since students only see this AFTER answering)
      - step 2
    - Answer: [number only — must match one of the Choices values exactly]
 2. **[Easy] Title**
