@@ -70,6 +70,7 @@ HELPERS_JS = r"""
       '<button type="button" class="tts-en" style="min-height:32px;padding:4px 10px;font-size:.82rem">&#127911; Listen EN</button>' +
       '<button type="button" class="tts-fr" style="min-height:32px;padding:4px 10px;font-size:.82rem">&#127911; Listen FR</button>' +
       '<button type="button" class="report-q-btn" data-qnum="' + qIdx + '" style="min-height:32px;padding:4px 10px;font-size:.82rem;background:#fff3f3;color:#dc2626;border:1px solid #fca5a5;border-radius:6px;cursor:pointer" title="Report wrong answer or issue">&#9873; Report</button>' +
+      '<button type="button" class="help-btn" data-question="' + (en || '').replace(/"/g, '&quot;') + '" data-hint="' + (hint || '').replace(/"/g, '&quot;') + '" style="min-height:32px;padding:4px 10px;font-size:.82rem;background:#ede9fe;color:#6366f1;border:1px solid #c4b5fd;border-radius:6px;cursor:pointer;font-weight:600" title="Ask Math Helper for guidance">&#129489;&#8205;&#127979; Need Help?</button>' +
       (hint ? '<details style="width:100%;margin-top:4px"><summary style="cursor:pointer;font-weight:700;color:var(--warn)">&#128161; Show hint</summary><p style="margin:6px 0 0;padding:8px;background:var(--warn-light);border-radius:8px">' + hint + '</p></details>' : '') +
       (stepsHtml ? '<details class="steps-wrap" style="width:100%;margin-top:4px;display:none"><summary style="cursor:pointer;font-weight:700;color:var(--primary)">&#128218; Show steps (available after submit)</summary>' + stepsHtml + '</details>' : '');
 
@@ -133,6 +134,14 @@ HELPERS_JS = r"""
           reportBtn.style.color = '#059669';
           reportBtn.style.borderColor = '#6ee7b7';
         }).catch(() => alert('Could not send report. Try again.'));
+      };
+    }
+    const helpBtn = bar.querySelector('.help-btn');
+    if (helpBtn) {
+      helpBtn.onclick = () => {
+        if (typeof openMathHelper === 'function') {
+          openMathHelper(helpBtn.dataset.question, helpBtn.dataset.hint);
+        }
       };
     }
   });
@@ -523,6 +532,7 @@ def generate_html_from_text(text, today):
   }});
 </script>
 {HELPERS_JS}
+<script src="../scripts/math-helper.js"></script>
 <script src="../scripts/feedback-widget.js"></script>
 </body></html>"""
     return page_html

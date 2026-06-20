@@ -133,6 +133,7 @@
         <div class="pq-audio-btns">
           <button class="pq-audio-btn" onclick="listenEN()">🎧 Listen EN</button>
           <button class="pq-audio-btn" onclick="listenFR()">🎧 Listen FR</button>
+          <button class="pq-audio-btn" onclick="openPracticeHelper()" style="background:#6366f1;border-color:#6366f1">🧑‍🏫 Need Help?</button>
         </div>
         <details class="pq-hint" id="pq-hint">
           <summary>💡 Show hint</summary>
@@ -660,6 +661,12 @@
     }
   }
 
+  function openPracticeHelper() {
+    if (typeof openMathHelper !== 'function') return;
+    var q = practiceState.questions[practiceState.current];
+    if (q) openMathHelper(q.question, q.hint || '');
+  }
+
   function resetPractice() {
     document.getElementById('practice-results').style.display = 'none';
     document.getElementById('practice-setup').style.display = 'block';
@@ -668,6 +675,7 @@
     if (typeof renderWeeklyGoalWidget === 'function') renderWeeklyGoalWidget('weekly-goal-practice');
   }
 </script>
+<script src="scripts/math-helper.js"></script>
 <script src="scripts/feedback-widget.js"></script>
 </body>
 </html>
