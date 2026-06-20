@@ -606,6 +606,12 @@ function showGradeProblems() {
     if (helloEl) helloEl.innerHTML = '\uD83D\uDD12 This quiz has expired. You can review the questions, but only today\'s quiz earns points. <a href="../index.html">Go to today\'s quiz!</a>';
     const submitBtn = document.querySelector('#quiz button[type="submit"]');
     if (submitBtn) { submitBtn.disabled = true; submitBtn.style.opacity = '0.5'; submitBtn.textContent = 'Quiz Expired'; }
+    // Show steps on expired quizzes for review
+    document.querySelectorAll('.steps-wrap').forEach(el => {
+      el.style.display = '';
+      const summary = el.querySelector('summary');
+      if (summary) summary.textContent = '📚 Show steps';
+    });
     return;
   }
 
@@ -690,6 +696,12 @@ function _lockQuizDone(code) {
   if (helloEl) helloEl.innerHTML = '✅ You already completed this quiz! <a href="../index.html">Back to Home</a>';
   const submitBtn = document.querySelector('#quiz button[type="submit"]');
   if (submitBtn) { submitBtn.disabled = true; submitBtn.style.opacity = '0.5'; submitBtn.textContent = 'Already Submitted'; }
+  // Show steps for review after completion
+  document.querySelectorAll('.steps-wrap').forEach(el => {
+    el.style.display = '';
+    const summary = el.querySelector('summary');
+    if (summary) summary.textContent = '📚 Show steps';
+  });
 }
 
 function resumeOrLockQuiz() {
@@ -742,6 +754,12 @@ function lockAnswersAfterSubmit() {
   });
   const submitBtn = document.querySelector('#quiz button[type="submit"]');
   if (submitBtn) { submitBtn.disabled = true; submitBtn.style.opacity = '0.5'; }
+  // Reveal steps after submission so students can review solutions
+  document.querySelectorAll('.steps-wrap').forEach(el => {
+    el.style.display = '';
+    const summary = el.querySelector('summary');
+    if (summary) summary.textContent = '📚 Show steps';
+  });
 }
 
 function showCompletionAndRedirect(score) {
