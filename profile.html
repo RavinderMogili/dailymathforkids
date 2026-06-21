@@ -118,6 +118,9 @@
         <button onclick="savePin()">Save</button>
         <span id="pin-save-msg" style="font-size:.85rem;font-weight:600"></span>
       </div>
+      <div id="pin-set-badge" style="display:none;margin-top:10px;padding:8px 12px;background:#d1fae5;color:#059669;border-radius:8px;font-size:.85rem;font-weight:600;width:fit-content">
+        ✅ Account protected with a PIN
+      </div>
       <div id="email-note" style="margin-top:4px;font-size:.78rem;color:var(--muted,#64748b)">📬 We send a weekly progress report to this email. Never shared or used for marketing.</div>
       <div class="stat-row">
         <div class="stat-box">
@@ -243,6 +246,18 @@ async function loadProfile() {
 
   const emailInput = document.getElementById('parent-email-input');
   if (emailInput) emailInput.value = u.parent_email || '';
+
+  const pinRow = document.getElementById('pin-row');
+  const pinBadge = document.getElementById('pin-set-badge');
+  if (pinRow && pinBadge) {
+    if (data.hasPin) {
+      pinRow.style.display = 'none';
+      pinBadge.style.display = 'block';
+    } else {
+      pinRow.style.display = 'flex';
+      pinBadge.style.display = 'none';
+    }
+  }
 
   const subs = data.submissions || [];
   const streak = calcCurrentStreak(subs);
