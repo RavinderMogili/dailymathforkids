@@ -338,6 +338,10 @@
     showGreeting();
   };
 
+  // Expose for testing and debugging
+  window.__mh_detectTopic = detectTopic;
+  window.__mh_concepts = concepts;
+
   /* ── Inject animation keyframes ── */
   var style = document.createElement('style');
   style.textContent =
