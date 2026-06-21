@@ -126,6 +126,10 @@ function injectModals() {
           <input id="reg-parent-email" class="form-input" type="email" placeholder="parent@example.com" maxlength="100"/>
           <small class="opt-label" style="margin-top:2px">📧 We’ll send a weekly progress report. Never shared or used for marketing.</small>
         </label>
+        <label class="form-label">4-Digit PIN <span class="req">*</span>
+          <input id="reg-pin" class="form-input" type="password" inputmode="numeric" pattern="[0-9]{4}" placeholder="e.g. 1234" required maxlength="4" minlength="4" autocomplete="off" style="letter-spacing:8px;font-size:1.2rem;text-align:center"/>
+          <small class="opt-label" style="margin-top:2px">🔑 Choose a 4-digit PIN to protect your account. Remember it!</small>
+        </label>
         <p id="reg-msg" class="form-msg" aria-live="polite"></p>
         <p class="privacy-note">🔒 Only your nickname and grade are stored. Your progress is private.</p>
         <button type="submit" class="btn-primary">Join for Free! 🎉</button>
@@ -171,6 +175,9 @@ function injectModals() {
         <label class="form-label">Nickname
           <input id="login-nickname" class="form-input" placeholder="Your nickname" required maxlength="30" autocomplete="off"/>
         </label>
+        <label class="form-label" id="login-pin-label">4-Digit PIN
+          <input id="login-pin" class="form-input" type="password" inputmode="numeric" pattern="[0-9]{4}" placeholder="Your PIN" maxlength="4" autocomplete="off" style="letter-spacing:8px;font-size:1.2rem;text-align:center"/>
+        </label>
         <p id="login-msg" class="form-msg" aria-live="polite"></p>
         <button type="submit" class="btn-primary">Log In</button>
       </form>
@@ -203,10 +210,16 @@ async function submitReg(e) {
   const school        = document.getElementById('reg-school').value.trim();
   const city          = document.getElementById('reg-city').value.trim();
   const parent_email  = document.getElementById('reg-parent-email').value.trim();
+  const pin           = document.getElementById('reg-pin').value.trim();
   const msg      = document.getElementById('reg-msg');
 
   if (!nickname || !grade) {
     msg.textContent = 'Please fill in your nickname and grade.';
+    msg.className = 'form-msg error';
+    return;
+  }
+  if (!/^\d{4}$/.test(pin)) {
+    msg.textContent = 'Please enter a 4-digit PIN (numbers only).';
     msg.className = 'form-msg error';
     return;
   }
@@ -223,7 +236,7 @@ async function submitReg(e) {
     const res  = await fetch(`${API}/api/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nickname, grade, school, city, parent_email }),
+      body: JSON.stringify({ nickname, grade, school, city, parent_email, pin }),
     });
     const data = await res.json();
     if (!res.ok) {
@@ -255,6 +268,7 @@ async function submitReg(e) {
 async function submitLogin(e) {
   e.preventDefault();
   const nickname = document.getElementById('login-nickname').value.trim();
+  const pin      = document.getElementById('login-pin').value.trim();
   const msg      = document.getElementById('login-msg');
   msg.textContent = 'Looking up…';
   msg.className = 'form-msg';
@@ -266,12 +280,31 @@ async function submitLogin(e) {
   }
 
   try {
-    const res  = await fetch(`${API}/api/lookup?nickname=${encodeURIComponent(nickname)}`);
+    const res  = await fetch(`${API}/api/lookup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nickname, pin: pin || undefined }),
+    });
     const data = await res.json();
     if (!res.ok) {
+      if (data.needPin) {
+        msg.textContent = 'This account has a PIN. Please enter your 4-digit PIN.';
+        msg.className = 'form-msg error';
+        document.getElementById('login-pin').focus();
+        return;
+      }
       msg.textContent = data.error || 'Nickname not found. Please register first.';
       msg.className = 'form-msg error';
       return;
+    }
+    // Old account without PIN — prompt to set one
+    if (data.needSetPin) {
+      if (!pin || !/^\d{4}$/.test(pin)) {
+        msg.innerHTML = '🔑 Your account needs a PIN now! Enter a <strong>4-digit PIN</strong> below and log in again to secure your account.';
+        msg.className = 'form-msg error';
+        document.getElementById('login-pin').focus();
+        return;
+      }
     }
     saveUser({ userId: data.userId, nickname: data.nickname, grade: data.grade, school: data.school, city: data.city });
     store.set('dmk_review', []); store.set('doneDays', {});
@@ -280,7 +313,6 @@ async function submitLogin(e) {
     if (typeof resumeOrLockQuiz === 'function') resumeOrLockQuiz();
     loadUserGroup();
     _retryPendingSubmit();
-    // Reload profile page so it picks up the logged-in user
     if (typeof loadProfile === 'function') window.location.reload();
   } catch {
     msg.textContent = 'Could not connect. Please try again.';
