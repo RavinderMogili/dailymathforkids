@@ -11,20 +11,20 @@
   function detectTopic(question) {
     var q = (question || '').toLowerCase();
     // Specific topics first — avoid vague words like 'left' or 'total' stealing the topic
-    if (/volume|cubic|capacity|liter|litre|milliliter|millilitre|gallon|quart|pint|cup|fill|cube|cuboid|box|tank|container|hold/.test(q)) return 'volume';
-    if (/mass|weight|kilogram|kg|gram|g|pound|lb|ounce|oz|heavier|lighter|weigh/.test(q)) return 'mass';
-    if (/area|perimeter|length|width|height|rectangle|square|triangle|circle|radius|diameter|circumference|polygon|angle|shape/.test(q)) return 'geometry';
-    if (/fraction|\/\d+|\bquarter\b|\bhalf\b|\bthird\b|\bfourth\b|\bfifth\b|piece|slice|part\s+of|numerator|denominator/.test(q)) return 'fractions';
-    if (/percent|%|\bpercentage\b/.test(q)) return 'percentage';
-    if (/\btimes\b|×|multiply|multiplication|rows?\s+of|groups?\s+of|each\s+(team|box|bag|pack|group|row)|product/.test(q)) return 'multiplication';
-    if (/÷|divide|division|share[ds]?\s+equally|split|each\s+(get|receive|friend|student|person)|equally\s+among|quotient/.test(q)) return 'division';
-    if (/subtract|minus|difference|take\s+away|give\s+away|spent|ate|used\s+up|how\s+many\s+more|how\s+much\s+more|decrease|left\s+over|remaining\s+after/.test(q)) return 'subtraction';
+    if (/\bmass\b|\bweight\b|kilogram|\bkg\b|gram|\bg\b|pound|\blb\b|ounce|\boz\b|heavier|lighter|weigh/.test(q)) return 'mass';
+    if (/\bvolume\b|cubic|capacity|\bliter\b|\blitre\b|milliliter|millilitre|\bgallon\b|\bquart\b|\bpint\b|\bcup\b|fill|\bcube\b|cuboid|\bbox\b|\btank\b|\bcontainer\b|\bhold\b/.test(q)) return 'volume';
+    if (/\bfraction\b|\/\d+|\bquarter\b|\bhalf\b|\bthird\b|\bfourth\b|\bfifth\b|piece|slice|\bpart\s+of\b|numerator|denominator/.test(q)) return 'fractions';
+    if (/\bpercent\b|%|\bpercentage\b/.test(q)) return 'percentage';
+    if (/\barea\b|\bperimeter\b|\blength\b|\bwidth\b|\bheight\b|\brectangle\b|\bsquare\b|\btriangle\b|\bcircle\b|radius|diameter|circumference|polygon|\bangle\b|\bshape\b/.test(q)) return 'geometry';
+    if (/\bmoney\b|\bdollar\b|\bcent\b|loonie|toonie|\$|cost|price|change|pay|bought|sell|wallet|bank/.test(q)) return 'money';
+    if (/\bequation\b|solve\s+for|variable|(?:\b|\d)[xyz]\s*[+=]\s*\d|unknown|\bexpression\b/.test(q)) return 'algebra';
+    if (/÷|divide|division|share[ds]?\s+equally|splits?\b|split\b|split\s+.*\s+into\s+groups?\s+of|equally\s+among|quotient|each\s+(get|receive|friend|student|person|group)/.test(q)) return 'division';
+    if (/\btimes\b|×|multiply|multiplication|rows?\s+of|groups?\s+of|\beach\b|per\s+\d+|product/.test(q)) return 'multiplication';
+    if (/subtract|minus|difference|take\s+away|giv[ae]\s+away|give\s+away|spent|ate|used\s+up|how\s+many\s+more|how\s+much\s+more|decrease|\bleft\b|left\s+over|remain|remaining\s+after|away/.test(q)) return 'subtraction';
     if (/add|\+|\btotal\b|altogether|in\s+all|combined|\bsum\b|more\s+than|how\s+many\s+together|joined|increase|both|all\s+of\s+them/.test(q)) return 'addition';
-    if (/pattern|sequence|next|rule|what\s+comes|continue\s+the/.test(q)) return 'patterns';
-    if (/time|hour|minute|clock|elapsed|am|pm|schedule|duration|start\s+at|finish\s+at/.test(q)) return 'time';
-    if (/money|dollar|cent|loonie|toonie|\$|cost|price|change|pay|bought|sell|wallet|bank/.test(q)) return 'money';
-    if (/equation|solve\s+for|variable|[xyz]\s*[+=]\s*\d|unknown|expression/.test(q)) return 'algebra';
-    if (/mean|median|mode|average|data|graph|chart|bar\s+graph|line\s+graph|pie\s+chart|probability|chance|likely|unlikely/.test(q)) return 'statistics';
+    if (/\bpattern\b|sequence|what\s+comes\s+next|continue\s+the|\brule\b/.test(q)) return 'patterns';
+    if (/\btime\b|\bhour\b|\bminute\b|clock|elapsed|\bam\b|\bpm\b|schedule|duration|start\s+at|finish\s+at/.test(q)) return 'time';
+    if (/\bmean\b|\bmedian\b|\bmode\b|average|data|graph|chart|bar\s+graph|line\s+graph|pie\s+chart|probability|chance|likely|unlikely/.test(q)) return 'statistics';
     return 'general';
   }
 
