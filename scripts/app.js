@@ -297,18 +297,15 @@ async function submitLogin(e) {
       msg.className = 'form-msg error';
       return;
     }
-    // Old account without PIN — prompt to set one
-    if (data.needSetPin) {
-      if (!pin || !/^\d{4}$/.test(pin)) {
-        msg.innerHTML = '🔑 Your account needs a PIN now! Enter a <strong>4-digit PIN</strong> below and log in again to secure your account.';
-        msg.className = 'form-msg error';
-        document.getElementById('login-pin').focus();
-        return;
-      }
-    }
     saveUser({ userId: data.userId, nickname: data.nickname, grade: data.grade, school: data.school, city: data.city });
     store.set('dmk_review', []); store.set('doneDays', {});
     hideLoginModal(); renderBadge();
+    // Old account without PIN — remind them to set one (don't block login)
+    if (data.needSetPin) {
+      setTimeout(() => {
+        alert('🔑 Tip: Your account doesn\'t have a PIN yet. Next time you log in, enter a 4-digit PIN to secure your account!');
+      }, 500);
+    }
     if (typeof showGradeProblems === 'function') showGradeProblems();
     if (typeof resumeOrLockQuiz === 'function') resumeOrLockQuiz();
     loadUserGroup();
