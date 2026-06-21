@@ -130,6 +130,19 @@ function injectModals() {
           <input id="reg-pin" class="form-input" type="password" inputmode="numeric" pattern="[0-9]{4}" placeholder="e.g. 1234" required maxlength="4" minlength="4" autocomplete="off" style="letter-spacing:8px;font-size:1.2rem;text-align:center"/>
           <small class="opt-label" style="margin-top:2px">🔑 Choose a 4-digit PIN to protect your account. Remember it!</small>
         </label>
+        <label class="form-label" id="reg-security-question-label">Security Question <small class="opt-label" id="reg-security-req">(required without parent email)</small>
+          <select id="reg-security-question" class="form-input">
+            <option value="">Choose a question…</option>
+            <option value="What is your favorite color?">What is your favorite color?</option>
+            <option value="What is your pet's name?">What is your pet's name?</option>
+            <option value="What is your favorite sport?">What is your favorite sport?</option>
+            <option value="What city were you born in?">What city were you born in?</option>
+            <option value="What is your favorite food?">What is your favorite food?</option>
+          </select>
+        </label>
+        <label class="form-label" id="reg-security-answer-label">Your Answer <small class="opt-label" id="reg-security-answer-req">(required without parent email)</small>
+          <input id="reg-security-answer" class="form-input" placeholder="e.g. Blue" maxlength="50" autocomplete="off"/>
+        </label>
         <p id="reg-msg" class="form-msg" aria-live="polite"></p>
         <p class="privacy-note">🔒 Only your nickname and grade are stored. Your progress is private.</p>
         <button type="submit" class="btn-primary">Join for Free! 🎉</button>
@@ -182,7 +195,71 @@ function injectModals() {
         <p id="login-msg" class="form-msg" aria-live="polite"></p>
         <button type="submit" class="btn-primary">Log In</button>
       </form>
+      <p style="margin-top:10px;font-size:.85rem">
+        <button class="link-btn" onclick="showForgotPinModal()">Forgot PIN?</button>
+        &nbsp;·&nbsp;
+        <button class="link-btn" onclick="showForgotNicknameModal()">Forgot nickname?</button>
+      </p>
       <p class="modal-note">New here? <button class="link-btn" onclick="showRegModal()">Register</button></p>
+    </div>
+  </div>
+
+  <!-- Forgot PIN modal -->
+  <div id="forgot-pin-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="forgot-pin-title" style="display:none">
+    <div class="modal-card">
+      <button class="modal-close" onclick="hideForgotPinModal()" aria-label="Close">✕</button>
+      <h2 class="modal-title" id="forgot-pin-title">Reset your PIN 🔑</h2>
+      <p class="modal-sub">Prove it's you, then choose a new PIN.</p>
+      <form id="forgot-pin-form" onsubmit="submitForgotPin(event)" novalidate>
+        <label class="form-label">Nickname
+          <input id="forgot-pin-nickname" class="form-input" placeholder="Your nickname" required maxlength="30" autocomplete="off"/>
+        </label>
+        <label class="form-label">Parent / Guardian email <small class="opt-label">(if you added one)</small>
+          <input id="forgot-pin-email" class="form-input" type="email" placeholder="parent@example.com" maxlength="100"/>
+        </label>
+        <div id="forgot-pin-sq-section" style="display:none">
+          <label class="form-label" id="forgot-pin-question-label">Security question</label>
+          <input id="forgot-pin-answer" class="form-input" placeholder="Your answer" maxlength="50" autocomplete="off"/>
+        </div>
+        <label class="form-label">New 4-Digit PIN <span class="req">*</span>
+          <input id="forgot-pin-new" class="form-input" type="password" inputmode="numeric" pattern="[0-9]{4}" placeholder="New PIN" required maxlength="4" autocomplete="off" style="letter-spacing:8px;font-size:1.2rem;text-align:center"/>
+        </label>
+        <p id="forgot-pin-msg" class="form-msg" aria-live="polite"></p>
+        <button type="submit" class="btn-primary">Reset PIN</button>
+      </form>
+      <p class="modal-note"><button class="link-btn" onclick="hideForgotPinModal(); showLoginModal()">Back to login</button></p>
+    </div>
+  </div>
+
+  <!-- Forgot nickname modal -->
+  <div id="forgot-nickname-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="forgot-nickname-title" style="display:none">
+    <div class="modal-card">
+      <button class="modal-close" onclick="hideForgotNicknameModal()" aria-label="Close">✕</button>
+      <h2 class="modal-title" id="forgot-nickname-title">Find your nickname 👤</h2>
+      <p class="modal-sub">We can remind you if you verify your identity.</p>
+      <form id="forgot-nickname-form" onsubmit="submitForgotNickname(event)" novalidate>
+        <label class="form-label">Parent / Guardian email <small class="opt-label">(if you added one)</small>
+          <input id="forgot-nickname-email" class="form-input" type="email" placeholder="parent@example.com" maxlength="100"/>
+        </label>
+        <div id="forgot-nickname-sq-section">
+          <label class="form-label">Security Question
+            <select id="forgot-nickname-question" class="form-input">
+              <option value="">Choose your question…</option>
+              <option value="What is your favorite color?">What is your favorite color?</option>
+              <option value="What is your pet's name?">What is your pet's name?</option>
+              <option value="What is your favorite sport?">What is your favorite sport?</option>
+              <option value="What city were you born in?">What city were you born in?</option>
+              <option value="What is your favorite food?">What is your favorite food?</option>
+            </select>
+          </label>
+          <label class="form-label">Your Answer
+            <input id="forgot-nickname-answer" class="form-input" placeholder="Your answer" maxlength="50" autocomplete="off"/>
+          </label>
+        </div>
+        <p id="forgot-nickname-msg" class="form-msg" aria-live="polite"></p>
+        <button type="submit" class="btn-primary">Find my nickname</button>
+      </form>
+      <p class="modal-note"><button class="link-btn" onclick="hideForgotNicknameModal(); showLoginModal()">Back to login</button></p>
     </div>
   </div>
 </div>`);
@@ -190,15 +267,19 @@ function injectModals() {
 
 function showRegModal()   { injectModals(); document.getElementById('reg-modal').style.display   = 'flex'; setTimeout(() => document.getElementById('reg-nickname').focus(), 40); }
 function hideRegModal()   { const m = document.getElementById('reg-modal');   if (m) m.style.display = 'none'; }
-function showLoginModal() { injectModals(); hideRegModal(); document.getElementById('login-modal').style.display = 'flex'; setTimeout(() => document.getElementById('login-nickname').focus(), 40); }
+function showLoginModal() { injectModals(); hideRegModal(); hideForgotPinModal(); hideForgotNicknameModal(); document.getElementById('login-modal').style.display = 'flex'; setTimeout(() => document.getElementById('login-nickname').focus(), 40); }
 function hideLoginModal() { const m = document.getElementById('login-modal'); if (m) m.style.display = 'none'; }
+function showForgotPinModal() { injectModals(); hideLoginModal(); document.getElementById('forgot-pin-modal').style.display = 'flex'; setTimeout(() => document.getElementById('forgot-pin-nickname').focus(), 40); }
+function hideForgotPinModal() { const m = document.getElementById('forgot-pin-modal'); if (m) m.style.display = 'none'; }
+function showForgotNicknameModal() { injectModals(); hideLoginModal(); document.getElementById('forgot-nickname-modal').style.display = 'flex'; setTimeout(() => document.getElementById('forgot-nickname-email').focus(), 40); }
+function hideForgotNicknameModal() { const m = document.getElementById('forgot-nickname-modal'); if (m) m.style.display = 'none'; }
 // showGroupModal defined below in Cooperative groups section
 function hideGroupModal() { const m = document.getElementById('group-modal'); if (m) m.style.display = 'none'; }
 
 // Close modals when clicking the overlay background
 document.addEventListener('click', e => {
   if (e.target.classList.contains('modal-overlay')) {
-    hideRegModal(); hideLoginModal(); hideGroupModal();
+    hideRegModal(); hideLoginModal(); hideGroupModal(); hideForgotPinModal(); hideForgotNicknameModal();
   }
 });
 
@@ -212,6 +293,8 @@ async function submitReg(e) {
   const city          = document.getElementById('reg-city').value.trim();
   const parent_email  = document.getElementById('reg-parent-email').value.trim();
   const pin           = document.getElementById('reg-pin').value.trim();
+  const security_question = document.getElementById('reg-security-question').value;
+  const security_answer   = document.getElementById('reg-security-answer').value.trim();
   const msg      = document.getElementById('reg-msg');
 
   if (!nickname || !grade) {
@@ -221,6 +304,11 @@ async function submitReg(e) {
   }
   if (!/^\d{4}$/.test(pin)) {
     msg.textContent = 'Please enter a 4-digit PIN (numbers only).';
+    msg.className = 'form-msg error';
+    return;
+  }
+  if (!parent_email && (!security_question || !security_answer)) {
+    msg.textContent = 'Please add a parent email OR choose a security question and answer. This helps you recover your account if you forget your PIN.';
     msg.className = 'form-msg error';
     return;
   }
@@ -237,7 +325,7 @@ async function submitReg(e) {
     const res  = await fetch(`${API}/api/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nickname, grade, school, city, parent_email, pin }),
+      body: JSON.stringify({ nickname, grade, school, city, parent_email, pin, security_question, security_answer }),
     });
     const data = await res.json();
     if (!res.ok) {
@@ -324,6 +412,98 @@ function _retryPendingSubmit() {
   window._pendingSubmit = null;
   resultEl.textContent = 'Checking…';
   submitQuizAnswers(quizId, answers, resultEl);
+}
+
+async function submitForgotPin(e) {
+  e.preventDefault();
+  const nickname = document.getElementById('forgot-pin-nickname').value.trim();
+  const email    = document.getElementById('forgot-pin-email').value.trim();
+  const question = document.getElementById('forgot-pin-question-label').textContent || '';
+  const answer   = document.getElementById('forgot-pin-answer').value.trim();
+  const newPin   = document.getElementById('forgot-pin-new').value.trim();
+  const msg      = document.getElementById('forgot-pin-msg');
+
+  if (!nickname) {
+    msg.textContent = 'Please enter your nickname.';
+    msg.className = 'form-msg error';
+    return;
+  }
+  if (!/^\d{4}$/.test(newPin)) {
+    msg.textContent = 'Please enter a new 4-digit PIN.';
+    msg.className = 'form-msg error';
+    return;
+  }
+  if (!email && !answer) {
+    msg.textContent = 'Please enter your parent email OR answer your security question.';
+    msg.className = 'form-msg error';
+    return;
+  }
+
+  msg.textContent = 'Verifying…';
+  msg.className = 'form-msg';
+
+  try {
+    const res = await fetch(`${API}/api/forgot-pin`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nickname, parent_email: email || undefined, security_question: question || undefined, security_answer: answer || undefined, new_pin: newPin }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      msg.textContent = data.error || 'Could not reset PIN. Please check your information.';
+      msg.className = 'form-msg error';
+      return;
+    }
+    msg.textContent = '✅ PIN reset! You can now log in with your new PIN.';
+    msg.className = 'form-msg';
+    setTimeout(() => { hideForgotPinModal(); showLoginModal(); }, 1500);
+  } catch {
+    msg.textContent = 'Could not connect. Please try again.';
+    msg.className = 'form-msg error';
+  }
+}
+
+async function submitForgotNickname(e) {
+  e.preventDefault();
+  const email    = document.getElementById('forgot-nickname-email').value.trim();
+  const question = document.getElementById('forgot-nickname-question').value;
+  const answer   = document.getElementById('forgot-nickname-answer').value.trim();
+  const msg      = document.getElementById('forgot-nickname-msg');
+
+  if (!email && (!question || !answer)) {
+    msg.textContent = 'Please enter your parent email OR answer your security question.';
+    msg.className = 'form-msg error';
+    return;
+  }
+
+  msg.textContent = 'Looking up…';
+  msg.className = 'form-msg';
+
+  try {
+    const res = await fetch(`${API}/api/forgot-nickname`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ parent_email: email || undefined, security_question: question || undefined, security_answer: answer || undefined }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      msg.textContent = data.error || 'No account found with that information.';
+      msg.className = 'form-msg error';
+      return;
+    }
+    if (data.nicknames) {
+      msg.innerHTML = '<strong>Multiple accounts found:</strong><br>' + data.nicknames.map(n => `• ${n}`).join('<br>') + '<br>Please choose your nickname.';
+    } else if (data.nickname) {
+      msg.innerHTML = '✅ Your nickname is: <strong>' + data.nickname + '</strong><br>Now you can log in!';
+      setTimeout(() => { hideForgotNicknameModal(); showLoginModal(); }, 2000);
+    } else {
+      msg.textContent = 'Could not find your nickname.';
+      msg.className = 'form-msg error';
+    }
+  } catch {
+    msg.textContent = 'Could not connect. Please try again.';
+    msg.className = 'form-msg error';
+  }
 }
 
 // ── Speed timer ─────────────────────────────────────────────────────────────
