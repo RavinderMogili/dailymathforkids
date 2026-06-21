@@ -10,18 +10,21 @@
   /* ── Topic detection from question text ── */
   function detectTopic(question) {
     var q = (question || '').toLowerCase();
-    if (/\btimes\b|×|multiply|rows?\s.*\bof\b|groups?\s.*\bof\b|each\s+(team|box|bag|pack)/.test(q)) return 'multiplication';
-    if (/÷|divide|share[ds]?\s+equally|split|each\s+(get|receive|friend)|equally\s+among/.test(q)) return 'division';
-    if (/fraction|\/\d+|quarter|half|third|piece|slice|part\s+of/.test(q)) return 'fractions';
-    if (/percent|%/.test(q)) return 'percentage';
-    if (/subtract|minus|\bleft\b|remain|fewer|less\s+than|take\s+away|difference|gave\s+away|lost|ate/.test(q)) return 'subtraction';
-    if (/add|\+|\btotal\b|altogether|in\s+all|combined|\bsum\b|more\s+than|how\s+many.*together|joined/.test(q)) return 'addition';
-    if (/area|perimeter|length|width|rectangle|square|triangle|circle|radius|diameter/.test(q)) return 'geometry';
-    if (/pattern|sequence|next|rule|what\s+comes/.test(q)) return 'patterns';
-    if (/time|hour|minute|clock|elapsed/.test(q)) return 'time';
-    if (/money|dollar|cent|loonie|toonie|\$|cost|price|change|pay/.test(q)) return 'money';
-    if (/equation|solve\s+for|variable|[xyz]\s*[+=]/.test(q)) return 'algebra';
-    if (/mean|median|mode|average|data|graph|chart|probability/.test(q)) return 'statistics';
+    // Specific topics first — avoid vague words like 'left' or 'total' stealing the topic
+    if (/volume|cubic|capacity|liter|litre|milliliter|millilitre|gallon|quart|pint|cup|fill|cube|cuboid|box|tank|container|hold/.test(q)) return 'volume';
+    if (/mass|weight|kilogram|kg|gram|g|pound|lb|ounce|oz|heavier|lighter|weigh/.test(q)) return 'mass';
+    if (/area|perimeter|length|width|height|rectangle|square|triangle|circle|radius|diameter|circumference|polygon|angle|shape/.test(q)) return 'geometry';
+    if (/fraction|\/\d+|\bquarter\b|\bhalf\b|\bthird\b|\bfourth\b|\bfifth\b|piece|slice|part\s+of|numerator|denominator/.test(q)) return 'fractions';
+    if (/percent|%|\bpercentage\b/.test(q)) return 'percentage';
+    if (/\btimes\b|×|multiply|multiplication|rows?\s+of|groups?\s+of|each\s+(team|box|bag|pack|group|row)|product/.test(q)) return 'multiplication';
+    if (/÷|divide|division|share[ds]?\s+equally|split|each\s+(get|receive|friend|student|person)|equally\s+among|quotient/.test(q)) return 'division';
+    if (/subtract|minus|difference|take\s+away|give\s+away|spent|ate|used\s+up|how\s+many\s+more|how\s+much\s+more|decrease|left\s+over|remaining\s+after/.test(q)) return 'subtraction';
+    if (/add|\+|\btotal\b|altogether|in\s+all|combined|\bsum\b|more\s+than|how\s+many\s+together|joined|increase|both|all\s+of\s+them/.test(q)) return 'addition';
+    if (/pattern|sequence|next|rule|what\s+comes|continue\s+the/.test(q)) return 'patterns';
+    if (/time|hour|minute|clock|elapsed|am|pm|schedule|duration|start\s+at|finish\s+at/.test(q)) return 'time';
+    if (/money|dollar|cent|loonie|toonie|\$|cost|price|change|pay|bought|sell|wallet|bank/.test(q)) return 'money';
+    if (/equation|solve\s+for|variable|[xyz]\s*[+=]\s*\d|unknown|expression/.test(q)) return 'algebra';
+    if (/mean|median|mode|average|data|graph|chart|bar\s+graph|line\s+graph|pie\s+chart|probability|chance|likely|unlikely/.test(q)) return 'statistics';
     return 'general';
   }
 
@@ -62,6 +65,18 @@
       explain: "Percent means 'out of 100'. 50% = half, 25% = quarter, 10% = one-tenth.",
       strategy: "Start with easy percentages: 10% = divide by 10, 50% = divide by 2, 25% = divide by 4. Build from these!",
       tip: "For example, to find 30% of 80: find 10% first (80 ÷ 10 = 8), then multiply by 3 (8 × 3 = 24)."
+    },
+    volume: {
+      name: 'Volume',
+      explain: "Volume is the amount of space inside a 3D object. Think of it as how much a box, tank, or container can hold.",
+      strategy: "For a box or cube, multiply length × width × height. For a cylinder, the formula is area of the circle × height. Make sure all measurements use the same units!",
+      tip: "Volume units are often cubic (cm³, m³) or liquid (liters, milliliters). 1 liter = 1000 milliliters."
+    },
+    mass: {
+      name: 'Mass and Weight',
+      explain: "Mass tells us how much matter is in an object. Weight is how heavy it feels due to gravity. Grams (g) and kilograms (kg) are common units.",
+      strategy: "Compare by looking at the units first. 1 kg = 1000 g. If one item is in kg and another in g, convert them to the same unit before comparing.",
+      tip: "Lighter objects are usually measured in grams. Heavier objects are usually measured in kilograms."
     },
     geometry: {
       name: 'Geometry',
