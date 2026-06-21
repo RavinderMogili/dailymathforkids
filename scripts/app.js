@@ -175,8 +175,9 @@ function injectModals() {
         <label class="form-label">Nickname
           <input id="login-nickname" class="form-input" placeholder="Your nickname" required maxlength="30" autocomplete="off"/>
         </label>
-        <label class="form-label" id="login-pin-label">4-Digit PIN
-          <input id="login-pin" class="form-input" type="password" inputmode="numeric" pattern="[0-9]{4}" placeholder="Your PIN" maxlength="4" autocomplete="off" style="letter-spacing:8px;font-size:1.2rem;text-align:center"/>
+        <label class="form-label" id="login-pin-label">4-Digit PIN <small class="opt-label">(if you set one)</small>
+          <input id="login-pin" class="form-input" type="password" inputmode="numeric" pattern="[0-9]{4}" placeholder="Leave empty if no PIN" maxlength="4" autocomplete="off" style="letter-spacing:8px;font-size:1.2rem;text-align:center"/>
+          <small class="opt-label" style="margin-top:2px">Old account? Leave blank — you can set a PIN after logging in.</small>
         </label>
         <p id="login-msg" class="form-msg" aria-live="polite"></p>
         <button type="submit" class="btn-primary">Log In</button>
