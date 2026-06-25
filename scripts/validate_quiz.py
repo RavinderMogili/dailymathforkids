@@ -181,21 +181,20 @@ def validate_questions(questions):
             # Case-insensitive check
             lower_choices = [c.lower() for c in choices]
             if answer.lower() not in lower_choices:
-                # Check if it's a fraction issue (14 vs 1/4)
-                possible_fraction = None
-                if re.match(r'^\d{2,}$', answer):
-                    # Could be a stripped fraction like 14 -> 1/4, 12 -> 1/2, 34 -> 3/4
-                    for c in choices:
-                        stripped = c.replace('/', '')
-                        if stripped == answer:
-                            possible_fraction = c
-                            break
+                # Check if answer is a stripped version of a choice
+                # (e.g. 14->1/4, 30->$30, 1230->12:30, 03->0.3)
+                possible_fix = None
+                for c in choices:
+                    stripped = re.sub(r'[$/:.,¢]', '', c)
+                    if stripped == answer:
+                        possible_fix = c
+                        break
 
-                if possible_fraction:
+                if possible_fix:
                     issues.append(Issue('error', grade, num,
-                        f'Answer "{answer}" looks like a stripped fraction. '
-                        f'Should be "{possible_fraction}" (matches choice)',
-                        fix=possible_fraction))
+                        f'Answer "{answer}" looks like a stripped version of "{possible_fix}". '
+                        f'Should be "{possible_fix}" (matches choice)',
+                        fix=possible_fix))
                 else:
                     issues.append(Issue('error', grade, num,
                         f'Answer "{answer}" does not match any choice: {choices}'))
