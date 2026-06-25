@@ -311,8 +311,7 @@ CANADIAN MATH CURRICULUM GUIDE — use this to calibrate each problem:
   G12 (Grade 12): advanced functions (polynomial/rational/trig), derivatives intro (rates of change), combinations and permutations, vectors intro, probability distributions"""
 
     prompt = f"""You are creating daily math problems for Canadian students in Grades 1–12.
-For Grades G1–G5: generate exactly 10 problems each (4 Easy, 4 Medium, 2 Hard).
-For Grades G6–G12: generate exactly 15 problems each (5 Easy, 6 Medium, 4 Hard).
+For ALL grades: generate exactly 10 problems each (4 Easy, 4 Medium, 2 Hard).
 Order them Easy first, then Medium, then Hard. Mark each with [Easy], [Medium], or [Hard] in the title.
 """
     prompt += grade_curriculum
