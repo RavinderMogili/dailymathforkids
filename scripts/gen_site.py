@@ -150,6 +150,59 @@ HELPERS_JS = r"""
 </script>
 """
 
+def auto_fix_answers(text):
+    """Auto-fix common LLM answer mistakes: stripped fractions, currency, time, decimals."""
+    lines = text.split('\n')
+    fixed_count = 0
+
+    for i, line in enumerate(lines):
+        ans_match = re.match(r'^(\s*-\s*Answer:\s*)(\S+)\s*$', line)
+        if not ans_match:
+            continue
+        prefix = ans_match.group(1)
+        answer = ans_match.group(2)
+
+        # Look backwards for the Choices line
+        choices_line = None
+        for j in range(i - 1, max(i - 10, -1), -1):
+            if re.match(r'^\s*-\s*Choices:', lines[j]):
+                choices_line = lines[j]
+                break
+
+        if not choices_line:
+            continue
+
+        # Parse choice values
+        choices_part = re.sub(r'^\s*-\s*Choices:\s*', '', choices_line)
+        choice_values = []
+        for part in re.split(r'\s{2,}(?=[A-D]\))', choices_part.strip()):
+            m = re.match(r'[A-D]\)\s*(.+)', part.strip())
+            if m:
+                choice_values.append(m.group(1).strip())
+
+        # If answer already matches a choice, no fix needed
+        if answer in choice_values:
+            continue
+
+        # Try to find the correct choice by matching the stripped answer
+        fixed = None
+        for cv in choice_values:
+            # Strip special chars from choice and compare
+            stripped = re.sub(r'[$/:.,¢]', '', cv)
+            if stripped == answer:
+                fixed = cv
+                break
+
+        if fixed:
+            lines[i] = f"{prefix}{fixed}"
+            fixed_count += 1
+            print(f"  AUTO-FIX: Answer '{answer}' → '{fixed}'")
+
+    if fixed_count:
+        print(f"INFO: Auto-fixed {fixed_count} answer(s)")
+    return '\n'.join(lines)
+
+
 def parse_grade_sections(text):
     sections = {}
     for code in GRADE_CODES:
@@ -238,12 +291,9 @@ def safe_generate_today():
         rebuild_index_and_sitemap()
         return
 
-    # Pick 5 grade levels to feature today, cycling so all 12 grades appear across the fortnight.
-    # Day-of-year offset ensures a different mix each day.
+    # Generate all 12 grades every day so no student is ever left without a quiz.
     _all_grades = ["G1","G2","G3","G4","G5","G6","G7","G8","G9","G10","G11","G12"]
-    _doy = datetime.date.today().timetuple().tm_yday
-    _featured = [_all_grades[(_doy + i * 3) % 12] for i in range(5)]
-    featured_grades_str = ", ".join(_featured)
+    featured_grades_str = ", ".join(_all_grades)
 
     grade_curriculum = """
 CANADIAN MATH CURRICULUM GUIDE — use this to calibrate each problem:
@@ -271,7 +321,8 @@ Order them Easy first, then Medium, then Hard. Mark each with [Easy], [Medium], 
 RULES:
 - Each problem must match the curriculum exactly for its assigned grade. No topics above grade level.
 - Use real-life Canadian contexts: loonies/toonies, hockey, maple syrup, Tim Hortons, snowfall (cm), camping, school supplies in CAD.
-- Answer must be a single number (integer or simple decimal). No units in the answer field.
+- The Answer field must EXACTLY match one of the Choices values (same formatting, symbols, and characters). If a choice is "1/4" the answer must be "1/4". If a choice is "$30" the answer must be "$30". If a choice is "3:00" the answer must be "3:00".
+- Division problems must always have whole-number results. Never create a division that produces a fraction or repeating decimal.
 - Keep language short, friendly, and age-appropriate.
 - Provide each problem in both English and French.
 
@@ -288,7 +339,7 @@ Use EXACTLY this format — no deviations:
    - Steps: Show a SIMILAR worked example using COMPLETELY DIFFERENT numbers — NEVER solve the actual problem. Example: if the problem is "7 × 8 = ?", the steps should solve a DIFFERENT multiplication like "3 × 5 = 5 + 5 + 5 = 15" and explain the concept. This teaches the METHOD so students can apply it themselves.
      - step 1 (analogous example with different numbers)
      - step 2 (explain the concept/method)
-   - Answer: [number only — must match one of the Choices values exactly]
+   - Answer: [must EXACTLY match one of the Choices values — include $, /, :, decimals etc. For example if the correct choice is "1/4" write Answer: 1/4, if it's "$30" write Answer: $30, if it's "3:00" write Answer: 3:00]
 2. **[Easy] Title**
    ...
 [continue with 4 Easy, 4 Medium, 2 Hard = 10 problems for G1]
@@ -341,18 +392,35 @@ A 3–4 sentence story about a child helping someone in Canada (English, Grade 3
         if not text:
             print("WARN: LLM returned empty text; skipping page write.")
             return
+
+        # Auto-fix common LLM answer issues before saving
+        text = auto_fix_answers(text)
+
         md_path.write_text(text + "\n", encoding="utf-8")
 
         page_html = generate_html_from_text(text, today)
         html_path.write_text(page_html, encoding="utf-8")
         print(f"INFO: Wrote {html_path}")
 
+        # Run validation and warn about remaining issues
+        try:
+            from validate_quiz import parse_questions_from_md, validate_questions
+            questions = parse_questions_from_md(text)
+            issues = validate_questions(questions)
+            errors = [i for i in issues if i.level == 'error']
+            if errors:
+                print(f"WARN: Quiz validation found {len(errors)} errors after auto-fix:")
+                for i in errors[:10]:
+                    print(f"  - [{i.grade} Q{i.qnum}] {i.msg}")
+        except Exception as ve:
+            print(f"INFO: Validation skipped: {ve}")
+
         grade_sections = parse_grade_sections(text)
         for code in GRADE_CODES:
             content = grade_sections.get(code, "")
             if content:
                 qs  = re.findall(r'^\s*-\s*EN:\s*(.+)',      content, re.MULTILINE)
-                ans = re.findall(r'^\s*-\s*Answer:\s*(\S+)', content, re.MULTILINE)
+                ans = re.findall(r'^\s*-\s*Answer:\s*(.+?)(?:\s*$)', content, re.MULTILINE)
                 upsert_quiz_to_supabase(f"{today}-{code}", qs, ans)
     except Exception as e:
         import traceback

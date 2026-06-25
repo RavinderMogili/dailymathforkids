@@ -790,6 +790,7 @@ function showGradeProblems() {
   const code = gradeToCode(u ? u.grade : store.get('dmk_lvl') || 'G3');
   window.DMK_ACTIVE_GRADE = code;
   const expired = isQuizExpired();
+  const mySection = document.querySelector(`.grade-section[data-grade="${code}"]`);
   document.querySelectorAll('.grade-section').forEach(el => {
     if (el.dataset.grade === code) {
       el.style.display = 'block';
@@ -811,6 +812,17 @@ function showGradeProblems() {
   const notice = document.getElementById('grade-notice');
   if (notice) notice.textContent = `Grade ${code.replace('G', '')} problems`;
   const helloEl = document.getElementById('hello');
+
+  // If user's grade has no questions today, show helpful message
+  if (!mySection && u) {
+    if (helloEl) helloEl.innerHTML =
+      `<span style="font-size:1.1rem">\uD83D\uDCC5 No Grade ${code.replace('G', '')} quiz today.</span><br>` +
+      `<span style="font-size:.95rem;color:var(--muted)">Grades rotate daily \u2014 yours will appear soon! ` +
+      `In the meantime, try <a href="../practice.html">Practice Mode</a> to earn points.</span>`;
+    const submitBtn = document.querySelector('#quiz button[type="submit"]');
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.style.display = 'none'; }
+    return;
+  }
 
   if (expired) {
     if (helloEl) helloEl.innerHTML = '\uD83D\uDD12 This quiz has expired. You can review the questions, but only today\'s quiz earns points. <a href="../index.html">Go to today\'s quiz!</a>';

@@ -34,6 +34,9 @@ jobs:
           PUBLIC_API_BASE: "https://dailymathforkids-api.vercel.app"
         run: python scripts/gen_site.py
 
+      - name: Validate quiz answers
+        run: python scripts/validate_quiz.py || true
+
       - name: Commit & push (even if nothing changed)
         run: |
           git config user.name "github-actions"
