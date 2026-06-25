@@ -13,7 +13,9 @@ Checks:
 Usage:
   python scripts/validate_quiz.py                  # validate today
   python scripts/validate_quiz.py 2026-06-25       # validate specific date
-  python scripts/validate_quiz.py --fix            # auto-fix what's possible
+  python scripts/validate_quiz.py --fix            # auto-fix and write corrections to file
+  python scripts/validate_quiz.py --strict         # exit code 2 if any errors (blocks deploy)
+  python scripts/validate_quiz.py --fix --strict   # fix first, then block if unfixable remain
 
 Exit code 0 = all good, 1 = warnings only, 2 = errors found
 """
@@ -276,10 +278,54 @@ def validate_file(filepath, source='html'):
     return questions, issues
 
 
+def auto_fix_file(filepath, issues, source='md'):
+    """Apply auto-fixes to the file for issues that have a suggested fix."""
+    fixable = [i for i in issues if i.fix and i.level == 'error']
+    if not fixable:
+        print("  No auto-fixable issues found.")
+        return 0
+
+    content = filepath.read_text(encoding='utf-8')
+    fixed_count = 0
+
+    for issue in fixable:
+        old_answer = issue.msg.split('"')[1]  # extract wrong answer from error msg
+        if source == 'md':
+            old_pattern = f'Answer: {old_answer}'
+            new_pattern = f'Answer: {issue.fix}'
+        else:
+            # HTML: Answer is in <li>Answer: VALUE</li>
+            old_pattern = f'Answer: {old_answer}</li>'
+            new_pattern = f'Answer: {issue.fix}</li>'
+
+        if old_pattern in content:
+            content = content.replace(old_pattern, new_pattern, 1)
+            fixed_count += 1
+            print(f"  ✅ Fixed [{issue.grade} Q{issue.qnum}]: \"{old_answer}\" → \"{issue.fix}\"")
+
+    if fixed_count:
+        filepath.write_text(content, encoding='utf-8')
+        print(f"\n  🔧 Auto-fixed {fixed_count} answer(s) in {filepath.name}")
+
+    return fixed_count
+
+
+def check_min_questions(questions, min_per_grade=10):
+    """Check that each grade has at least min_per_grade questions."""
+    from collections import Counter
+    grade_counts = Counter(q['grade'] for q in questions)
+    issues = []
+    for grade, count in sorted(grade_counts.items()):
+        if count < min_per_grade:
+            issues.append(f"[{grade}] Only {count} questions (expected {min_per_grade})")
+    return issues
+
+
 def main():
     args = sys.argv[1:]
     do_fix = '--fix' in args
-    args = [a for a in args if a != '--fix']
+    strict = '--strict' in args
+    args = [a for a in args if not a.startswith('--')]
 
     if args:
         date_str = args[0]
@@ -290,18 +336,30 @@ def main():
     html_path = DAILY_DIR / f"{date_str}.html"
 
     if md_path.exists():
+        filepath = md_path
+        source = 'md'
         print(f"Validating: {md_path.name} (markdown source)")
-        questions, issues = validate_file(md_path, source='md')
     elif html_path.exists():
+        filepath = html_path
+        source = 'html'
         print(f"Validating: {html_path.name} (HTML)")
-        questions, issues = validate_file(html_path, source='html')
     else:
         print(f"ERROR: No quiz file found for {date_str}")
         sys.exit(2)
 
-    print(f"Found {len(questions)} questions across {len(set(q['grade'] for q in questions))} grades\n")
+    questions, issues = validate_file(filepath, source=source)
+    grade_count = len(set(q['grade'] for q in questions))
+    print(f"Found {len(questions)} questions across {grade_count} grades\n")
 
-    if not issues:
+    # Check minimum question count per grade
+    min_issues = check_min_questions(questions, min_per_grade=10)
+    if min_issues:
+        print(f"QUESTION COUNT ISSUES ({len(min_issues)}):")
+        for msg in min_issues:
+            print(f"  ⚠️  {msg}")
+        print()
+
+    if not issues and not min_issues:
         print("✅ All checks passed! No issues found.")
         sys.exit(0)
 
@@ -322,25 +380,34 @@ def main():
             print(i)
         print()
 
-    total = len(errors) + len(warnings)
     print(f"\nSummary: {len(errors)} errors, {len(warnings)} warnings in {len(questions)} questions")
 
+    # Auto-fix mode: apply fixes and write back to file
     if do_fix and errors:
-        fixable = [i for i in errors if i.fix]
-        if fixable:
-            print(f"\n🔧 Auto-fixing {len(fixable)} issues...")
-            if md_path.exists():
-                content = md_path.read_text(encoding='utf-8')
-                for issue in fixable:
-                    # Replace Answer: [wrong] with Answer: [fix]
-                    old_answer = issue.msg.split('"')[1]  # extract from error msg
-                    # This is a simple fix — in real usage we'd need more context
-                    print(f"  Fixed [{issue.grade} Q{issue.qnum}]: {old_answer} → {issue.fix}")
-            print("  ⚠️  Auto-fix applied to markdown. Re-run gen_site.py to rebuild HTML.")
-        else:
-            print("  No auto-fixable issues found. Manual review needed.")
+        print(f"\n🔧 Attempting auto-fix...")
+        fixed = auto_fix_file(filepath, issues, source=source)
+        if fixed:
+            # Re-validate after fix
+            questions2, issues2 = validate_file(filepath, source=source)
+            remaining_errors = [i for i in issues2 if i.level == 'error']
+            if remaining_errors:
+                print(f"\n  ⚠️  {len(remaining_errors)} error(s) remain after auto-fix (need manual review)")
+            else:
+                print(f"\n  ✅ All errors resolved after auto-fix!")
+                sys.exit(0)
 
-    sys.exit(2 if errors else 1)
+    # In strict mode, exit with error code if any errors remain
+    if strict and errors:
+        unfixable = [i for i in errors if not i.fix]
+        if unfixable:
+            print(f"\n❌ STRICT MODE: {len(unfixable)} unfixable error(s) — blocking deploy.")
+            sys.exit(2)
+        # If all errors were fixable but --fix wasn't used
+        print(f"\n❌ STRICT MODE: {len(errors)} error(s) found — run with --fix first.")
+        sys.exit(2)
+
+    # Exit code: 2 for errors, 1 for warnings only, 0 for clean
+    sys.exit(2 if errors else (1 if warnings or min_issues else 0))
 
 
 if __name__ == "__main__":

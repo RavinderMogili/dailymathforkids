@@ -34,8 +34,12 @@ jobs:
           PUBLIC_API_BASE: "https://dailymathforkids-api.vercel.app"
         run: python scripts/gen_site.py
 
-      - name: Validate quiz answers
-        run: python scripts/validate_quiz.py || true
+      - name: Validate and auto-fix quiz answers
+        run: |
+          echo "Running validation with auto-fix..."
+          python scripts/validate_quiz.py --fix
+          echo "Re-validating after fixes..."
+          python scripts/validate_quiz.py --strict
 
       - name: Commit & push (even if nothing changed)
         run: |
