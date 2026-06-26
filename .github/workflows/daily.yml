@@ -59,6 +59,48 @@ jobs:
           echo "=== Final validation (deploy regardless — kids must get their quiz) ==="
           python scripts/validate_quiz.py || true
 
+      - name: Ensure all 12 grades are present (retry up to 3 times if any missing)
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+          SITE_TITLE: "Daily Math for Kids"
+          PUBLIC_API_BASE: "https://dailymathforkids-api.vercel.app"
+        run: |
+          TODAY=$(date +%Y-%m-%d)
+          FILE="daily/${TODAY}.html"
+          for ATTEMPT in 1 2 3; do
+            if [ ! -f "$FILE" ]; then
+              echo "⚠️ Attempt $ATTEMPT: No quiz file — generating..."
+              python scripts/gen_site.py || true
+              continue
+            fi
+            MISSING=""
+            for G in G1 G2 G3 G4 G5 G6 G7 G8 G9 G10 G11 G12; do
+              if ! grep -q "data-grade=\"$G\"" "$FILE"; then
+                MISSING="$MISSING $G"
+              fi
+            done
+            if [ -z "$MISSING" ]; then
+              echo "✅ All 12 grades present in today's quiz."
+              break
+            fi
+            echo "⚠️ Attempt $ATTEMPT: Missing grades:$MISSING — deleting and regenerating..."
+            rm -f "$FILE" "daily/${TODAY}.md"
+            python scripts/gen_site.py || true
+          done
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run unit tests (grade coverage, answer validation)
+        run: |
+          npm install --no-audit --no-fund
+          npx jest scripts/validate_quiz.test.js --verbose || true
+
       - name: Commit & push (even if nothing changed)
         run: |
           git config user.name "github-actions"

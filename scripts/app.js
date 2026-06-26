@@ -342,13 +342,9 @@ async function submitReg(e) {
     _retryPendingSubmit();
     if (typeof loadProfile === 'function') window.location.reload();
   } catch {
-    // Network error — continue as guest so the student can still practice offline
-    saveUser({ userId: crypto.randomUUID(), nickname, grade, school, city, parent_email, guest: true });
-    store.set('dmk_review', []); store.set('doneDays', {});
-    hideRegModal(); renderBadge();
-    if (typeof showGradeProblems === 'function') showGradeProblems();
-    if (typeof resumeOrLockQuiz === 'function') resumeOrLockQuiz();
-    _retryPendingSubmit();
+    // Network error — keep modal open so student sees error and can retry
+    msg.textContent = '⚠️ Could not connect to server. Check your internet connection or disable ad blockers, then try again.';
+    msg.className = 'form-msg error';
   }
 }
 
@@ -565,6 +561,14 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
     });
     const data = await res.json();
     if (!res.ok) {
+      // If user account doesn't exist in DB (guest or deleted), prompt re-registration
+      if (data.error && /user_id_fkey|user.*not found/i.test(data.error)) {
+        store.set('dmk_user', null);
+        resultEl.innerHTML = '⚠️ Your account needs to be re-created. Please register again — your answers are saved and will be submitted automatically.';
+        window._pendingSubmit = { quizId, answers, resultEl };
+        showRegModal();
+        return false;
+      }
       resultEl.textContent = data.error || 'Something went wrong. Try again!';
       return false;
     }

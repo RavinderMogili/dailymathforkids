@@ -236,3 +236,61 @@ describe('Quiz answer validation', () => {
     });
   });
 });
+
+describe('All grades coverage check', () => {
+  const ALL_GRADES = ['G1','G2','G3','G4','G5','G6','G7','G8','G9','G10','G11','G12'];
+  const DAILY_DIR = path.join(__dirname, '..', 'daily');
+
+  function getTodayFile() {
+    const today = new Date().toISOString().slice(0, 10);
+    const htmlPath = path.join(DAILY_DIR, `${today}.html`);
+    if (fs.existsSync(htmlPath)) return htmlPath;
+    // Find the most recent quiz file
+    const files = fs.readdirSync(DAILY_DIR)
+      .filter(f => f.endsWith('.html') && /^\d{4}-\d{2}-\d{2}\.html$/.test(f))
+      .sort()
+      .reverse();
+    return files.length ? path.join(DAILY_DIR, files[0]) : null;
+  }
+
+  it('latest quiz HTML has all 12 grades (G1-G12)', () => {
+    const quizFile = getTodayFile();
+    if (!quizFile) { console.warn('No quiz HTML found — skipping'); return; }
+    const html = fs.readFileSync(quizFile, 'utf-8');
+    const foundGrades = [];
+    for (const g of ALL_GRADES) {
+      if (html.includes(`data-grade="${g}"`)) foundGrades.push(g);
+    }
+    const missing = ALL_GRADES.filter(g => !foundGrades.includes(g));
+    expect(missing).toEqual([]);
+  });
+
+  it('each grade has at least 10 questions', () => {
+    const quizFile = getTodayFile();
+    if (!quizFile) { console.warn('No quiz HTML found — skipping'); return; }
+    const html = fs.readFileSync(quizFile, 'utf-8');
+    const tooFew = [];
+    for (const g of ALL_GRADES) {
+      const regex = new RegExp(`data-grade="${g}"[^>]*>[\\s\\S]*?<ol class="problems-list">([\\s\\S]*?)</ol>`, 'm');
+      const match = html.match(regex);
+      if (!match) { tooFew.push(`${g}: missing`); continue; }
+      const count = (match[1].match(/<li>/g) || []).length;
+      if (count < 10) tooFew.push(`${g}: only ${count} questions`);
+    }
+    expect(tooFew).toEqual([]);
+  });
+
+  it('every question has an Answer field', () => {
+    const quizFile = getTodayFile();
+    if (!quizFile) { console.warn('No quiz HTML found — skipping'); return; }
+    const html = fs.readFileSync(quizFile, 'utf-8');
+    for (const g of ALL_GRADES) {
+      const regex = new RegExp(`data-grade="${g}"[^>]*>[\\s\\S]*?<ol class="problems-list">([\\s\\S]*?)</ol>`, 'm');
+      const match = html.match(regex);
+      if (!match) continue;
+      const questions = (match[1].match(/<li>/g) || []).length;
+      const answers = (match[1].match(/<li>Answer:/g) || []).length;
+      expect(answers).toBeGreaterThanOrEqual(questions);
+    }
+  });
+});

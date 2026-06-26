@@ -258,7 +258,7 @@ def call_llm(prompt):
         resp = client.chat.completions.create(
             model="gpt-4o",
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=32000,
+            max_tokens=16384,
         )
         return resp.choices[0].message.content.strip()
     else:
@@ -288,19 +288,6 @@ def safe_generate_today():
                     qs  = re.findall(r'^\s*-\s*EN:\s*(.+)',      content, re.MULTILINE)
                     ans = re.findall(r'^\s*-\s*Answer:\s*(\S+)', content, re.MULTILINE)
                     upsert_quiz_to_supabase(f"{today}-{code}", qs, ans)
-        else:
-            # No .md file — parse questions/answers directly from HTML
-            print("INFO: No .md file found — registering quizzes from HTML.")
-            html_text = html_path.read_text(encoding="utf-8")
-            for code in GRADE_CODES:
-                pattern = rf'<div class="grade-section" data-grade="{code}"[^>]*>(.*?)</div>'
-                match = re.search(pattern, html_text, re.DOTALL)
-                if match:
-                    section = match.group(1)
-                    qs  = re.findall(r'<li>EN:\s*(.+?)</li>', section)
-                    ans = re.findall(r'<li>Answer:\s*(.+?)</li>', section)
-                    if qs and ans:
-                        upsert_quiz_to_supabase(f"{today}-{code}", qs, ans)
         rebuild_index_and_sitemap()
         return
 
