@@ -244,21 +244,21 @@ def call_llm(prompt):
 
     if anthropic and anthropic_key:
         print("INFO: Using Claude Sonnet 4.6 for generation (high math accuracy).")
-        client = anthropic.Anthropic(api_key=anthropic_key, timeout=300.0, max_retries=5)
+        client = anthropic.Anthropic(api_key=anthropic_key, timeout=600.0, max_retries=5)
         msg = client.messages.create(
             model="claude-sonnet-4-6",
-            max_tokens=16000,
+            max_tokens=64000,
             messages=[{"role": "user", "content": prompt}],
         )
         return msg.content[0].text.strip()
     elif OpenAI and openai_key:
         print("INFO: Using OpenAI gpt-4o for generation (Anthropic key not found).")
         os.environ["OPENAI_API_KEY"] = openai_key
-        client = OpenAI(timeout=300, max_retries=5)
+        client = OpenAI(timeout=600, max_retries=5)
         resp = client.chat.completions.create(
             model="gpt-4o",
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=16000,
+            max_tokens=32000,
         )
         return resp.choices[0].message.content.strip()
     else:
@@ -288,6 +288,19 @@ def safe_generate_today():
                     qs  = re.findall(r'^\s*-\s*EN:\s*(.+)',      content, re.MULTILINE)
                     ans = re.findall(r'^\s*-\s*Answer:\s*(\S+)', content, re.MULTILINE)
                     upsert_quiz_to_supabase(f"{today}-{code}", qs, ans)
+        else:
+            # No .md file — parse questions/answers directly from HTML
+            print("INFO: No .md file found — registering quizzes from HTML.")
+            html_text = html_path.read_text(encoding="utf-8")
+            for code in GRADE_CODES:
+                pattern = rf'<div class="grade-section" data-grade="{code}"[^>]*>(.*?)</div>'
+                match = re.search(pattern, html_text, re.DOTALL)
+                if match:
+                    section = match.group(1)
+                    qs  = re.findall(r'<li>EN:\s*(.+?)</li>', section)
+                    ans = re.findall(r'<li>Answer:\s*(.+?)</li>', section)
+                    if qs and ans:
+                        upsert_quiz_to_supabase(f"{today}-{code}", qs, ans)
         rebuild_index_and_sitemap()
         return
 
@@ -394,6 +407,26 @@ A 3–4 sentence story about a child helping someone in Canada (English, Grade 3
 
         # Auto-fix common LLM answer issues before saving
         text = auto_fix_answers(text)
+
+        # Check for missing grades and retry if needed
+        grade_sections = parse_grade_sections(text)
+        missing = [g for g in GRADE_CODES if not grade_sections.get(g, "").strip()]
+        if missing:
+            print(f"WARN: LLM output missing {len(missing)} grades: {missing}. Retrying for missing grades...")
+            missing_prompt = prompt.replace(
+                "For ALL grades: generate exactly 10 problems each",
+                f"For ONLY these grades: {', '.join(missing)} — generate exactly 10 problems each"
+            )
+            extra_text = call_llm(missing_prompt)
+            if extra_text:
+                extra_text = auto_fix_answers(extra_text)
+                text = text.rstrip() + "\n\n" + extra_text.strip()
+                grade_sections = parse_grade_sections(text)
+                still_missing = [g for g in GRADE_CODES if not grade_sections.get(g, "").strip()]
+                if still_missing:
+                    print(f"WARN: Still missing after retry: {still_missing}")
+                else:
+                    print(f"INFO: All 12 grades now present after retry.")
 
         md_path.write_text(text + "\n", encoding="utf-8")
 
