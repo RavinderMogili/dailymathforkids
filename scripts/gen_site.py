@@ -244,7 +244,7 @@ def call_llm(prompt):
 
     if anthropic and anthropic_key:
         print("INFO: Using Claude Sonnet 4.6 for generation (high math accuracy).")
-        client = anthropic.Anthropic(api_key=anthropic_key, timeout=600.0, max_retries=5)
+        client = anthropic.Anthropic(api_key=anthropic_key, timeout=180.0, max_retries=2)
         msg = client.messages.create(
             model="claude-sonnet-4-6",
             max_tokens=64000,
@@ -254,7 +254,7 @@ def call_llm(prompt):
     elif OpenAI and openai_key:
         print("INFO: Using OpenAI gpt-4o for generation (Anthropic key not found).")
         os.environ["OPENAI_API_KEY"] = openai_key
-        client = OpenAI(timeout=600, max_retries=5)
+        client = OpenAI(timeout=180, max_retries=2)
         resp = client.chat.completions.create(
             model="gpt-4o",
             messages=[{"role": "user", "content": prompt}],
@@ -310,22 +310,40 @@ CANADIAN MATH CURRICULUM GUIDE — use this to calibrate each problem:
   G11 (Grade 11): functions (linear/quadratic/exponential), logarithms intro, sequences and series, financial math (compound interest, annuities), trigonometric identities
   G12 (Grade 12): advanced functions (polynomial/rational/trig), derivatives intro (rates of change), combinations and permutations, vectors intro, probability distributions"""
 
-    prompt = f"""You are creating daily math problems for Canadian students in Grades 1–12.
-For ALL grades: generate exactly 10 problems each (4 Easy, 4 Medium, 2 Hard).
-Order them Easy first, then Medium, then Hard. Mark each with [Easy], [Medium], or [Hard] in the title.
-"""
-    prompt += grade_curriculum
-    prompt += f"""
+    prompt = f"""Create daily math problems for Canadian students, Grades 1–12.
+You MUST generate ALL 12 grades (G1 through G12) — do NOT stop early.
+Each grade: EXACTLY 10 problems (4 Easy, 4 Medium, 2 Hard). Order: Easy first, then Medium, then Hard.
+{grade_curriculum}
 
-RULES:
-- Each problem must match the curriculum exactly for its assigned grade. No topics above grade level.
-- Use real-life Canadian contexts: loonies/toonies, hockey, maple syrup, Tim Hortons, snowfall (cm), camping, school supplies in CAD.
-- The Answer field must EXACTLY match one of the Choices values (same formatting, symbols, and characters). If a choice is "1/4" the answer must be "1/4". If a choice is "$30" the answer must be "$30". If a choice is "3:00" the answer must be "3:00".
-- Division problems must always have whole-number results. Never create a division that produces a fraction or repeating decimal.
-- Keep language short, friendly, and age-appropriate.
-- Provide each problem in both English and French.
+CRITICAL RULES — violations will break the quiz:
 
-Use EXACTLY this format — no deviations:
+1. ANSWER FORMATTING (most common bug):
+   - The Answer field must be COPIED from the Choices — character for character.
+   - If the correct choice is "$6.75", write Answer: $6.75 (NOT "675" or "6.75")
+   - If the correct choice is "1/4", write Answer: 1/4 (NOT "14")
+   - If the correct choice is "3:30", write Answer: 3:30 (NOT "330")
+   - If the correct choice is "0.3", write Answer: 0.3 (NOT "03")
+   - NEVER strip $, /, :, or decimal points from the answer.
+
+2. MATH ACCURACY:
+   - Solve each problem yourself before writing the answer. Double-check the arithmetic.
+   - The correct answer MUST appear as exactly one of the four choices.
+   - All four choices must be plausible (no obviously silly options).
+   - Division problems must have whole-number results only.
+
+3. CONTENT:
+   - Match curriculum for each grade. No topics above grade level.
+   - Canadian contexts: loonies/toonies, hockey, Tim Hortons, snowfall (cm), school supplies in CAD.
+   - Short, friendly, age-appropriate language. Both English and French.
+   - Hint: teach the METHOD using DIFFERENT numbers (never the actual problem's numbers).
+   - Steps: worked example with DIFFERENT numbers — never solve the actual problem.
+
+4. COMPLETENESS:
+   - You MUST output all sections: G1, G2, G3, G4, G5, G6, G7, G8, G9, G10, G11, G12.
+   - Each grade MUST have exactly 10 numbered problems.
+   - Do NOT stop or summarize. Write every problem in full.
+
+FORMAT (follow exactly — no deviations):
 
 # Daily Math - {today}
 
@@ -333,15 +351,13 @@ Use EXACTLY this format — no deviations:
 1. **[Easy] Title**
    - EN: problem in English
    - FR: same problem in French
-   - Choices: A) [wrong]  B) [correct]  C) [wrong]  D) [wrong]
-   - Hint: Teach the METHOD using a DIFFERENT example with DIFFERENT numbers (IXL-style). NEVER use the same numbers as the actual problem. Example: if the problem is "5 × 4 = ?", the hint should be "Multiplication means groups. For example, 3 × 6 = 6 + 6 + 6 = 18. Now try applying the same idea!" — always use a simpler analogous case so students learn the concept and apply it themselves.
-   - Steps: Show a SIMILAR worked example using COMPLETELY DIFFERENT numbers — NEVER solve the actual problem. Example: if the problem is "7 × 8 = ?", the steps should solve a DIFFERENT multiplication like "3 × 5 = 5 + 5 + 5 = 15" and explain the concept. This teaches the METHOD so students can apply it themselves.
-     - step 1 (analogous example with different numbers)
-     - step 2 (explain the concept/method)
-   - Answer: [must EXACTLY match one of the Choices values — include $, /, :, decimals etc. For example if the correct choice is "1/4" write Answer: 1/4, if it's "$30" write Answer: $30, if it's "3:00" write Answer: 3:00]
-2. **[Easy] Title**
-   ...
-[continue with 4 Easy, 4 Medium, 2 Hard = 10 problems for G1]
+   - Choices: A) ...  B) ...  C) ...  D) ...
+   - Hint: one-line hint using different numbers
+   - Steps:
+     - step 1
+     - step 2
+   - Answer: [COPY exact text of correct choice]
+[...problems 2-10]
 
 ## G2
 [10 problems: 4 Easy, 4 Medium, 2 Hard]
@@ -356,31 +372,33 @@ Use EXACTLY this format — no deviations:
 [10 problems: 4 Easy, 4 Medium, 2 Hard]
 
 ## G6
-[15 problems: 5 Easy, 6 Medium, 4 Hard]
+[10 problems: 4 Easy, 4 Medium, 2 Hard]
 
 ## G7
-[15 problems: 5 Easy, 6 Medium, 4 Hard]
+[10 problems: 4 Easy, 4 Medium, 2 Hard]
 
 ## G8
-[15 problems: 5 Easy, 6 Medium, 4 Hard]
+[10 problems: 4 Easy, 4 Medium, 2 Hard]
 
 ## G9
-[15 problems: 5 Easy, 6 Medium, 4 Hard]
+[10 problems: 4 Easy, 4 Medium, 2 Hard]
 
 ## G10
-[15 problems: 5 Easy, 6 Medium, 4 Hard]
+[10 problems: 4 Easy, 4 Medium, 2 Hard]
 
 ## G11
-[15 problems: 5 Easy, 6 Medium, 4 Hard]
+[10 problems: 4 Easy, 4 Medium, 2 Hard]
 
 ## G12
-[15 problems: 5 Easy, 6 Medium, 4 Hard]
+[10 problems: 4 Easy, 4 Medium, 2 Hard]
 
 ## Today's Encouragement
 One cheerful sentence (10–16 words, English only). No emojis.
 
 ## Mini Story of Kindness
 A 3–4 sentence story about a child helping someone in Canada (English, Grade 3 reading level).
+
+FINAL CHECK before outputting: Verify you have 12 grade sections (G1-G12), each with exactly 10 problems, and every Answer exactly matches one of its Choices.
 """
     # (original prompt replaced — keep variable name for compatibility)
     _unused_prompt = f"""
