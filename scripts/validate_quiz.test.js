@@ -274,7 +274,8 @@ describe('All grades coverage check', () => {
       const regex = new RegExp(`data-grade="${g}"[^>]*>[\\s\\S]*?<ol class="problems-list">([\\s\\S]*?)</ol>`, 'm');
       const match = html.match(regex);
       if (!match) { tooFew.push(`${g}: missing`); continue; }
-      const count = (match[1].match(/<li>/g) || []).length;
+      // Count problems by Answer fields (one per question)
+      const count = (match[1].match(/<li>Answer:/g) || []).length;
       if (count < 10) tooFew.push(`${g}: only ${count} questions`);
     }
     expect(tooFew).toEqual([]);
@@ -284,13 +285,14 @@ describe('All grades coverage check', () => {
     const quizFile = getTodayFile();
     if (!quizFile) { console.warn('No quiz HTML found — skipping'); return; }
     const html = fs.readFileSync(quizFile, 'utf-8');
+    const missing = [];
     for (const g of ALL_GRADES) {
       const regex = new RegExp(`data-grade="${g}"[^>]*>[\\s\\S]*?<ol class="problems-list">([\\s\\S]*?)</ol>`, 'm');
       const match = html.match(regex);
       if (!match) continue;
-      const questions = (match[1].match(/<li>/g) || []).length;
       const answers = (match[1].match(/<li>Answer:/g) || []).length;
-      expect(answers).toBeGreaterThanOrEqual(questions);
+      if (answers < 10) missing.push(`${g}: only ${answers} answers (need 10)`);
     }
+    expect(missing).toEqual([]);
   });
 });
