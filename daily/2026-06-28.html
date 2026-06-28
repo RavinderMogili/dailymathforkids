@@ -1878,6 +1878,9 @@
   });
   document.getElementById('quiz').addEventListener('submit', async function(e) {
     e.preventDefault();
+    const qid = window.QUIZ_ID || QUIZ_ID;
+    // Prevent double-submission
+    if (getQuizState(qid) === 'done') return;
     const grade = (window.QUIZ_ID || QUIZ_ID).replace(/^.*-(G\d+)$/, '$1');
     const section = document.querySelector('.grade-section[data-grade="' + grade + '"]');
     const lis = section ? section.querySelectorAll('.problems-list > li') : [];
@@ -1894,8 +1897,10 @@
       return inp ? inp.value.trim() : '';
     });
     const resultEl = document.getElementById('result');
-    resultEl.textContent = 'Checking…';
-    const qid = window.QUIZ_ID || QUIZ_ID;
+    resultEl.textContent = 'Submitting…';
+    // Disable submit button immediately to prevent double-clicks
+    const submitBtn = document.querySelector('#quiz button[type="submit"]');
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Submitting…'; }
     const secs = dmkTimer.stop();
     const timerEl = document.getElementById('quiz-timer');
     if (timerEl) timerEl.style.display = 'none';
@@ -1905,6 +1910,7 @@
       markDayDone(qid);
       setQuizState(qid, 'done');
       store.set('dmk_active_quiz_url', null);
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Submitted'; }
       const streak = calcStreak(qid);
       const streakEl = document.getElementById('streak-msg');
       streakEl.textContent = streak > 1
@@ -1938,6 +1944,9 @@
         feedbackEl.innerHTML = html;
         feedbackEl.scrollIntoView({behavior:'smooth', block:'nearest'});
       }
+    } else {
+      // Re-enable submit button so user can retry
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit Answers'; }
     }
   });
 </script>

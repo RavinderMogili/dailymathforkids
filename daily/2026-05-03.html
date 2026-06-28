@@ -1965,6 +1965,8 @@
   });
   document.getElementById('quiz').addEventListener('submit', async function(e) {
     e.preventDefault();
+    const qid = window.QUIZ_ID || QUIZ_ID;
+    if (getQuizState(qid) === 'done') return;
     const grade = (window.QUIZ_ID || QUIZ_ID).replace(/^.*-(G\d+)$/, '$1');
     const section = document.querySelector('.grade-section[data-grade="' + grade + '"]');
     const lis = section ? section.querySelectorAll('.problems-list > li') : [];
@@ -1981,7 +1983,9 @@
       return inp ? inp.value.trim() : '';
     });
     const resultEl = document.getElementById('result');
-    resultEl.textContent = 'Checking…';
+    resultEl.textContent = 'Submitting...';
+    const submitBtn = document.querySelector('#quiz button[type="submit"]');
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Submitting...'; }
     const qid = window.QUIZ_ID || QUIZ_ID;
     const secs = dmkTimer.stop();
     const timerEl = document.getElementById('quiz-timer');

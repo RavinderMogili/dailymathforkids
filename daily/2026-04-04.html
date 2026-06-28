@@ -859,7 +859,9 @@
     const fd = new FormData(this);
     const answers = ['q1','q2','q3','q4','q5'].map(k => fd.get(k).trim());
     const resultEl = document.getElementById('result');
-    resultEl.textContent = 'Checking…';
+    resultEl.textContent = 'Submitting...';
+    const submitBtn = document.querySelector('#quiz button[type="submit"]');
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Submitting...'; }
     const qid = window.QUIZ_ID || QUIZ_ID;
     const ok = await submitQuizAnswers(qid, answers, resultEl);
     if (ok) {

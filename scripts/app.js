@@ -562,11 +562,27 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
   }
 
   try {
-    const res  = await fetch(`${API}/api/submit`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: u.userId, quizId, answers, timeSeconds: timeSeconds ?? null }),
-    });
+    let res, attempts = 0;
+    const payload = JSON.stringify({ userId: u.userId, quizId, answers, timeSeconds: timeSeconds ?? null });
+    while (attempts < 2) {
+      attempts++;
+      try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 15000);
+        res = await fetch(`${API}/api/submit`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: payload,
+          signal: ctrl.signal,
+        });
+        clearTimeout(timer);
+        break;
+      } catch (e) {
+        if (attempts >= 2) throw e;
+        resultEl.textContent = 'Retrying\u2026';
+        await new Promise(r => setTimeout(r, 2000));
+      }
+    }
     const data = await res.json();
     if (!res.ok) {
       // If user account doesn't exist in DB (guest or deleted), prompt re-registration
@@ -581,9 +597,15 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
       return false;
     }
     if (data.already) {
-      resultEl.innerHTML = `<div class="result-celebration"><p class="result-praise">You already completed this quiz today — your points were saved!</p><p style="margin-top:8px;font-size:.9rem;color:var(--muted)">Come back tomorrow for a fresh quiz to earn more points.</p></div>`;
+      const wasStarted = getQuizState(quizId) === 'started';
       markDayDone(quizId);
       setQuizState(quizId, 'done');
+      if (wasStarted) {
+        // User never saw their results — their first submit went through but response was lost
+        resultEl.innerHTML = `<div class="result-celebration"><p class="result-praise">Your answers were submitted successfully!</p><p style="margin-top:8px;font-size:.9rem;color:var(--muted)">Your points from your first attempt have been saved. Check <a href="../profile.html">My Progress</a> to see your score.</p><p style="margin-top:8px;font-size:.9rem;color:var(--muted)">Come back tomorrow for a fresh quiz!</p></div>`;
+      } else {
+        resultEl.innerHTML = `<div class="result-celebration"><p class="result-praise">You already completed this quiz today — your points were saved!</p><p style="margin-top:8px;font-size:.9rem;color:var(--muted)">Come back tomorrow for a fresh quiz to earn more points.</p></div>`;
+      }
       return data;
     } else {
       const perfect  = data.score === data.outOf;
@@ -641,7 +663,8 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
     bumpSessionCount();
     return data;
   } catch {
-    resultEl.innerHTML = 'Could not reach the server. <button onclick="submitQuizAnswers(\'' + quizId + '\',' + JSON.stringify(answers) + ',this.parentElement,' + (timeSeconds ?? 'null') + ')" style="margin-left:8px;padding:6px 14px;border-radius:8px;background:var(--primary,#2563eb);color:#fff;border:none;cursor:pointer;font-weight:600">Retry</button>';
+    window._lastFailedSubmit = { quizId, answers, resultEl, timeSeconds };
+    resultEl.innerHTML = 'Could not reach the server. <button onclick="(function(){ var s=window._lastFailedSubmit; if(s) submitQuizAnswers(s.quizId,s.answers,s.resultEl,s.timeSeconds); })()" style="margin-left:8px;padding:6px 14px;border-radius:8px;background:var(--primary,#2563eb);color:#fff;border:none;cursor:pointer;font-weight:600">Retry</button>';
     return false;
   }
 }
