@@ -105,8 +105,8 @@ function injectModals() {
   <div id="reg-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="reg-title" style="display:none">
     <div class="modal-card">
       <button class="modal-close" onclick="hideRegModal()" aria-label="Close">✕</button>
-      <h2 class="modal-title" id="reg-title">Join Daily Math for Kids! 🧮</h2>
-      <p class="modal-sub">Free daily practice — track your personal best and grow every day! 🌱</p>
+      <h2 class="modal-title" id="reg-title">Join Daily Math for Kids!</h2>
+      <p class="modal-sub">Free daily practice — track your personal best and grow every day!</p>
       <form id="reg-form" onsubmit="submitReg(event)" novalidate>
         <label class="form-label">Nickname <span class="req">*</span>
           <input id="reg-nickname" class="form-input" placeholder="e.g. MathStar99" required maxlength="30" autocomplete="off"/>
@@ -124,11 +124,11 @@ function injectModals() {
         </label>
         <label class="form-label">Parent / Guardian email <small class="opt-label">(optional)</small>
           <input id="reg-parent-email" class="form-input" type="email" placeholder="parent@example.com" maxlength="100"/>
-          <small class="opt-label" style="margin-top:2px">📧 We’ll send a weekly progress report. Never shared or used for marketing.</small>
+          <small class="opt-label" style="margin-top:2px">We’ll send a weekly progress report. Never shared or used for marketing.</small>
         </label>
         <label class="form-label">4-Digit PIN <span class="req">*</span>
           <input id="reg-pin" class="form-input" type="password" inputmode="numeric" pattern="[0-9]{4}" placeholder="e.g. 1234" required maxlength="4" minlength="4" autocomplete="off" style="letter-spacing:8px;font-size:1.2rem;text-align:center"/>
-          <small class="opt-label" style="margin-top:2px">🔑 Choose a 4-digit PIN to protect your account. Remember it!</small>
+          <small class="opt-label" style="margin-top:2px">Choose a 4-digit PIN to protect your account. Remember it!</small>
         </label>
         <label class="form-label" id="reg-security-question-label">Security Question <small class="opt-label" id="reg-security-req">(required without parent email)</small>
           <select id="reg-security-question" class="form-input">
@@ -182,7 +182,7 @@ function injectModals() {
   <div id="login-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="login-title" style="display:none">
     <div class="modal-card">
       <button class="modal-close" onclick="hideLoginModal()" aria-label="Close">✕</button>
-      <h2 class="modal-title" id="login-title">Welcome Back! 👋</h2>
+      <h2 class="modal-title" id="login-title">Welcome Back!</h2>
       <p class="modal-sub">Enter your nickname to continue tracking your progress.</p>
       <form id="login-form" onsubmit="submitLogin(event)" novalidate>
         <label class="form-label">Nickname
@@ -208,7 +208,7 @@ function injectModals() {
   <div id="forgot-pin-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="forgot-pin-title" style="display:none">
     <div class="modal-card">
       <button class="modal-close" onclick="hideForgotPinModal()" aria-label="Close">✕</button>
-      <h2 class="modal-title" id="forgot-pin-title">Reset your PIN 🔑</h2>
+      <h2 class="modal-title" id="forgot-pin-title">Reset your PIN</h2>
       <p class="modal-sub">Prove it's you, then choose a new PIN.</p>
       <form id="forgot-pin-form" onsubmit="submitForgotPin(event)" novalidate>
         <label class="form-label">Nickname
@@ -235,7 +235,7 @@ function injectModals() {
   <div id="forgot-nickname-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="forgot-nickname-title" style="display:none">
     <div class="modal-card">
       <button class="modal-close" onclick="hideForgotNicknameModal()" aria-label="Close">✕</button>
-      <h2 class="modal-title" id="forgot-nickname-title">Find your nickname 👤</h2>
+      <h2 class="modal-title" id="forgot-nickname-title">Find your nickname</h2>
       <p class="modal-sub">We can remind you if you verify your identity.</p>
       <form id="forgot-nickname-form" onsubmit="submitForgotNickname(event)" novalidate>
         <label class="form-label">Parent / Guardian email <small class="opt-label">(if you added one)</small>
@@ -343,7 +343,7 @@ async function submitReg(e) {
     if (typeof loadProfile === 'function') window.location.reload();
   } catch {
     // Network error — keep modal open so student sees error and can retry
-    msg.textContent = '⚠️ Could not connect to server. Check your internet connection or disable ad blockers, then try again.';
+    msg.textContent = 'Could not connect to server. Check your internet connection or disable ad blockers, then try again.';
     msg.className = 'form-msg error';
   }
 }
@@ -388,7 +388,7 @@ async function submitLogin(e) {
     // Old account without PIN — remind them to set one (don't block login)
     if (data.needSetPin) {
       setTimeout(() => {
-        alert('🔑 Tip: Your account doesn\'t have a PIN yet. Next time you log in, enter a 4-digit PIN to secure your account!');
+        alert('Tip: Your account doesn\'t have a PIN yet. Next time you log in, enter a 4-digit PIN to secure your account!');
       }, 500);
     }
     if (typeof showGradeProblems === 'function') showGradeProblems();
@@ -544,12 +544,12 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
   }
 
   if (isQuizExpired()) {
-    resultEl.innerHTML = '\uD83D\uDD12 This quiz has expired \u2014 only today\'s quiz can be submitted for points. <a href="../index.html">Go to today\'s quiz!</a>';
+    resultEl.innerHTML = 'This quiz has expired \u2014 only today\'s quiz can be submitted for points. <a href="../index.html">Go to today\'s quiz!</a>';
     return false;
   }
 
   if (!API) {
-    resultEl.textContent = 'Practice recorded! Keep going! &#x1F600;';
+    resultEl.textContent = 'Practice recorded! Keep going!';
     return true;
   }
 
@@ -577,7 +577,6 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
     } else {
       const perfect  = data.score === data.outOf;
       const pct      = data.outOf > 0 ? data.score / data.outOf : 0;
-      const emoji    = perfect ? '' : pct >= 0.6 ? '' : '';
       const praise   = perfect
         ? 'Perfect score — you nailed every single one!'
         : pct >= 0.6
@@ -589,7 +588,7 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
         : perfect && !shieldAwarded
         ? `<p class="shield-note" style="color:var(--muted)">Perfect score! You can earn a new shield next month.</p>`
         : (hasShield() ? `<p class="shield-note" style="color:var(--muted)">Your magic shield is ready — you can skip a day and your streak stays safe!</p>` : '');
-      const timeNote = timeSeconds ? `<p class="time-taken">&#9201; Completed in <strong>${dmkTimer.fmt(timeSeconds)}</strong></p>` : '';
+      const timeNote = timeSeconds ? `<p class="time-taken">Completed in <strong>${dmkTimer.fmt(timeSeconds)}</strong></p>` : '';
       let feedbackHtml = '';
       if (data.results && data.results.length) {
         feedbackHtml = '<div class="answer-feedback" style="margin-top:1rem;text-align:left">';
@@ -610,14 +609,19 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
         });
         feedbackHtml += '</div>';
       }
+      const wrongCount = (data.results || []).filter(r => !r.correct).length;
+      const reviewButton = wrongCount > 0
+        ? `<button class="btn-secondary" onclick="startQuizReview('${quizId}')" style="margin-top:12px">Review ${wrongCount} mistake${wrongCount !== 1 ? 's' : ''}</button>`
+        : '';
       resultEl.innerHTML =
         `<div class="result-celebration">` +
-        `<p class="result-praise">${emoji} ${praise}</p>` +
+        `<p class="result-praise">${praise}</p>` +
         `<p class="points-earned">+${data.points_earned} point${data.points_earned !== 1 ? 's' : ''} earned today!</p>` +
         timeNote +
         feedbackHtml +
         shieldNote +
-        (!perfect ? `<button class="btn-secondary" onclick="retryQuiz()">&#9999;&#65039; Try again</button>` : '') +
+        (!perfect ? `<button class="btn-secondary" onclick="retryQuiz()">Try again</button>` : '') +
+        reviewButton +
         `</div>`;
       checkAndRevealFadedHints(quizId, answers);
       saveWrongAnswersForReview(quizId, answers);
@@ -661,7 +665,7 @@ async function showGroupModal() {
   const g = store.get('dmk_group', null);
   if (g && g.groupName) {
     let html = `<div style="text-align:left">` +
-      `<h3 style="margin:0 0 6px">🤝 ${escHtml(g.groupName)}</h3>` +
+      `<h3 style="margin:0 0 6px">${escHtml(g.groupName)}</h3>` +
       (g.invite_code ? `<p style="margin:4px 0">Invite code: <strong style="font-size:1.2rem;letter-spacing:2px;color:var(--primary)">${g.invite_code}</strong></p>` : '') +
       `<p style="margin:4px 0;color:var(--muted)">${g.member_count ?? 0} members · ${g.total_points ?? 0} total pts · ${g.quizzes_completed ?? 0} quizzes</p>`;
     if (g.members && g.members.length > 0) {
@@ -734,7 +738,7 @@ function retryQuiz() {
   const form     = document.getElementById('quiz');
   const resultEl = document.getElementById('result');
   const streakEl = document.getElementById('streak-msg');
-  if (resultEl) resultEl.innerHTML = '<p class="retry-nudge">✏️ Hints are now visible — give it another go!</p>';
+  if (resultEl) resultEl.innerHTML = '<p class="retry-nudge">Hints are now visible — give it another go!</p>';
   if (streakEl) streakEl.textContent = '';
   if (form) {
     form.querySelectorAll('input[type=text],input:not([type])').forEach(inp => inp.value = '');
@@ -753,9 +757,9 @@ function renderFeelingsCheckin(containerId) {
   el.innerHTML =
     `<div class="feelings-bar">
       <span>How are you feeling about today's math?</span>
-      <button class="feeling-btn" onclick="recordFeeling('calm',this)">😊 Calm</button>
-      <button class="feeling-btn" onclick="recordFeeling('unsure',this)">😐 Unsure</button>
-      <button class="feeling-btn" onclick="recordFeeling('stressed',this)">😰 Stressed</button>
+      <button class="feeling-btn" onclick="recordFeeling('calm',this)">Calm</button>
+      <button class="feeling-btn" onclick="recordFeeling('unsure',this)">Unsure</button>
+      <button class="feeling-btn" onclick="recordFeeling('stressed',this)">Stressed</button>
     </div>`;
 }
 
@@ -1067,19 +1071,38 @@ function checkAndRevealFadedHints(quizId, answers) {
 
 // ── Review questions ───────────────────────────────────────────────────────────
 
+function getQuestionDetails(li) {
+  const questionText = li.dataset.question || li.querySelector('.problem-en')?.textContent || '';
+  const answer = (li.dataset.answer || '').trim();
+  let choices = [];
+  let hint = '';
+  let steps = [];
+  li.querySelectorAll(':scope > ul > li, > ul > li').forEach(item => {
+    const text = item.textContent.trim();
+    if (text.startsWith('Choices:')) {
+      choices = text.replace('Choices:', '').trim().split(/\s+(?=[A-D]\)\s)/).filter(Boolean);
+    } else if (text.startsWith('Hint:')) {
+      hint = text.replace('Hint:', '').trim();
+    } else if (text.startsWith('Steps:')) {
+      steps = Array.from(item.querySelectorAll('li')).map(s => s.textContent.trim());
+    }
+  });
+  return { questionText, answer, choices, hint, steps };
+}
+
 function saveWrongAnswersForReview(quizId, answers) {
   const grade   = window.DMK_ACTIVE_GRADE || 'G3';
   const section = document.querySelector(`.grade-section[data-grade="${grade}"]`);
   const problems = (section || document).querySelectorAll('.problems-list li');
   const items    = store.get('dmk_review', []);
+  const today    = new Date().toISOString().slice(0, 10);
   answers.forEach((ans, i) => {
     const li      = problems[i];
     if (!li) return;
-    const correct = (li.dataset.answer || '').trim();
-    const qText   = li.dataset.question || li.querySelector('.problem-en')?.textContent || '';
-    if (correct && String(ans).trim() !== correct && qText) {
+    const details = getQuestionDetails(li);
+    if (details.answer && String(ans).trim() !== details.answer && details.questionText) {
       const filtered = items.filter(x => !(x.quizId === quizId && x.qNum === i + 1));
-      filtered.push({ quizId, qNum: i + 1, questionText: qText, answer: correct, date: new Date().toISOString().slice(0, 10) });
+      filtered.push({ quizId, qNum: i + 1, grade, date: today, ...details });
       items.length = 0;
       items.push(...filtered.slice(-30));
     }
@@ -1096,7 +1119,7 @@ function renderReviewSection(containerId) {
   if (!due.length) { el.style.display = 'none'; return; }
   el.innerHTML =
     `<div class="review-section">
-      <h3>🔁 Review from earlier</h3>
+      <h3>Review from earlier</h3>
       <p class="review-sub">These gave you trouble before — try them again!</p>
       <ol>${due.map(it =>
         `<li>
@@ -1107,6 +1130,97 @@ function renderReviewSection(containerId) {
         </li>`).join('')}
       </ol>
     </div>`;
+}
+
+function startQuizReview(quizId) {
+  const today = new Date().toISOString().slice(0, 10);
+  const items = store.get('dmk_review', []).filter(x => x.quizId === quizId && x.date === today);
+  if (!items.length) return;
+  window._quizReviewItems = items;
+  window._quizReviewIndex = 0;
+  renderQuizReviewModal();
+}
+
+function renderQuizReviewModal() {
+  if (document.getElementById('quiz-review-modal')) return;
+  document.body.insertAdjacentHTML('beforeend', `
+  <div id="quiz-review-modal" class="modal-overlay" role="dialog" aria-modal="true" style="display:flex;z-index:9999">
+    <div class="modal-card" style="max-width:600px;width:100%;max-height:90vh;overflow:auto">
+      <button class="modal-close" onclick="closeQuizReview()" aria-label="Close">✕</button>
+      <h2 class="modal-title">Review Mistakes</h2>
+      <p class="modal-sub">Practice the questions you got wrong today. No points — just learning!</p>
+      <div id="quiz-review-content"></div>
+    </div>
+  </div>`);
+  renderReviewQuestion();
+}
+
+function renderReviewQuestion() {
+  const items = window._quizReviewItems;
+  const index = window._quizReviewIndex;
+  const item = items[index];
+  const content = document.getElementById('quiz-review-content');
+  let choicesHtml = '';
+  if (item.choices && item.choices.length) {
+    choicesHtml = `<div style="display:flex;flex-direction:column;gap:8px;margin:16px 0">` +
+      item.choices.map((c, i) =>
+        `<button class="review-choice-btn" onclick="handleReviewAnswer(${i}, this)" style="text-align:left;padding:10px 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface);cursor:pointer;font-family:inherit">${escHtml(c)}</button>`
+      ).join('') +
+      `</div>`;
+  } else {
+    choicesHtml = `<p style="color:var(--muted);font-size:.9rem">No choices available for this question.</p>`;
+  }
+  const isLast = index === items.length - 1;
+  content.innerHTML = `
+    <div class="review-question">
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:6px">Question ${index + 1} of ${items.length}</p>
+      <p style="font-weight:600;margin-bottom:12px">${escHtml(item.questionText)}</p>
+      ${choicesHtml}
+      <div id="review-feedback" style="margin-top:12px"></div>
+      <div style="margin-top:16px;display:flex;gap:10px;justify-content:flex-end">
+        <button class="btn-secondary" onclick="nextReviewQuestion()" id="review-next" style="display:none">Next</button>
+        <button class="btn-secondary" onclick="closeQuizReview()" id="review-close" style="display:none">Close</button>
+      </div>
+    </div>
+  `;
+}
+
+function handleReviewAnswer(choiceIndex, btn) {
+  const item = window._quizReviewItems[window._quizReviewIndex];
+  const selectedText = item.choices[choiceIndex].replace(/^[A-D]\)\s*/, '').trim();
+  const correct = selectedText === item.answer.trim();
+  const buttons = document.querySelectorAll('.review-choice-btn');
+  buttons.forEach(b => b.disabled = true);
+  const feedback = document.getElementById('review-feedback');
+  if (correct) {
+    btn.style.background = '#dcfce7';
+    btn.style.borderColor = '#22c55e';
+    feedback.innerHTML = `<p style="color:green;font-weight:600">Correct! Great job learning from your mistake.</p>`;
+  } else {
+    btn.style.background = '#fee2e2';
+    btn.style.borderColor = '#ef4444';
+    feedback.innerHTML = `<p style="color:red;font-weight:600">Not quite. The correct answer is: <strong>${escHtml(item.answer)}</strong></p>`;
+  }
+  if (item.hint) {
+    feedback.innerHTML += `<details class="hint-wrap" style="margin-top:10px"><summary>Show hint</summary><p>${escHtml(item.hint)}</p></details>`;
+  }
+  if (item.steps && item.steps.length) {
+    feedback.innerHTML += `<details class="steps-wrap" style="margin-top:10px"><summary>Show steps</summary><ol>${item.steps.map(s => `<li>${escHtml(s)}</li>`).join('')}</ol></details>`;
+  }
+  const isLast = window._quizReviewIndex === window._quizReviewItems.length - 1;
+  document.getElementById(isLast ? 'review-close' : 'review-next').style.display = '';
+}
+
+function nextReviewQuestion() {
+  window._quizReviewIndex++;
+  renderReviewQuestion();
+}
+
+function closeQuizReview() {
+  const modal = document.getElementById('quiz-review-modal');
+  if (modal) modal.remove();
+  window._quizReviewItems = null;
+  window._quizReviewIndex = 0;
 }
 
 // ── Streaks ───────────────────────────────────────────────────────────────────
@@ -1209,7 +1323,7 @@ function renderReminderButton(containerId) {
   const on = store.get('dmk_reminders') && Notification.permission === 'granted';
   el.innerHTML =
     `<button class="reminder-btn ${on ? 'on' : ''}" onclick="enableReminders(this)" ${on ? 'disabled' : ''}>` +
-    (on ? '✅ Daily reminders on' : '🔔 Enable daily reminders') +
+    (on ? 'Daily reminders on' : 'Enable daily reminders') +
     `</button>`;
 }
 
@@ -1279,19 +1393,19 @@ function _showEmailPromptModal() {
   document.body.insertAdjacentHTML('beforeend', `
   <div id="email-prompt-modal" class="modal-overlay" style="display:flex;z-index:9999">
     <div class="modal-card" style="max-width:420px;text-align:center">
-      <h2 style="margin:0 0 8px;font-size:1.3rem">Great job, ${escHtml(name)}! 🎉</h2>
+      <h2 style="margin:0 0 8px;font-size:1.3rem">Great job, ${escHtml(name)}!</h2>
       <p style="color:var(--muted);margin:0 0 16px;font-size:.92rem">Want your parents to see how well you're doing?</p>
       <p style="font-size:.88rem;margin:0 0 14px">Add their email and we'll send a <strong>weekly progress report</strong> showing your scores, streaks, and achievements.</p>
       <form id="email-prompt-form" onsubmit="submitEmailPrompt(event)" novalidate style="margin-bottom:14px">
         <input id="email-prompt-input" class="form-input" type="email" placeholder="parent@example.com" maxlength="100" style="margin-bottom:10px;text-align:center" autocomplete="email"/>
         <p id="email-prompt-msg" class="form-msg" aria-live="polite"></p>
-        <button type="submit" class="btn-primary" style="width:100%">📧 Send My Progress to Parent</button>
+        <button type="submit" class="btn-primary" style="width:100%">Send My Progress to Parent</button>
       </form>
       <div style="display:flex;gap:10px;justify-content:center">
         <button onclick="emailPromptLater()" class="btn-secondary" style="font-size:.82rem;padding:6px 16px">Maybe Later</button>
         <button onclick="emailPromptNever()" style="font-size:.82rem;padding:6px 16px;background:none;border:1px solid var(--border);border-radius:8px;cursor:pointer;color:var(--muted);font-family:inherit">No Thanks</button>
       </div>
-      <p style="font-size:.72rem;color:var(--muted);margin:12px 0 0">🔒 Never shared or used for marketing. Only progress reports.</p>
+      <p style="font-size:.72rem;color:var(--muted);margin:12px 0 0">Never shared or used for marketing. Only progress reports.</p>
     </div>
   </div>`);
   setTimeout(() => {
@@ -1328,7 +1442,7 @@ async function submitEmailPrompt(e) {
     u.parent_email = email;
     saveUser(u);
     store.set('dmk_email_prompt_done', true);
-    msg.textContent = 'Saved! Your parent will get weekly updates. 🎉';
+    msg.textContent = 'Saved! Your parent will get weekly updates.';
     msg.className = 'form-msg success';
     setTimeout(_hideEmailPromptModal, 1500);
   } catch {
