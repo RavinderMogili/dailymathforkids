@@ -597,15 +597,10 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
       return false;
     }
     if (data.already) {
-      const wasStarted = getQuizState(quizId) === 'started';
       markDayDone(quizId);
       setQuizState(quizId, 'done');
-      if (wasStarted) {
-        // User never saw their results — their first submit went through but response was lost
-        resultEl.innerHTML = `<div class="result-celebration"><p class="result-praise">Your answers were submitted successfully!</p><p style="margin-top:8px;font-size:.9rem;color:var(--muted)">Your points from your first attempt have been saved. Check <a href="../profile.html">My Progress</a> to see your score.</p><p style="margin-top:8px;font-size:.9rem;color:var(--muted)">Come back tomorrow for a fresh quiz!</p></div>`;
-      } else {
-        resultEl.innerHTML = `<div class="result-celebration"><p class="result-praise">You already completed this quiz today — your points were saved!</p><p style="margin-top:8px;font-size:.9rem;color:var(--muted)">Come back tomorrow for a fresh quiz to earn more points.</p></div>`;
-      }
+      resultEl.innerHTML = `<div class="result-celebration"><p class="result-praise">Your answers were submitted successfully!</p><p style="margin-top:8px;font-size:.9rem;color:var(--muted)">Your points have been saved. Check <a href="../profile.html">My Progress</a> to see your score.</p></div>`;
+      resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       return data;
     } else {
       const perfect  = data.score === data.outOf;
