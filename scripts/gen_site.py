@@ -244,7 +244,7 @@ def call_llm(prompt):
 
     if anthropic and anthropic_key:
         print("INFO: Using Claude Sonnet 4.6 for generation (high math accuracy).")
-        client = anthropic.Anthropic(api_key=anthropic_key, timeout=180.0, max_retries=2)
+        client = anthropic.Anthropic(api_key=anthropic_key, timeout=600.0, max_retries=2)
         msg = client.messages.create(
             model="claude-sonnet-4-6",
             max_tokens=64000,
@@ -254,7 +254,7 @@ def call_llm(prompt):
     elif OpenAI and openai_key:
         print("INFO: Using OpenAI gpt-4o for generation (Anthropic key not found).")
         os.environ["OPENAI_API_KEY"] = openai_key
-        client = OpenAI(timeout=180, max_retries=2)
+        client = OpenAI(timeout=600, max_retries=2)
         resp = client.chat.completions.create(
             model="gpt-4o",
             messages=[{"role": "user", "content": prompt}],
