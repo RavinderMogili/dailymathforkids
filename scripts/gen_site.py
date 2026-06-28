@@ -16,7 +16,7 @@ DAILY_DIR = ROOT / "daily"
 DAILY_DIR.mkdir(parents=True, exist_ok=True)
 
 TITLE       = os.getenv("SITE_TITLE", "Daily Math for Kids")
-PUBLIC_API  = os.getenv("PUBLIC_API_BASE", "https://YOUR_BACKEND_URL").rstrip("/")
+PUBLIC_API  = os.getenv("PUBLIC_API_BASE", "https://dailymathforkids-api.vercel.app").rstrip("/")
 GRADE_CODES = ["G1","G2","G3","G4","G5","G6","G7","G8","G9","G10","G11","G12"]
 
 HELPERS_JS = r"""
