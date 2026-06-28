@@ -1428,6 +1428,7 @@
       else if (e.target.closest('#start-test-btn')) { startTest(); }
     });
   });
+  var _submitting = false;
   document.getElementById('quiz').addEventListener('submit', async function(e) {
     e.preventDefault();
     const qid = window.QUIZ_ID || QUIZ_ID;

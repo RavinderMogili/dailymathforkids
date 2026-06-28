@@ -1876,11 +1876,12 @@
       else if (e.target.closest('#start-test-btn')) { startTest(); }
     });
   });
+  var _submitting = false;
   document.getElementById('quiz').addEventListener('submit', async function(e) {
     e.preventDefault();
+    if (_submitting) return;
+    _submitting = true;
     const qid = window.QUIZ_ID || QUIZ_ID;
-    // Prevent double-submission
-    if (getQuizState(qid) === 'done') return;
     const grade = (window.QUIZ_ID || QUIZ_ID).replace(/^.*-(G\d+)$/, '$1');
     const section = document.querySelector('.grade-section[data-grade="' + grade + '"]');
     const lis = section ? section.querySelectorAll('.problems-list > li') : [];
@@ -1946,6 +1947,7 @@
       }
     } else {
       // Re-enable submit button so user can retry
+      _submitting = false;
       if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit Answers'; }
     }
   });

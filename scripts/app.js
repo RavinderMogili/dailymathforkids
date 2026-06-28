@@ -975,7 +975,14 @@ function resumeOrLockQuiz() {
   const code = qid.replace(/^.*-(G\d+)$/, '$1');
   const state = getQuizState(qid);
   if (state === 'done') {
-    _lockQuizDone(code);
+    // Only lock if the doneDays record confirms successful submission
+    const doneDays = store.get('doneDays', {});
+    if (doneDays[qid]) {
+      _lockQuizDone(code);
+    } else {
+      // Stale 'done' state (e.g. from old beacon) — clear it so user can submit
+      setQuizState(qid, null);
+    }
   } else if (state === 'started') {
     dmkTimer.restore();
     _revealTest(code);
