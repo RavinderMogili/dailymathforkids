@@ -23,14 +23,14 @@ function renderBadge() {
   document.querySelectorAll('.user-badge').forEach(el => {
     if (u) {
       el.innerHTML =
-        `<span class="badge-name">⭐ ${escHtml(u.nickname)}</span>` +
-        `<a class="badge-link" href="${ROOT}profile.html">📊 My Progress</a>` +
-        `<a class="badge-link" href="${ROOT}practice.html">🎯 Practice</a>` +
-        `<button class="badge-link" onclick="showGroupModal()">🤝 Group</button>` +
+        `<span class="badge-name">${escHtml(u.nickname)}</span>` +
+        `<a class="badge-link" href="${ROOT}profile.html">My Progress</a>` +
+        `<a class="badge-link" href="${ROOT}practice.html">Practice</a>` +
+        `<button class="badge-link" onclick="showGroupModal()">Group</button>` +
         `<button class="badge-link" onclick="logOut()">Log out</button>`;
     } else {
       el.innerHTML =
-        `<button class="badge-btn" onclick="showRegModal()">Join Free 🚀</button>` +
+        `<button class="badge-btn" onclick="showRegModal()">Join Free</button>` +
         `<button class="badge-link" onclick="showLoginModal()">Log in</button>`;
     }
   });
@@ -144,8 +144,8 @@ function injectModals() {
           <input id="reg-security-answer" class="form-input" placeholder="e.g. Blue" maxlength="50" autocomplete="off"/>
         </label>
         <p id="reg-msg" class="form-msg" aria-live="polite"></p>
-        <p class="privacy-note">🔒 Only your nickname and grade are stored. Your progress is private.</p>
-        <button type="submit" class="btn-primary">Join for Free! 🎉</button>
+        <p class="privacy-note">Only your nickname and grade are stored. Your progress is private.</p>
+        <button type="submit" class="btn-primary">Join for Free!</button>
       </form>
       <p class="modal-note">Already joined? <button class="link-btn" onclick="showLoginModal()">Log in with nickname</button></p>
     </div>
@@ -155,7 +155,7 @@ function injectModals() {
   <div id="group-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="group-title" style="display:none">
     <div class="modal-card">
       <button class="modal-close" onclick="hideGroupModal()" aria-label="Close">✕</button>
-      <h2 class="modal-title" id="group-title">🤝 Family / Class Goal</h2>
+      <h2 class="modal-title" id="group-title">Family / Class Goal</h2>
       <p class="modal-sub">Practice together and celebrate as a team — no public ranking!</p>
       <div style="display:flex;flex-direction:column;gap:14px">
         <div>
@@ -450,7 +450,7 @@ async function submitForgotPin(e) {
       msg.className = 'form-msg error';
       return;
     }
-    msg.textContent = '✅ PIN reset! You can now log in with your new PIN.';
+    msg.textContent = 'PIN reset! You can now log in with your new PIN.';
     msg.className = 'form-msg';
     setTimeout(() => { hideForgotPinModal(); showLoginModal(); }, 1500);
   } catch {
@@ -490,7 +490,7 @@ async function submitForgotNickname(e) {
     if (data.nicknames) {
       msg.innerHTML = '<strong>Multiple accounts found:</strong><br>' + data.nicknames.map(n => `• ${n}`).join('<br>') + '<br>Please choose your nickname.';
     } else if (data.nickname) {
-      msg.innerHTML = '✅ Your nickname is: <strong>' + data.nickname + '</strong><br>Now you can log in!';
+      msg.innerHTML = 'Your nickname is: <strong>' + data.nickname + '</strong><br>Now you can log in!';
       setTimeout(() => { hideForgotNicknameModal(); showLoginModal(); }, 2000);
     } else {
       msg.textContent = 'Could not find your nickname.';
@@ -564,7 +564,7 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
       // If user account doesn't exist in DB (guest or deleted), prompt re-registration
       if (data.error && /user_id_fkey|user.*not found/i.test(data.error)) {
         store.set('dmk_user', null);
-        resultEl.innerHTML = '⚠️ Your account needs to be re-created. Please register again — your answers are saved and will be submitted automatically.';
+        resultEl.innerHTML = 'Your account needs to be re-created. Please register again — your answers are saved and will be submitted automatically.';
         window._pendingSubmit = { quizId, answers, resultEl };
         showRegModal();
         return false;
@@ -573,11 +573,11 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
       return false;
     }
     if (data.already) {
-      resultEl.innerHTML = `<p>✅ You already completed this quiz today — great job showing up!</p>`;
+      resultEl.innerHTML = `<p>You already completed this quiz today — great job showing up!</p>`;
     } else {
       const perfect  = data.score === data.outOf;
       const pct      = data.outOf > 0 ? data.score / data.outOf : 0;
-      const emoji    = perfect ? '🎉' : pct >= 0.6 ? '🌟' : '💪';
+      const emoji    = perfect ? '' : pct >= 0.6 ? '' : '';
       const praise   = perfect
         ? 'Perfect score — you nailed every single one!'
         : pct >= 0.6
@@ -585,27 +585,27 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
         : `Keep going! ${data.score} out of ${data.outOf} today — every practice makes you stronger!`;
       const shieldAwarded = perfect ? awardShield() : false;
       const shieldNote = shieldAwarded
-        ? `<p class="shield-note" style="color:var(--primary);font-weight:700">🛡️ You won a magic shield! It lets you skip one day without losing your streak!</p>`
+        ? `<p class="shield-note" style="color:var(--primary);font-weight:700">You won a magic shield! It lets you skip one day without losing your streak!</p>`
         : perfect && !shieldAwarded
-        ? `<p class="shield-note" style="color:var(--muted)">🛡️ Perfect score! You can earn a new shield next month.</p>`
-        : (hasShield() ? `<p class="shield-note" style="color:var(--muted)">🛡️ Your magic shield is ready — you can skip a day and your streak stays safe!</p>` : '');
+        ? `<p class="shield-note" style="color:var(--muted)">Perfect score! You can earn a new shield next month.</p>`
+        : (hasShield() ? `<p class="shield-note" style="color:var(--muted)">Your magic shield is ready — you can skip a day and your streak stays safe!</p>` : '');
       const timeNote = timeSeconds ? `<p class="time-taken">&#9201; Completed in <strong>${dmkTimer.fmt(timeSeconds)}</strong></p>` : '';
       let feedbackHtml = '';
       if (data.results && data.results.length) {
         feedbackHtml = '<div class="answer-feedback" style="margin-top:1rem;text-align:left">';
         data.results.forEach(r => {
-          const icon = r.correct ? '✅' : '❌';
+          const icon = r.correct ? '✓' : '✗';
           const mindsetMsgs = [
-            'Mistakes help your brain grow! 🌱',
-            'Every wrong answer teaches you something new! 📚',
-            'Not yet — but you\'re learning! 🌟',
-            'This is how your brain builds new connections! 🧠',
-            'Almost! Each attempt makes you smarter! ⭐',
+            'Mistakes help your brain grow!',
+            'Every wrong answer teaches you something new!',
+            'Not yet — but you\'re learning!',
+            'This is how your brain builds new connections!',
+            'Almost! Each attempt makes you smarter!',
           ];
           const mindset = mindsetMsgs[Math.floor(Math.random() * mindsetMsgs.length)];
           const detail = r.correct
             ? `<span style="color:green">Q${r.question}: Correct!</span>`
-            : `<span style="color:red">Q${r.question}: Not quite right.</span> <span style="font-size:.8rem;color:#6366f1">Use 🧑‍🏫 Need Help? to learn the method! ${mindset}</span>`;
+            : `<span style="color:red">Q${r.question}: Not quite right.</span> <span style="font-size:.8rem;color:#6366f1">Use <strong>Need Help?</strong> to learn the method! ${mindset}</span>`;
           feedbackHtml += `<p style="margin:0.3rem 0">${icon} ${detail}</p>`;
         });
         feedbackHtml += '</div>';
@@ -675,7 +675,7 @@ async function showGroupModal() {
           `<td style="padding:6px 8px">${m.grade || '—'}</td>` +
           `<td style="padding:6px 8px">${m.totalPoints}</td>` +
           `<td style="padding:6px 8px">${m.quizzes}</td>` +
-          `<td style="padding:6px 8px">${m.perfect > 0 ? '⭐ ' + m.perfect : '—'}</td></tr>`;
+          `<td style="padding:6px 8px">${m.perfect > 0 ? '★ ' + m.perfect : '—'}</td></tr>`;
       });
       html += `</tbody></table>`;
     }
@@ -703,7 +703,7 @@ async function createGroup() {
     const data = await res.json();
     if (!res.ok) { msg.textContent = data.error || 'Could not create group.'; msg.className = 'form-msg error'; return; }
     store.set('dmk_group', data);
-    msg.innerHTML = `✅ Group created! Share this code with your family/class: <strong style="font-size:1.3rem;letter-spacing:2px">${data.invite_code}</strong>`;
+    msg.innerHTML = `Group created! Share this code with your family/class: <strong style="font-size:1.3rem;letter-spacing:2px">${data.invite_code}</strong>`;
     msg.className = 'form-msg';
   } catch { msg.textContent = 'Could not connect. Try again.'; msg.className = 'form-msg error'; }
 }
@@ -723,7 +723,7 @@ async function joinGroup() {
     const data = await res.json();
     if (!res.ok) { msg.textContent = data.error || 'Could not join group.'; msg.className = 'form-msg error'; return; }
     store.set('dmk_group', data);
-    msg.innerHTML = `🎉 Joined <strong>${escHtml(data.groupName)}</strong>! ${data.member_count} members, ${data.total_points} pts so far.`;
+    msg.innerHTML = `Joined <strong>${escHtml(data.groupName)}</strong>! ${data.member_count} members, ${data.total_points} pts so far.`;
     msg.className = 'form-msg';
   } catch { msg.textContent = 'Could not connect. Try again.'; msg.className = 'form-msg error'; }
 }
@@ -764,15 +764,15 @@ function recordFeeling(feeling, btn) {
   store.set(todayKey, feeling);
   const bar = btn.closest('.feelings-bar');
   if (feeling === 'stressed') {
-    bar.innerHTML = `<p class="feelings-response">💙 That's okay — take a breath. Start with Problem 1 and use the hint if you need it. You've got this!</p>`;
+    bar.innerHTML = `<p class="feelings-response">That's okay — take a breath. Start with Problem 1 and use the hint if you need it. You've got this!</p>`;
     const grade = window.DMK_ACTIVE_GRADE || 'G3';
     const sec   = document.querySelector(`.grade-section[data-grade="${grade}"]`);
     const firstHintBtn = (sec || document).querySelector('.hint-wrap');
     if (firstHintBtn) firstHintBtn.open = true;
   } else if (feeling === 'unsure') {
-    bar.innerHTML = `<p class="feelings-response">👍 That's normal! Hints and steps are there to help — give it your best shot!</p>`;
+    bar.innerHTML = `<p class="feelings-response">That's normal! Hints and steps are there to help — give it your best shot!</p>`;
   } else {
-    bar.innerHTML = `<p class="feelings-response">🌟 Love the energy! Let's go!</p>`;
+    bar.innerHTML = `<p class="feelings-response">Love the energy! Let's go!</p>`;
   }
 }
 
@@ -836,7 +836,7 @@ function showGradeProblems() {
     document.querySelectorAll('.steps-wrap').forEach(el => {
       el.style.display = '';
       const summary = el.querySelector('summary');
-      if (summary) summary.textContent = '📚 Show steps';
+      if (summary) summary.textContent = 'Show steps';
     });
     return;
   }
@@ -919,14 +919,14 @@ function _lockQuizDone(code) {
   const startBtn = document.getElementById('start-test-btn');
   if (startBtn) startBtn.style.display = 'none';
   const helloEl = document.getElementById('hello');
-  if (helloEl) helloEl.innerHTML = '✅ You already completed this quiz! <a href="../index.html">Back to Home</a>';
+  if (helloEl) helloEl.innerHTML = 'You already completed this quiz! <a href="../index.html">Back to Home</a>';
   const submitBtn = document.querySelector('#quiz button[type="submit"]');
   if (submitBtn) { submitBtn.disabled = true; submitBtn.style.opacity = '0.5'; submitBtn.textContent = 'Already Submitted'; }
   // Show steps for review after completion
   document.querySelectorAll('.steps-wrap').forEach(el => {
     el.style.display = '';
     const summary = el.querySelector('summary');
-    if (summary) summary.textContent = '📚 Show steps';
+    if (summary) summary.textContent = 'Show steps';
   });
 }
 
@@ -984,7 +984,7 @@ function lockAnswersAfterSubmit() {
   document.querySelectorAll('.steps-wrap').forEach(el => {
     el.style.display = '';
     const summary = el.querySelector('summary');
-    if (summary) summary.textContent = '📚 Show steps';
+    if (summary) summary.textContent = 'Show steps';
   });
 }
 
@@ -995,16 +995,16 @@ function showCompletionAndRedirect(score) {
   const user = (typeof getUser === 'function') ? getUser() : null;
   const nick = user ? user.nickname : 'I';
   const shareText = perfect
-    ? `🎉 ${nick} got a PERFECT SCORE on today's Daily Math quiz! 5/5 🏆`
-    : `✅ ${nick} scored ${score}/5 on today's Daily Math quiz! 💪`;
+    ? `${nick} got a PERFECT SCORE on today's Daily Math quiz! 5/5`
+    : `${nick} scored ${score}/5 on today's Daily Math quiz!`;
   const shareUrl = 'https://dailymathforkids.com';
   overlay.innerHTML = `
     <div style="background:#fff;border-radius:20px;padding:32px 28px;max-width:420px;width:100%;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.2)">
-      <div style="font-size:3rem;margin-bottom:12px">${perfect ? '🎉' : '✅'}</div>
+      <div style="font-size:3rem;margin-bottom:12px">${perfect ? '★' : '✓'}</div>
       <h2 style="margin:0 0 8px;font-size:1.5rem">${perfect ? 'Perfect Score!' : 'Quiz Complete!'}</h2>
-      <p style="color:#64748b;margin:0 0 16px">${perfect ? 'Amazing! You got all 5 correct!' : 'Great effort! Every problem you try makes your brain stronger. Come back tomorrow! 💪'}</p>
+      <p style="color:#64748b;margin:0 0 16px">${perfect ? 'Amazing! You got all 5 correct!' : 'Great effort! Every problem you try makes your brain stronger. Come back tomorrow!'}</p>
       <p style="font-size:1.1rem;font-weight:700;color:#2563eb;margin:0 0 20px">+${score} point${score !== 1 ? 's' : ''}${perfect ? ' + 3 bonus!' : ''}</p>
-      <button id="share-score-btn" style="display:inline-block;background:#10b981;color:#fff;padding:12px 32px;border-radius:999px;font-weight:700;border:none;cursor:pointer;font-size:1rem;margin-bottom:12px">📤 Share My Score</button>
+      <button id="share-score-btn" style="display:inline-block;background:#10b981;color:#fff;padding:12px 32px;border-radius:999px;font-weight:700;border:none;cursor:pointer;font-size:1rem;margin-bottom:12px">Share My Score</button>
       <br>
       <a href="${ROOT || './'}index.html" style="display:inline-block;background:#2563eb;color:#fff;padding:12px 32px;border-radius:999px;font-weight:700;text-decoration:none;font-size:1rem">Back to Home</a>
     </div>`;
@@ -1016,7 +1016,7 @@ function showCompletionAndRedirect(score) {
       navigator.share({ title: 'Daily Math for Kids', text: shareText, url: shareUrl }).catch(() => {});
     } else if (navigator.clipboard) {
       navigator.clipboard.writeText(text).then(() => {
-        this.textContent = '✅ Copied!';
+        this.textContent = 'Copied!';
         this.style.background = '#059669';
       });
     } else {
@@ -1166,11 +1166,11 @@ async function enableReminders(btnEl) {
   }
   const permission = await Notification.requestPermission();
   if (permission !== 'granted') {
-    if (btnEl) { btnEl.textContent = '🔕 Notifications blocked'; btnEl.disabled = true; }
+    if (btnEl) { btnEl.textContent = 'Notifications blocked'; btnEl.disabled = true; }
     return;
   }
   store.set('dmk_reminders', true);
-  if (btnEl) { btnEl.textContent = '✅ Reminders on!'; btnEl.disabled = true; btnEl.className = 'reminder-btn on'; }
+  if (btnEl) { btnEl.textContent = 'Reminders on!'; btnEl.disabled = true; btnEl.className = 'reminder-btn on'; }
 
   if ('serviceWorker' in navigator && 'periodicSync' in (await navigator.serviceWorker.ready)) {
     try {
@@ -1179,8 +1179,8 @@ async function enableReminders(btnEl) {
     } catch {}
   }
 
-  new Notification('🧮 Daily Math for Kids', {
-    body: "You're all set! We'll remind you every day to keep your streak going 🔥",
+  new Notification('Daily Math for Kids', {
+    body: "You're all set! We'll remind you every day to keep your streak going",
     icon: (window.DMK_ROOT || './') + 'favicon.ico',
     tag: 'dmk-confirm',
   });
@@ -1195,8 +1195,8 @@ function checkDailyReminder() {
   const shown  = store.get('dmk_reminder_shown_' + today);
   if (!done[today] && hour >= 15 && !shown) {
     store.set('dmk_reminder_shown_' + today, true);
-    new Notification('🧮 Daily Math for Kids', {
-      body: "You haven't done today's problems yet — keep your streak alive! 🔥",
+    new Notification('Daily Math for Kids', {
+      body: "You haven't done today's problems yet — keep your streak alive!",
       icon: (window.DMK_ROOT || './') + 'favicon.ico',
       tag: 'dmk-daily',
     });

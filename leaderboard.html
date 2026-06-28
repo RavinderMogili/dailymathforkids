@@ -17,21 +17,21 @@
     <span class="user-badge"></span>
   </header>
   <main class="container">
-    <h1>🏆 Leaderboard</h1>
-    <p style="color:var(--muted)">Top math stars earning points through daily practice!</p>
+    <h1>Leaderboard</h1>
+    <p style="color:var(--muted)">Top students earning points through daily practice!</p>
 
     <div style="background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;border-radius:14px;padding:14px 18px;margin-bottom:16px;text-align:center;box-shadow:0 4px 15px rgba(239,68,68,.3)">
-      🎁 <strong>Prize Challenge:</strong> Every student who earns <strong>300 points</strong> wins a <strong>$10 Walmart gift card!</strong> 🏆 Keep practicing!
+      <strong>Prize Challenge:</strong> Every student who earns <strong>300 points</strong> wins a <strong>$10 Walmart gift card!</strong> Keep practicing!
     </div>
 
     <div class="points-info">
-      🌟 <strong>Points:</strong> 1 pt per correct answer &nbsp;|&nbsp; +3 bonus for a perfect score (5/5)!
-      &nbsp; ⚡ <strong>Speed tab</strong> shows today's fastest perfect-score completions!
+      <strong>Points:</strong> 1 pt per correct answer &nbsp;|&nbsp; +3 bonus for a perfect score (5/5)!
+      &nbsp; <strong>Speed tab</strong> shows today's fastest perfect-score completions!
     </div>
 
     <div style="display:flex;gap:8px;margin:16px 0">
-      <button id="tab-points" onclick="switchTab('points')" style="min-height:38px;padding:6px 20px">🏆 Points</button>
-      <button id="tab-speed"  onclick="switchTab('speed')"  style="min-height:38px;padding:6px 20px;background:var(--surface);color:var(--primary);border:2px solid var(--primary)">⚡ Speed</button>
+      <button id="tab-points" onclick="switchTab('points')" style="min-height:38px;padding:6px 20px">Points</button>
+      <button id="tab-speed"  onclick="switchTab('speed')"  style="min-height:38px;padding:6px 20px;background:var(--surface);color:var(--primary);border:2px solid var(--primary)">Speed</button>
     </div>
 
     <div class="filter-bar" id="filter-bar-points">
@@ -92,7 +92,7 @@
     </div>
 
     <div id="board-speed" style="display:none">
-      <p style="color:var(--muted);font-size:.9rem">⚡ Only <strong>perfect scores (5/5)</strong> qualify. Today's fastest completions:</p>
+      <p style="color:var(--muted);font-size:.9rem">Only <strong>perfect scores (5/5)</strong> qualify. Today's fastest completions:</p>
       <div class="board-wrap">
         <table class="board-table">
           <thead><tr><th>Name</th><th>Grade</th><th>Time</th><th>Date</th></tr></thead>
@@ -105,7 +105,7 @@
     <div id="my-speed-box" class="my-rank-box" style="display:none"></div>
 
     <p class="privacy-note" style="margin-top:16px">
-      🔒 Only nicknames and grades appear here. School names and cities are never shown publicly.
+      Only nicknames and grades appear here. School names and cities are never shown publicly.
     </p>
     <p style="margin-top:12px;color:var(--muted);font-size:.9rem">
       Not on the list yet?
@@ -148,7 +148,7 @@
         const rows = data.leaderboard || [];
 
         if (!rows.length) {
-          tbody.innerHTML = '<tr><td colspan="4" class="empty-msg">No students yet — be the first! 🌟</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="4" class="empty-msg">No students yet — be the first!</td></tr>';
           return;
         }
 
@@ -156,7 +156,7 @@
         tbody.innerHTML = rows.map(r => {
           const isMe = u && r.nickname === u.nickname;
           return `<tr class="${isMe ? 'my-row' : ''}">
-            <td>${isMe ? '⭐ ' : ''}${escHtml(r.nickname)}</td>
+            <td>${isMe ? '★ ' : ''}${escHtml(r.nickname)}</td>
             <td>${escHtml(r.grade || '–')}</td>
             <td><span class="pts-chip">${r.total_points} pts</span></td>
             <td><span class="days-chip">${r.days_played}d</span></td>
@@ -167,7 +167,7 @@
           const me = rows.find(r => r.nickname === u.nickname);
           if (me) {
             myRankEl.innerHTML =
-              `🎯 <strong>Your stats:</strong> ` +
+              `<strong>Your stats:</strong> ` +
               `<strong>${me.total_points} points</strong> &nbsp;|&nbsp; ` +
               `${me.days_played} days completed`;
             myRankEl.style.display = 'block';
@@ -214,14 +214,14 @@
         const data = await res.json();
         const rows = data.leaderboard || [];
         if (!rows.length) {
-          tbody.innerHTML = '<tr><td colspan="4" class="empty-msg">No speed entries yet today — be the first with a perfect score! ⚡</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="4" class="empty-msg">No speed entries yet today — be the first with a perfect score!</td></tr>';
           return;
         }
         const u = getUser();
         tbody.innerHTML = rows.map(r => {
           const isMe = u && r.nickname === u.nickname;
           return `<tr class="${isMe ? 'my-row' : ''}">
-            <td>${isMe ? '⭐ ' : ''}${escHtml(r.nickname)}</td>
+            <td>${isMe ? '★ ' : ''}${escHtml(r.nickname)}</td>
             <td>${escHtml(r.grade || '–')}</td>
             <td><strong>${fmtTime(r.timeSeconds)}</strong></td>
             <td>${r.date}</td>
@@ -230,7 +230,7 @@
         if (u) {
           const me = rows.find(r => r.nickname === u.nickname);
           if (me) {
-            myEl.innerHTML = `⚡ <strong>Your best time:</strong> <strong>${fmtTime(me.timeSeconds)}</strong>`;
+            myEl.innerHTML = `<strong>Your best time:</strong> <strong>${fmtTime(me.timeSeconds)}</strong>`;
             myEl.style.display = 'block';
           }
         }
