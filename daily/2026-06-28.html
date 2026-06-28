@@ -1924,27 +1924,24 @@
         const feedbackEl = document.getElementById('corrective-feedback');
         if (lis.length && feedbackEl) {
           let html = '<h3 style="margin-bottom:10px">Your Results</h3><ol style="list-style:none;padding:0;margin:0">';
-          let totalPts = 0, earnedPts = 0;
           answers.forEach((userAns, i) => {
             const li = lis[i];
             const correct = li ? (li.dataset.answer || '').trim() : '';
             const q = li ? (li.dataset.question || '') : '';
-            const diff = li ? (li.dataset.difficulty || 'easy') : 'easy';
-            const pts = diff === 'hard' ? 3 : diff === 'medium' ? 2 : 1;
-            totalPts += pts;
             const isRight = userAns.trim().toLowerCase() === correct.toLowerCase();
-            if (isRight) earnedPts += pts;
-            const badge = diff === 'hard' ? '(hard)' : diff === 'medium' ? '(med)' : '(easy)';
             html += '<li style="margin:8px 0;padding:10px 14px;border-radius:10px;background:' +
               (isRight ? 'var(--success-light)' : 'var(--danger-light)') + ';border:1px solid ' +
               (isRight ? 'var(--success)' : 'var(--danger)') + '">';
-            html += (isRight ? '&#9989;' : '&#10060;') + ' ' + badge + ' <strong>Q' + (i+1) + ' (' + pts + 'pt):</strong> ' + (q || '(question ' + (i+1) + ')') + '<br>';
+            html += (isRight ? '&#9989;' : '&#10060;') + ' <strong>Q' + (i+1) + ':</strong> ' + (q || '(question ' + (i+1) + ')') + '<br>';
             html += 'Your answer: <strong>' + (userAns || '—') + '</strong>';
-            if (!isRight) html += ' &nbsp;&middot;&nbsp; <span style="color:#6366f1;font-size:.85rem">Click Need Help? on this question to learn the method!</span>';
+            if (!isRight) html += ' &nbsp;&middot;&nbsp; Correct: <strong>' + correct + '</strong>';
+            if (!isRight) html += '<br><span style="color:#6366f1;font-size:.85rem">Click Need Help? on this question to learn the method!</span>';
             html += '</li>';
           });
           html += '</ol>';
-          html += '<p style="margin-top:12px;font-size:1.1rem;font-weight:700">Weighted score: ' + earnedPts + ' / ' + totalPts + ' points</p>';
+          if (ok && ok.score != null) {
+            html += '<p style="margin-top:12px;font-size:1.1rem;font-weight:700">Score: ' + ok.score + ' / ' + ok.outOf + ' &mdash; +' + ok.points_earned + ' points earned</p>';
+          }
           feedbackEl.innerHTML = html;
           feedbackEl.scrollIntoView({behavior:'smooth', block:'nearest'});
         }
