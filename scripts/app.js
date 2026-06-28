@@ -660,6 +660,7 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
       saveWrongAnswersForReview(quizId, answers);
       if (typeof addSolvedQuestions === 'function') addSolvedQuestions(answers.length);
     }
+    resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     bumpSessionCount();
     return data;
   } catch {
