@@ -70,17 +70,25 @@ async function _autoSubmitAndFinish(qid) {
   for (let i = 0; i < lis.length; i++) {
     answers.push(lis[i].dataset.selected || '');
   }
+  // Never submit if no answers selected — prevents wasting the submission
+  if (answers.every(a => a === '')) {
+    setQuizState(qid, null);
+    store.set('dmk_active_quiz_url', null);
+    dmkTimer.reset();
+    return;
+  }
   const secs = dmkTimer.stop();
   // Submit to API
   const resultEl = document.getElementById('result');
-  if (resultEl) resultEl.textContent = 'Auto-submitting your answers\u2026';
+  if (resultEl) resultEl.textContent = 'Submitting your answers\u2026';
   try {
-    await submitQuizAnswers(qid, answers, resultEl || document.createElement('p'), secs || null);
-  } catch (e) { /* best effort */ }
-  // Clean up state
-  dmkTimer.reset();
-  setQuizState(qid, 'done');
-  store.set('dmk_active_quiz_url', null);
+    const ok = await submitQuizAnswers(qid, answers, resultEl || document.createElement('p'), secs || null);
+    if (ok) {
+      dmkTimer.reset();
+      setQuizState(qid, 'done');
+      store.set('dmk_active_quiz_url', null);
+    }
+  } catch (e) { /* best effort — keep state as started so user can retry */ }
 }
 
 function _autoSubmitQuiz() {
@@ -573,7 +581,10 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
       return false;
     }
     if (data.already) {
-      resultEl.innerHTML = `<p>You already completed this quiz today — great job showing up!</p>`;
+      resultEl.innerHTML = `<div class="result-celebration"><p class="result-praise">You already completed this quiz today — your points were saved!</p><p style="margin-top:8px;font-size:.9rem;color:var(--muted)">Come back tomorrow for a fresh quiz to earn more points.</p></div>`;
+      markDayDone(quizId);
+      setQuizState(quizId, 'done');
+      return data;
     } else {
       const perfect  = data.score === data.outOf;
       const pct      = data.outOf > 0 ? data.score / data.outOf : 0;
@@ -630,7 +641,7 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
     bumpSessionCount();
     return data;
   } catch {
-    resultEl.textContent = 'Could not reach the server. Keep practising!';
+    resultEl.innerHTML = 'Could not reach the server. <button onclick="submitQuizAnswers(\'' + quizId + '\',' + JSON.stringify(answers) + ',this.parentElement,' + (timeSeconds ?? 'null') + ')" style="margin-left:8px;padding:6px 14px;border-radius:8px;background:var(--primary,#2563eb);color:#fff;border:none;cursor:pointer;font-weight:600">Retry</button>';
     return false;
   }
 }
@@ -961,18 +972,9 @@ function checkForActiveQuizRedirect() {
   const hasActive = keys.some(k => localStorage.getItem(k) === '"started"');
   if (hasActive) {
     const banner = document.createElement('div');
-    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#dc2626;color:#fff;padding:14px 20px;text-align:center;font-weight:700;font-size:1.1rem;box-shadow:0 4px 12px rgba(0,0,0,.2)';
-    banner.innerHTML = '\u23F0 You left your quiz! Your answers are being submitted\u2026 <a href="' + url + '" style="color:#fff;text-decoration:underline;margin-left:8px">Go back to quiz</a>';
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#2563eb;color:#fff;padding:14px 20px;text-align:center;font-weight:700;font-size:1.1rem;box-shadow:0 4px 12px rgba(0,0,0,.2)';
+    banner.innerHTML = 'You have an unfinished quiz! <a href="' + url + '" style="color:#fff;text-decoration:underline;margin-left:8px">Go back and submit it</a>';
     document.body.prepend(banner);
-    keys.forEach(k => {
-      if (localStorage.getItem(k) === '"started"') {
-        const qid = k.replace('dmk_quiz_state_', '');
-        setQuizState(qid, 'done');
-      }
-    });
-    store.set('dmk_active_quiz_url', null);
-    dmkTimer.stop();
-    dmkTimer.reset();
   }
 }
 
@@ -1327,41 +1329,25 @@ function renderReminderButton(containerId) {
     `</button>`;
 }
 
-// ── Auto-submit on page leave (quiz pages only) ─────────────────────────────
-
-function _beaconSubmit() {
-  const qid = _getActiveQuizId();
-  if (!qid || getQuizState(qid) !== 'started') return;
-  const u = getUser();
-  if (!u) return;
-  const code = qid.replace(/^.*-(G\d+)$/, '$1');
-  const section = document.querySelector(`.grade-section[data-grade="${code}"]`);
-  const lis = section ? section.querySelectorAll('.problems-list > li') : [];
-  const answers = [];
-  for (let i = 0; i < lis.length; i++) answers.push(lis[i].dataset.selected || '');
-  const secs = dmkTimer.stop();
-  setQuizState(qid, 'done');
-  store.set('dmk_active_quiz_url', null);
-  dmkTimer.reset();
-  if (typeof API !== 'undefined' && API) {
-    navigator.sendBeacon(
-      `${API}/api/submit`,
-      new Blob([JSON.stringify({ userId: u.userId, quizId: qid, answers, timeSeconds: secs })], { type: 'application/json' })
-    );
-  }
-}
+// ── Quiz leave guard (quiz pages only) ───────────────────────────────────────
+// NEVER auto-submit silently. If user tries to leave, warn them.
+// Their quiz state stays as 'started' so they can return and submit properly.
 
 function _setupQuizLeaveGuard() {
   if (typeof QUIZ_DATE === 'undefined') return;
-  // Catch link clicks that navigate away from the quiz page.
-  // We intentionally do NOT use beforeunload because it also fires on
-  // refresh, which should safely resume the quiz instead of submitting.
+
+  // Warn on link clicks that would navigate away
   document.addEventListener('click', (e) => {
     const link = e.target.closest('a[href]');
     if (!link) return;
     const qid = _getActiveQuizId();
     if (qid && getQuizState(qid) === 'started') {
-      _beaconSubmit();
+      e.preventDefault();
+      const leave = confirm('You have an unfinished quiz! If you leave now, your answers will NOT be submitted and you may lose points.\n\nClick OK to leave, or Cancel to go back and submit.');
+      if (leave) {
+        // Keep state as 'started' so they can come back
+        window.location.href = link.href;
+      }
     }
   });
 }
