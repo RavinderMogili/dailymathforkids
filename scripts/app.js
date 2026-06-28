@@ -564,11 +564,11 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
   try {
     let res, attempts = 0;
     const payload = JSON.stringify({ userId: u.userId, quizId, answers, timeSeconds: timeSeconds ?? null });
-    while (attempts < 2) {
+    while (attempts < 3) {
       attempts++;
       try {
         const ctrl = new AbortController();
-        const timer = setTimeout(() => ctrl.abort(), 15000);
+        const timer = setTimeout(() => ctrl.abort(), 30000);
         res = await fetch(`${API}/api/submit`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -578,8 +578,8 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
         clearTimeout(timer);
         break;
       } catch (e) {
-        if (attempts >= 2) throw e;
-        resultEl.textContent = 'Retrying\u2026';
+        if (attempts >= 3) throw e;
+        resultEl.textContent = 'Retrying (attempt ' + (attempts + 1) + ')\u2026';
         await new Promise(r => setTimeout(r, 2000));
       }
     }
