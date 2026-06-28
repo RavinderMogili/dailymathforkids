@@ -72,7 +72,7 @@
 </head>
 <body>
   <header>
-    <a href="index.html">🧮 Daily Math for Kids</a>
+    <a href="index.html">Daily Math for Kids</a>
     <span class="user-badge"></span>
   </header>
   <main class="container">
@@ -175,9 +175,9 @@
         <div id="badge-notification" style="display:none;margin:16px 0;padding:14px;background:linear-gradient(135deg,#fffbeb,#fef3c7);border-radius:12px;border:2px solid #f59e0b"></div>
         <div id="results-review-prompt" style="display:none;margin:16px 0;padding:14px;background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:12px;border:2px solid #f59e0b;text-align:center"></div>
         <div class="results-btns">
-          <button id="share-practice-btn" onclick="sharePracticeScore()" style="background:#10b981;color:#fff;border:none;cursor:pointer;font-weight:700">📤 Share My Score</button>
-          <button onclick="resetPractice()" style="background:var(--primary);color:#fff;border:none;cursor:pointer">🔄 Practice Again</button>
-          <a href="profile.html" style="background:var(--surface-2);color:var(--ink);border:2px solid var(--border)">📊 My Badges</a>
+          <button id="share-practice-btn" onclick="sharePracticeScore()" style="background:#10b981;color:#fff;border:none;cursor:pointer;font-weight:700">Share My Score</button>
+          <button onclick="resetPractice()" style="background:var(--primary);color:#fff;border:none;cursor:pointer">Practice Again</button>
+          <a href="profile.html" style="background:var(--surface-2);color:var(--ink);border:2px solid var(--border)">My Badges</a>
           <a href="index.html" style="background:var(--surface-2);color:var(--ink);border:2px solid var(--border)">← Home</a>
         </div>
       </div>
@@ -392,7 +392,7 @@
     if (practiceState.current < practiceState.count - 1) {
       nextBtn.textContent = 'Next →';
     } else {
-      nextBtn.textContent = 'See Results 🏁';
+      nextBtn.textContent = 'See Results';
     }
     nextBtn.style.display = 'inline-block';
   }
@@ -468,7 +468,7 @@
     const badgeEl = document.getElementById('badge-notification');
     if (newBadges.length > 0) {
       badgeEl.style.display = 'block';
-      badgeEl.innerHTML = '<p style="font-weight:700;margin:0 0 6px">🎖️ New Badge Earned!</p>' +
+      badgeEl.innerHTML = '<p style="font-weight:700;margin:0 0 6px">New Badge Earned!</p>' +
         newBadges.map(b => `<p style="margin:4px 0;font-size:1.1rem">${b.icon} <strong>${b.name}</strong> — ${b.desc}</p>`).join('');
     } else {
       badgeEl.style.display = 'none';
@@ -483,7 +483,7 @@
     const reviewPrompt = document.getElementById('results-review-prompt');
     if (wrongCount > 0 && reviewPrompt) {
       reviewPrompt.style.display = 'block';
-      reviewPrompt.innerHTML = '<strong>🔁 You got ' + wrongCount + ' wrong</strong> — ' +
+      reviewPrompt.innerHTML = '<strong>You got ' + wrongCount + ' wrong</strong> — ' +
         '<button onclick="resetPractice(); startReview()" style="margin-left:8px;padding:8px 20px;background:#f59e0b;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-family:inherit">Review Mistakes Now</button>';
     } else if (reviewPrompt) {
       reviewPrompt.style.display = 'none';
@@ -597,7 +597,7 @@
       });
       html += '</div>';
     });
-    html += '<button onclick="if(confirm(\'Clear all mistake history?\')){ localStorage.removeItem(\'' + REVIEW_KEY + '\'); updateReviewButton(); }" style="margin-top:6px;padding:6px 14px;font-size:.8rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;cursor:pointer;color:var(--muted);font-family:inherit">🗑 Clear History</button>';
+    html += '<button onclick="if(confirm(\'Clear all mistake history?\')){ localStorage.removeItem(\'' + REVIEW_KEY + '\'); updateReviewButton(); }" style="margin-top:6px;padding:6px 14px;font-size:.8rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;cursor:pointer;color:var(--muted);font-family:inherit">Clear History</button>';
     el.innerHTML = html;
   }
 

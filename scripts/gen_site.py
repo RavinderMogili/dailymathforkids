@@ -668,7 +668,7 @@ def rebuild_index_and_sitemap():
 </head>
 <body>
   <header>
-    <a href="index.html">🧮 {TITLE}</a>
+    <a href="index.html">{TITLE}</a>
     <span class="user-badge"></span>
   </header>
   <main class="container">
@@ -677,17 +677,16 @@ def rebuild_index_and_sitemap():
       <p>Five math problems posted daily across <strong>Grades 1–12</strong> — aligned to the Canadian curriculum. Simple, positive, and <strong>free</strong>.</p>
       <p id="latest-link"><strong>Latest:</strong> {latest_link_html}</p>
       <p id="join-cta" style="margin-top:10px">
-        <button onclick="showRegModal()" style="font-size:1rem;padding:12px 22px">Join Free &amp; Track Your Progress 🚀</button>
+        <button onclick="showRegModal()" style="font-size:1rem;padding:12px 22px">Join Free &amp; Track Your Progress</button>
       </p>
     </section>
     <div class="points-info">
-      🌟 <strong>How points work:</strong> Complete a daily quiz to earn points — 1 point per correct answer, +3 bonus for a perfect score!
-      Check <a href="profile.html">📊 My Progress</a> to see how you're doing. Want more? Try <a href="practice.html">🎯 Practice Mode</a>!
+      <strong>How points work:</strong> Complete a daily quiz to earn points — 1 point per correct answer, +3 bonus for a perfect score!
+      Check <a href="profile.html">My Progress</a> to see how you're doing. Want more? Try <a href="practice.html">Practice Mode</a>!
     </div>
     <div style="background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;border-radius:16px;padding:18px 20px;margin:16px 0;text-align:center;box-shadow:0 4px 15px rgba(239,68,68,.3)">
-      <div style="font-size:1.5rem">🎁</div>
-      <strong style="font-size:1.1rem">Prize Challenge!</strong>
-      <p style="margin:6px 0 0;font-size:.95rem">Every student who earns <strong>300 points</strong> wins a <strong>$10 Walmart gift card!</strong> 🏆</p>
+            <strong style="font-size:1.1rem">Prize Challenge!</strong>
+      <p style="margin:6px 0 0;font-size:.95rem">Every student who earns <strong>300 points</strong> wins a <strong>$10 Walmart gift card!</strong></p>
       <p style="margin:4px 0 0;font-size:.82rem;opacity:.9">Earn points by doing daily quizzes &amp; practice sessions. Check your points on <a href="profile.html" style="color:#fff;font-weight:700">My Profile</a>.</p>
     </div>
     <div id="weekly-goal-home"></div>
@@ -700,7 +699,7 @@ def rebuild_index_and_sitemap():
     </section>
     <section style="margin-top:28px">
       <h2>About this site</h2>
-      <p>Built with ❤️ for kids in <strong>Moncton, NB, Canada</strong> (and anywhere else!). Daily problems cover
+      <p>Built for kids in <strong>Moncton, NB, Canada</strong> (and anywhere else!). Daily problems cover
          all topics from Grades 1–12 — generated fresh every day.</p>
     </section>
   </main>

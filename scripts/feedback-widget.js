@@ -77,7 +77,7 @@
   // Create button
   const btn = document.createElement('button');
   btn.id = 'dmk-feedback-btn';
-  btn.innerHTML = '💬 Feedback';
+  btn.innerHTML = 'Feedback';
   document.body.appendChild(btn);
 
   // Create panel
@@ -90,10 +90,10 @@
     </header>
     <div class="fb-body">
       <div class="fb-categories">
-        <span class="fb-cat active" data-cat="suggestion">💡 Suggestion</span>
-        <span class="fb-cat" data-cat="bug">🐛 Bug</span>
-        <span class="fb-cat" data-cat="question">❓ Question</span>
-        <span class="fb-cat" data-cat="wrong_answer">❌ Wrong Answer</span>
+        <span class="fb-cat active" data-cat="suggestion">Suggestion</span>
+        <span class="fb-cat" data-cat="bug">Bug</span>
+        <span class="fb-cat" data-cat="question">Question</span>
+        <span class="fb-cat" data-cat="wrong_answer">Wrong Answer</span>
       </div>
       <textarea id="dmk-fb-msg" placeholder="Tell us what's on your mind..."></textarea>
       <input type="email" id="dmk-fb-email" placeholder="Your email (optional — for follow-up)"/>
@@ -108,12 +108,12 @@
   // Toggle panel
   btn.addEventListener('click', () => {
     panel.classList.toggle('open');
-    if (panel.classList.contains('open')) btn.innerHTML = '✕ Close';
-    else btn.innerHTML = '💬 Feedback';
+    if (panel.classList.contains('open')) btn.innerHTML = 'Close';
+    else btn.innerHTML = 'Feedback';
   });
   document.getElementById('dmk-fb-close').addEventListener('click', () => {
     panel.classList.remove('open');
-    btn.innerHTML = '💬 Feedback';
+    btn.innerHTML = 'Feedback';
   });
 
   // Category selection
@@ -150,14 +150,14 @@
       if (res.ok) {
         panel.querySelector('.fb-body').innerHTML = `
           <div class="fb-success">
-            <div class="checkmark">✅</div>
+            <div class="checkmark"></div>
             <h3 style="margin:8px 0;color:#16a34a">Thank you!</h3>
             <p style="color:#64748b;font-size:.9rem">Your feedback has been received. We appreciate you helping us improve!</p>
           </div>
         `;
         setTimeout(() => {
           panel.classList.remove('open');
-          btn.innerHTML = '💬 Feedback';
+          btn.innerHTML = 'Feedback';
           // Reset form after close
           setTimeout(() => { location.reload(); }, 300);
         }, 2500);

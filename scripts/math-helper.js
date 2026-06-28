@@ -152,7 +152,7 @@
       'display:flex;align-items:center;justify-content:space-between;';
     header.innerHTML =
       '<div style="display:flex;align-items:center;gap:8px">' +
-      '<span style="font-size:1.4rem">🧑‍🏫</span>' +
+      '<span style="font-size:1.4rem"></span>' +
       '<div><strong style="font-size:.95rem">Math Helper</strong>' +
       '<div style="font-size:.7rem;opacity:.85">I help you learn, not just answer!</div></div></div>' +
       '<button id="math-helper-close" style="background:none;border:none;color:#fff;font-size:1.3rem;cursor:pointer;padding:4px">✕</button>';
@@ -222,14 +222,14 @@
   function showGreeting() {
     var c = concepts[state.topic] || concepts.general;
     addBotMessage(
-      "Hi! I'm your <strong>Math Helper</strong> 🧮<br><br>" +
+      "Hi! I'm your <strong>Math Helper</strong><br><br>" +
       "I can see you're working on a <strong>" + c.name + "</strong> problem. " +
       "I won't give you the answer, but I'll help you figure it out yourself!"
     );
     setQuickReplies([
-      { label: '❓ What concept is this?', action: showConcept },
-      { label: '💡 Give me a hint', action: showHint },
-      { label: '🗺️ Walk me through it', action: showWalkthrough }
+      { label: 'What concept is this?', action: showConcept },
+      { label: 'Give me a hint', action: showHint },
+      { label: 'Walk me through it', action: showWalkthrough }
     ]);
     state.step = 0;
   }
@@ -239,34 +239,34 @@
     addBotMessage("<strong>" + c.name + "</strong><br><br>" + c.explain);
     state.step = 1;
     setQuickReplies([
-      { label: '💡 Give me a hint', action: showHint },
-      { label: '✅ Thanks, I\'ll try!', action: showGoodbye }
+      { label: 'Give me a hint', action: showHint },
+      { label: 'Thanks, I\'ll try!', action: showGoodbye }
     ]);
   }
 
   function showHint() {
     var hintText = state.hint;
     if (hintText) {
-      addBotMessage("💡 <strong>Here's a hint:</strong><br><br>" + hintText);
+      addBotMessage("<strong>Here's a hint:</strong><br><br>" + hintText);
     } else {
       var c = concepts[state.topic] || concepts.general;
-      addBotMessage("💡 <strong>Here's a strategy:</strong><br><br>" + c.strategy);
+      addBotMessage("<strong>Here's a strategy:</strong><br><br>" + c.strategy);
     }
     state.step = 2;
     setQuickReplies([
-      { label: '🤔 Still stuck', action: showStrategy },
-      { label: '✅ Got it, thanks!', action: showGoodbye }
+      { label: 'Still stuck', action: showStrategy },
+      { label: 'Got it, thanks!', action: showGoodbye }
     ]);
   }
 
   function showStrategy() {
     var c = concepts[state.topic] || concepts.general;
     if (state.step < 3) {
-      addBotMessage("🗺️ <strong>Try this approach:</strong><br><br>" + c.strategy);
+      addBotMessage("<strong>Try this approach:</strong><br><br>" + c.strategy);
       state.step = 3;
       setQuickReplies([
-        { label: '😫 One more tip?', action: showTip },
-        { label: '✅ I\'ll try now!', action: showGoodbye }
+        { label: 'One more tip?', action: showTip },
+        { label: 'I\'ll try now!', action: showGoodbye }
       ]);
     } else {
       showTip();
@@ -276,38 +276,38 @@
   function showWalkthrough() {
     var c = concepts[state.topic] || concepts.general;
     addBotMessage(
-      "Let's break this down! 📝<br><br>" +
+      "Let's break this down!<br><br>" +
       "<strong>Step 1:</strong> Read the problem carefully. What numbers do you see? What is the question asking?<br><br>" +
       "<strong>Step 2:</strong> " + c.explain + "<br><br>" +
       "<strong>Step 3:</strong> " + c.strategy
     );
     state.step = 3;
     setQuickReplies([
-      { label: '💡 Any more tips?', action: showTip },
-      { label: '✅ I\'ll try now!', action: showGoodbye }
+      { label: 'Any more tips?', action: showTip },
+      { label: 'I\'ll try now!', action: showGoodbye }
     ]);
   }
 
   function showTip() {
     var c = concepts[state.topic] || concepts.general;
-    addBotMessage("💪 <strong>Pro tip:</strong><br><br>" + c.tip);
+    addBotMessage("<strong>Pro tip:</strong><br><br>" + c.tip);
     state.step = 4;
     addBotMessage(
-      "Remember — making mistakes is how your brain grows! 🌱 " +
+      "Remember — making mistakes is how your brain grows! " +
       "Give it your best try. You can review the full solution after you submit!"
     );
     state.step = 5;
     setQuickReplies([
-      { label: '🎯 I\'ll give it a try!', action: showGoodbye }
+      { label: 'I\'ll give it a try!', action: showGoodbye }
     ]);
   }
 
   function showGoodbye() {
     var encouragements = [
-      "You've got this! Good luck! 🎉",
-      "Believe in yourself — you're learning every time you try! 🌟",
-      "Go for it! Every math problem you solve makes your brain stronger! 💪",
-      "Awesome! Remember, it's OK to make mistakes. That's how we learn! 🧠"
+      "You've got this! Good luck!",
+      "Believe in yourself — you're learning every time you try!",
+      "Go for it! Every math problem you solve makes your brain stronger!",
+      "Awesome! Remember, it's OK to make mistakes. That's how we learn!"
     ];
     addBotMessage(encouragements[Math.floor(Math.random() * encouragements.length)]);
     quickRepliesEl.innerHTML = '';

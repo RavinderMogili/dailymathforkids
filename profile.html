@@ -7,7 +7,7 @@
   <meta property="og:title" content="My Progress – Daily Math for Kids"/>
   <meta property="og:description" content="Track your quiz scores, streaks, and points on Daily Math for Kids."/>
   <meta property="og:image" content="https://dailymathforkids.com/assets/og-image.svg"/>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧮</text></svg>"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>+</text></svg>"/>
   <link rel="stylesheet" href="styles.css"/>
   <style>
     .profile-card {
@@ -69,7 +69,7 @@
 </head>
 <body>
 <header>
-  <a href="index.html">🧮 Daily Math for Kids</a>
+  <a href="index.html">Daily Math for Kids</a>
   <span class="user-badge"></span>
 </header>
 <main class="container">
@@ -107,22 +107,22 @@
         <span id="grade-save-msg"></span>
       </div>
       <div id="parent-email-row" class="grade-change-row" style="margin-top:10px">
-        <label for="parent-email-input">📧 Parent email:</label>
+        <label for="parent-email-input">Parent email:</label>
         <input id="parent-email-input" type="email" placeholder="parent@example.com" maxlength="100" style="min-height:36px;padding:4px 10px;border-radius:8px;border:1px solid var(--border,#e0e0e0);font-family:inherit;font-size:.95rem;flex:1;max-width:280px"/>
         <button onclick="saveParentEmail()">Save</button>
         <span id="email-save-msg" style="font-size:.85rem;font-weight:600"></span>
       </div>
       <div id="pin-row" class="grade-change-row" style="margin-top:10px">
-        <label for="pin-input" id="pin-label">🔑 4-Digit PIN:</label>
+        <label for="pin-input" id="pin-label">4-Digit PIN:</label>
         <input id="pin-input" type="password" inputmode="numeric" pattern="[0-9]{4}" placeholder="Set PIN" maxlength="4" style="min-height:36px;padding:4px 10px;border-radius:8px;border:1px solid var(--border,#e0e0e0);font-family:inherit;font-size:.95rem;letter-spacing:6px;text-align:center;max-width:120px"/>
         <button onclick="savePin()" id="pin-btn">Save</button>
         <span id="pin-save-msg" style="font-size:.85rem;font-weight:600"></span>
       </div>
       <div id="pin-set-badge" style="display:none;margin-top:10px;padding:8px 12px;background:#d1fae5;color:#059669;border-radius:8px;font-size:.85rem;font-weight:600;width:fit-content">
-        ✅ Account protected with a PIN
+        Account protected with a PIN
       </div>
       <div id="security-question-row" class="grade-change-row" style="margin-top:10px">
-        <label for="security-question-input">🔐 Security Question:</label>
+        <label for="security-question-input">Security Question:</label>
         <select id="security-question-input" class="form-input" style="min-height:36px;padding:4px 10px;border-radius:8px;border:1px solid var(--border,#e0e0e0);font-family:inherit;font-size:.95rem;flex:1;max-width:280px">
           <option value="">Choose a question…</option>
           <option value="What is your favorite color?">What is your favorite color?</option>
@@ -135,7 +135,7 @@
         <button onclick="saveSecurityQuestion()">Save</button>
         <span id="security-save-msg" style="font-size:.85rem;font-weight:600"></span>
       </div>
-      <div id="email-note" style="margin-top:4px;font-size:.78rem;color:var(--muted,#64748b)">📬 We send a weekly progress report to this email. Never shared or used for marketing.</div>
+      <div id="email-note" style="margin-top:4px;font-size:.78rem;color:var(--muted,#64748b)">We send a weekly progress report to this email. Never shared or used for marketing.</div>
       <div class="stat-row">
         <div class="stat-box">
           <div class="stat-num" id="stat-total-pts">—</div>
@@ -147,7 +147,7 @@
         </div>
         <div class="stat-box">
           <div class="stat-num" id="stat-streak">—</div>
-          <div class="stat-lbl">Day Streak 🔥</div>
+          <div class="stat-lbl">Day Streak</div>
         </div>
         <div class="stat-box">
           <div class="stat-num" id="stat-perfect">—</div>
@@ -155,11 +155,11 @@
         </div>
         <div class="stat-box" id="shield-box">
           <div class="stat-num" id="stat-shield">—</div>
-          <div class="stat-lbl">Streak Shield 🛡️</div>
+          <div class="stat-lbl">Streak Shield</div>
         </div>
         <div class="stat-box">
           <div class="stat-num" id="stat-best-time">—</div>
-          <div class="stat-lbl">Best Time ⚡</div>
+          <div class="stat-lbl">Best Time</div>
         </div>
         <div class="stat-box">
           <div class="stat-num" id="stat-avg-time">—</div>
@@ -167,13 +167,13 @@
         </div>
       </div>
       <div style="margin-top:16px;padding:12px 16px;background:var(--surface-2,#f1f5f9);border-radius:12px;font-size:.9rem;color:var(--muted,#64748b)">
-        🔥 <strong>What's a streak?</strong> Every day you do a quiz, your streak number goes up! Do it 3 days in a row? That's a 3-day streak! But if you skip a day, it goes back to zero 😢<br><br>
-        🛡️ <strong>What's a shield?</strong> Get all 5 answers right and you win a magic shield! The shield lets you skip ONE day without losing your streak. After that, the shield disappears. You can earn one new shield every month — so use it wisely! 💪
+        <strong>What's a streak?</strong> Every day you do a quiz, your streak number goes up! Do it 3 days in a row? That's a 3-day streak! But if you skip a day, it goes back to zero.<br><br>
+        <strong>What's a shield?</strong> Get all 5 answers right and you win a magic shield! The shield lets you skip ONE day without losing your streak. After that, the shield disappears. You can earn one new shield every month — so use it wisely!
       </div>
     </div>
 
     <div class="profile-card" id="rank-card" style="display:none">
-      <h2>📊 Your Position in Grade <span id="rank-grade"></span></h2>
+      <h2>Your Position in Grade <span id="rank-grade"></span></h2>
       <div id="rank-wrap" style="margin-top:12px">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
           <div style="flex:1;background:#e2e8f0;border-radius:12px;height:28px;overflow:hidden;position:relative">
@@ -187,7 +187,7 @@
     </div>
 
     <div class="profile-card" id="practice-stats-card" style="display:none">
-      <h2>🎯 Practice Mode Stats</h2>
+      <h2>Practice Mode Stats</h2>
       <div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
         <div class="stat-box">
           <div class="stat-num" id="stat-practice-sessions">0</div>
@@ -206,11 +206,11 @@
           <div class="stat-lbl">Practice Pts</div>
         </div>
       </div>
-      <p style="margin-top:8px;text-align:center"><a href="practice.html" style="font-weight:700">🎯 Go Practice →</a></p>
+      <p style="margin-top:8px;text-align:center"><a href="practice.html" style="font-weight:700">Go Practice →</a></p>
     </div>
 
     <div class="profile-card" id="badges-card">
-      <h2>🎖️ My Badges</h2>
+      <h2>My Badges</h2>
       <div id="badges-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:12px"></div>
       <p id="badges-empty" style="color:var(--muted);text-align:center;display:none">No badges yet — <a href="practice.html">start practising</a> to earn them!</p>
     </div>
@@ -272,12 +272,12 @@ async function loadProfile() {
     if (data.hasPin) {
       pinRow.style.display = 'flex';
       pinBadge.style.display = 'block';
-      if (pinLabel) pinLabel.textContent = '🔑 Change PIN:';
+      if (pinLabel) pinLabel.textContent = 'Change PIN:';
       if (pinInput) pinInput.placeholder = 'New 4-digit PIN';
     } else {
       pinRow.style.display = 'flex';
       pinBadge.style.display = 'none';
-      if (pinLabel) pinLabel.textContent = '🔑 4-Digit PIN:';
+      if (pinLabel) pinLabel.textContent = '4-Digit PIN:';
       if (pinInput) pinInput.placeholder = 'Set PIN';
     }
   }
@@ -301,12 +301,12 @@ async function loadProfile() {
     document.getElementById('rank-bar').style.width = barWidth + '%';
     document.getElementById('rank-bar-text').textContent = 'Top ' + (100 - pct + 1) + '%';
     const msg = pct >= 80
-      ? '🏆 Amazing! You\'re one of the top students in your grade!'
+      ? 'Amazing! You\'re one of the top students in your grade!'
       : pct >= 50
-      ? '⭐ Great job! You\'re ahead of more than half your grade. Keep going!'
+      ? 'Great job! You\'re ahead of more than half your grade. Keep going!'
       : pct >= 25
-      ? '💪 Good progress! Keep practising and you\'ll climb higher!'
-      : '🚀 Every quiz you do helps you improve. Keep it up!';
+      ? 'Good progress! Keep practising and you\'ll climb higher!'
+      : 'Every quiz you do helps you improve. Keep it up!';
     document.getElementById('rank-msg').textContent = msg;
   }
 
@@ -323,14 +323,14 @@ async function loadProfile() {
 
   const shieldActive = typeof hasShield === 'function' ? hasShield() : false;
   const shieldEl = document.getElementById('stat-shield');
-  if (shieldEl) shieldEl.textContent = shieldActive ? '✅ Ready' : 'None';
+  if (shieldEl) shieldEl.textContent = shieldActive ? 'Ready' : 'None';
   const shieldBox = document.getElementById('shield-box');
   if (shieldBox) shieldBox.style.background = shieldActive ? 'linear-gradient(135deg,#e0f2fe,#bae6fd)' : '';
 
   if (streak > 1) {
-    const shieldBadge = shieldActive ? ' 🛡️' : '';
+    const shieldBadge = shieldActive ? ' (shield active)' : '';
     document.getElementById('streak-badge-wrap').innerHTML =
-      `<span class="streak-badge">🔥 ${streak}-day streak! Keep it up!${shieldBadge}</span>`;
+      `<span class="streak-badge">${streak}-day streak! Keep it up!${shieldBadge}</span>`;
   }
 
   // Render badges
@@ -354,7 +354,7 @@ async function loadProfile() {
           <div style="font-size:2rem">${b.icon}</div>
           <div style="font-size:.8rem;font-weight:700;color:${b.earned ? 'var(--ink)' : 'var(--muted)'};margin-top:4px">${b.name}</div>
           <div style="font-size:.7rem;color:var(--muted)">${b.desc}</div>
-          ${b.earned ? '<div style="font-size:.7rem;color:#16a34a;font-weight:700;margin-top:2px">✅ Earned!</div>' : ''}
+          ${b.earned ? '<div style="font-size:.7rem;color:#16a34a;font-weight:700;margin-top:2px">Earned!</div>' : ''}
         </div>`
       ).join('');
     }
@@ -369,18 +369,16 @@ async function loadProfile() {
     prizeDiv.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
     prizeDiv.innerHTML = hasEmail
       ? `<div style="background:#fff;border-radius:20px;padding:32px;max-width:420px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.2)">
-          <div style="font-size:3rem">🎉🏆</div>
-          <h2 style="margin:12px 0 8px;color:#16a34a">Congratulations!</h2>
+                    <h2 style="margin:12px 0 8px;color:#16a34a">Congratulations!</h2>
           <p style="font-size:1rem;color:#333">You earned <strong>${totalPts} points</strong>! You qualify for a <strong>$10 Walmart gift card!</strong></p>
           <p style="font-size:.9rem;color:#666;margin-top:8px">We'll send the gift card to your parent's email. Stay tuned!</p>
-          <button onclick="document.getElementById('prize-popup').remove();sessionStorage.setItem('prize_popup_dismissed','1')" style="margin-top:16px;padding:12px 28px;border-radius:12px;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;font-weight:700;font-size:1rem;border:none;cursor:pointer">Awesome! 🎁</button>
+          <button onclick="document.getElementById('prize-popup').remove();sessionStorage.setItem('prize_popup_dismissed','1')" style="margin-top:16px;padding:12px 28px;border-radius:12px;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;font-weight:700;font-size:1rem;border:none;cursor:pointer">Awesome!</button>
         </div>`
       : `<div style="background:#fff;border-radius:20px;padding:32px;max-width:420px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.2)">
-          <div style="font-size:3rem">🎉🏆</div>
-          <h2 style="margin:12px 0 8px;color:#f59e0b">You did it!</h2>
+                    <h2 style="margin:12px 0 8px;color:#f59e0b">You did it!</h2>
           <p style="font-size:1rem;color:#333">You earned <strong>${totalPts} points</strong>! You qualify for a <strong>$10 Walmart gift card!</strong></p>
-          <p style="font-size:.95rem;color:#dc2626;font-weight:600;margin-top:10px">⬇️ Please add your parent's email below so we can send your gift card!</p>
-          <button onclick="document.getElementById('prize-popup').remove();sessionStorage.setItem('prize_popup_dismissed','1');document.getElementById('parent-email-input').focus()" style="margin-top:16px;padding:12px 28px;border-radius:12px;background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;font-weight:700;font-size:1rem;border:none;cursor:pointer">Add Email to Claim 📧</button>
+          <p style="font-size:.95rem;color:#dc2626;font-weight:600;margin-top:10px">Please add your parent's email below so we can send your gift card!</p>
+          <button onclick="document.getElementById('prize-popup').remove();sessionStorage.setItem('prize_popup_dismissed','1');document.getElementById('parent-email-input').focus()" style="margin-top:16px;padding:12px 28px;border-radius:12px;background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;font-weight:700;font-size:1rem;border:none;cursor:pointer">Add Email to Claim</button>
         </div>`;
     document.body.appendChild(prizeDiv);
   }

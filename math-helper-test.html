@@ -20,7 +20,7 @@
   </style>
 </head>
 <body>
-  <h1>🧪 Math Helper Topic Detector Test</h1>
+  <h1>Math Helper Topic Detector Test</h1>
   <p>This page tests whether the Math Helper correctly identifies the topic for many real question examples.</p>
   <button onclick="runTests()">Run Tests</button>
   <div id="summary" class="summary" style="display:none"></div>
@@ -146,7 +146,7 @@
       summary.style.display = 'block';
       summary.innerHTML = `
         <strong>Results:</strong> ${pass} passed, ${fail} failed out of ${testCases.length}
-        ${fail === 0 ? ' 🎉 All good!' : ''}
+        ${fail === 0 ? ' All good!' : ''}
       `;
       summary.style.background = fail === 0 ? '#d1fae5' : '#fee2e2';
     }

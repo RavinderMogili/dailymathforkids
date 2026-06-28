@@ -37,20 +37,20 @@ function getWeeklySolved() { return getWeeklyGoalData().solved || 0; }
 
 // ── Milestones ──────────────────────────────────────────────────────────
 const MILESTONE_LEVELS = [
-  { count: 10,   icon: '🌱', name: 'Getting Started',   msg: 'You solved 10 problems this week!' },
-  { count: 30,   icon: '⭐', name: 'Weekly Goal!',       msg: 'Amazing! You hit your weekly goal of 30!' },
-  { count: 50,   icon: '🔥', name: 'On Fire!',           msg: '50 problems this week — you\'re unstoppable!' },
-  { count: 100,  icon: '💯', name: 'Century!',            msg: '100 problems in one week! Incredible!' },
-  { count: 200,  icon: '🏆', name: 'Math Champion',      msg: '200 problems! You\'re a true math champion!' },
+  { count: 10,   icon: '', name: 'Getting Started',   msg: 'You solved 10 problems this week!' },
+  { count: 30,   icon: '', name: 'Weekly Goal!',       msg: 'Amazing! You hit your weekly goal of 30!' },
+  { count: 50,   icon: '', name: 'On Fire!',           msg: '50 problems this week — you\'re unstoppable!' },
+  { count: 100,  icon: '', name: 'Century!',            msg: '100 problems in one week! Incredible!' },
+  { count: 200,  icon: '', name: 'Math Champion',      msg: '200 problems! You\'re a true math champion!' },
 ];
 
 // Lifetime milestones
 const LIFETIME_MILESTONES = [
-  { count: 50,   icon: '🌟', name: '50 Questions',   msg: 'You\'ve solved 50 questions total!' },
-  { count: 100,  icon: '💪', name: '100 Questions',  msg: '100 questions solved — you\'re growing!' },
-  { count: 250,  icon: '🎯', name: '250 Questions',  msg: '250 questions! You\'re on a mission!' },
-  { count: 500,  icon: '🏅', name: '500 Questions',  msg: 'Half a thousand! Legendary effort!' },
-  { count: 1000, icon: '👑', name: '1000 Questions', msg: '1,000 questions solved! Math royalty!' },
+  { count: 50,   icon: '', name: '50 Questions',   msg: 'You\'ve solved 50 questions total!' },
+  { count: 100,  icon: '', name: '100 Questions',  msg: '100 questions solved — you\'re growing!' },
+  { count: 250,  icon: '', name: '250 Questions',  msg: '250 questions! You\'re on a mission!' },
+  { count: 500,  icon: '', name: '500 Questions',  msg: 'Half a thousand! Legendary effort!' },
+  { count: 1000, icon: '', name: '1000 Questions', msg: '1,000 questions solved! Math royalty!' },
 ];
 
 function getMilestones() {
@@ -120,15 +120,15 @@ function renderWeeklyGoalWidget(containerId) {
   el.innerHTML = `
     <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:2px solid #86efac;border-radius:14px;padding:14px 18px;margin:12px 0">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <span style="font-weight:700;font-size:.95rem">${reached ? '🎉' : '🎯'} Weekly Goal</span>
+        <span style="font-weight:700;font-size:.95rem">Weekly Goal</span>
         <span style="font-size:.85rem;color:var(--muted)">${d.solved} / ${d.goal} problems</span>
       </div>
       <div style="background:#e2e8f0;border-radius:999px;height:14px;overflow:hidden">
         <div style="height:100%;border-radius:999px;background:${reached ? 'linear-gradient(90deg,#22c55e,#86efac)' : 'linear-gradient(90deg,#2563eb,#60a5fa)'};width:${pct}%;transition:width .6s ease;min-width:${d.solved > 0 ? '8px' : '0'}"></div>
       </div>
       <p style="margin:6px 0 0;font-size:.8rem;color:var(--muted);text-align:center">${
-        reached ? '🏆 Goal reached! Keep going for bonus milestones!'
-        : pct >= 50 ? `💪 Over halfway — ${d.goal - d.solved} more to go!`
+        reached ? 'Goal reached! Keep going for bonus milestones!'
+        : pct >= 50 ? `Over halfway — ${d.goal - d.solved} more to go!`
         : `Solve ${d.goal - d.solved} more problems this week!`
       }</p>
     </div>

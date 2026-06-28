@@ -1903,8 +1903,8 @@
       const streak = calcStreak(qid);
       const streakEl = document.getElementById('streak-msg');
       streakEl.textContent = streak > 1
-        ? '🔥 ' + streak + '-day streak! Keep it up!'
-        : '⭐ Day 1 — great start!';
+        ? '' + streak + '-day streak! Keep it up!'
+        : 'Day 1 — great start!';
 
       const feedbackEl = document.getElementById('corrective-feedback');
       if (section && feedbackEl) {
@@ -1919,7 +1919,7 @@
           totalPts += pts;
           const isRight = userAns.trim().toLowerCase() === correct.toLowerCase();
           if (isRight) earnedPts += pts;
-          const badge = diff === 'hard' ? '🔥' : diff === 'medium' ? '⚡' : '🟢';
+          const badge = diff === 'hard' ? '(hard)' : diff === 'medium' ? '(med)' : '(easy)';
           html += '<li style="margin:8px 0;padding:10px 14px;border-radius:10px;background:' +
             (isRight ? 'var(--success-light)' : 'var(--danger-light)') + ';border:1px solid ' +
             (isRight ? 'var(--success)' : 'var(--danger)') + '">';
@@ -1929,7 +1929,7 @@
           html += '</li>';
         });
         html += '</ol>';
-        html += '<p style="margin-top:12px;font-size:1.1rem;font-weight:700">🎯 Weighted score: ' + earnedPts + ' / ' + totalPts + ' points</p>';
+        html += '<p style="margin-top:12px;font-size:1.1rem;font-weight:700">Weighted score: ' + earnedPts + ' / ' + totalPts + ' points</p>';
         feedbackEl.innerHTML = html;
         feedbackEl.scrollIntoView({behavior:'smooth', block:'nearest'});
       }

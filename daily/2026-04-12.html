@@ -960,8 +960,8 @@
       const streak = calcStreak(qid);
       const streakEl = document.getElementById('streak-msg');
       streakEl.textContent = streak > 1
-        ? '🔥 ' + streak + '-day streak! Keep it up!'
-        : '⭐ Day 1 — great start!';
+        ? '' + streak + '-day streak! Keep it up!'
+        : 'Day 1 — great start!';
 
       const grade = qid.replace(/^.*-(G\d+)$/, '$1');
       const section = document.querySelector('.grade-section[data-grade="' + grade + '"]');

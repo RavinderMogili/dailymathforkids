@@ -152,7 +152,7 @@ class Issue:
         self.fix = fix  # suggested fix
 
     def __str__(self):
-        icon = '❌' if self.level == 'error' else '⚠️'
+        icon = '[ERROR]' if self.level == 'error' else '[WARN]'
         return f"  {icon} [{self.grade} Q{self.qnum}] {self.msg}"
 
 
@@ -301,11 +301,11 @@ def auto_fix_file(filepath, issues, source='md'):
         if old_pattern in content:
             content = content.replace(old_pattern, new_pattern, 1)
             fixed_count += 1
-            print(f"  ✅ Fixed [{issue.grade} Q{issue.qnum}]: \"{old_answer}\" → \"{issue.fix}\"")
+            print(f"  Fixed [{issue.grade} Q{issue.qnum}]: \"{old_answer}\" -> \"{issue.fix}\"")
 
     if fixed_count:
         filepath.write_text(content, encoding='utf-8')
-        print(f"\n  🔧 Auto-fixed {fixed_count} answer(s) in {filepath.name}")
+        print(f"\n  Auto-fixed {fixed_count} answer(s) in {filepath.name}")
 
     return fixed_count
 
@@ -356,11 +356,11 @@ def main():
     if min_issues:
         print(f"QUESTION COUNT ISSUES ({len(min_issues)}):")
         for msg in min_issues:
-            print(f"  ⚠️  {msg}")
+            print(f"  [WARN] {msg}")
         print()
 
     if not issues and not min_issues:
-        print("✅ All checks passed! No issues found.")
+        print("All checks passed! No issues found.")
         sys.exit(0)
 
     errors = [i for i in issues if i.level == 'error']
@@ -371,7 +371,7 @@ def main():
         for i in errors:
             print(i)
             if i.fix:
-                print(f"       💡 Suggested fix: change answer to \"{i.fix}\"")
+                print(f"       Suggested fix: change answer to \"{i.fix}\"")
         print()
 
     if warnings:
@@ -384,26 +384,26 @@ def main():
 
     # Auto-fix mode: apply fixes and write back to file
     if do_fix and errors:
-        print(f"\n🔧 Attempting auto-fix...")
+        print(f"\nAttempting auto-fix...")
         fixed = auto_fix_file(filepath, issues, source=source)
         if fixed:
             # Re-validate after fix
             questions2, issues2 = validate_file(filepath, source=source)
             remaining_errors = [i for i in issues2 if i.level == 'error']
             if remaining_errors:
-                print(f"\n  ⚠️  {len(remaining_errors)} error(s) remain after auto-fix (need manual review)")
+                print(f"\n  {len(remaining_errors)} error(s) remain after auto-fix (need manual review)")
             else:
-                print(f"\n  ✅ All errors resolved after auto-fix!")
+                print(f"\n  All errors resolved after auto-fix!")
                 sys.exit(0)
 
     # In strict mode, exit with error code if any errors remain
     if strict and errors:
         unfixable = [i for i in errors if not i.fix]
         if unfixable:
-            print(f"\n❌ STRICT MODE: {len(unfixable)} unfixable error(s) — blocking deploy.")
+            print(f"\nSTRICT MODE: {len(unfixable)} unfixable error(s) -- blocking deploy.")
             sys.exit(2)
         # If all errors were fixable but --fix wasn't used
-        print(f"\n❌ STRICT MODE: {len(errors)} error(s) found — run with --fix first.")
+        print(f"\nSTRICT MODE: {len(errors)} error(s) found -- run with --fix first.")
         sys.exit(2)
 
     # Exit code: 2 for errors, 1 for warnings only, 0 for clean

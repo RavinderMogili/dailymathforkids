@@ -4,7 +4,7 @@
 <title>Daily Math for Kids - 2025-09-01</title><link rel="stylesheet" href="../styles.css"/></head>
 <body>
 <header>
-  <a href="../index.html">🧮 Daily Math for Kids</a>
+  <a href="../index.html">Daily Math for Kids</a>
   <span class="user-badge"></span>
 </header>
 <main class="container">
@@ -22,7 +22,7 @@
 <h2>Today's Encouragement</h2>
 <blockquote class="encouragement"><p>Small steps every day make you a strong math explorer.</p></blockquote>
 <section class="hero" id="quiz-box">
-  <h2>Test Yourself! 📝</h2>
+  <h2>Test Yourself!</h2>
   <p id="hello">Enter your answers below — your score will be saved and you'll earn points!</p>
   <form id="quiz" aria-label="Enter answers">
     <ol>
@@ -32,7 +32,7 @@
       <li><input name="q4" placeholder="Answer 4" required autocomplete="off"></li>
       <li><input name="q5" placeholder="Answer 5" required autocomplete="off"></li>
     </ol>
-    <button type="submit">Submit &amp; Earn Points 🌟</button>
+    <button type="submit">Submit &amp; Earn Points</button>
   </form>
   <p id="result"></p>
   <p id="streak-msg" style="margin-top:8px;font-size:.95rem;color:var(--muted)"></p>
@@ -61,8 +61,8 @@
       const streak = calcStreak(QUIZ_ID);
       const streakEl = document.getElementById('streak-msg');
       streakEl.textContent = streak > 1
-        ? `🔥 ${streak}-day streak! Keep it up!`
-        : '⭐ Day 1 — great start!';
+        ? `${streak}-day streak! Keep it up!`
+        : 'Day 1 — great start!';
     }
   });
 </script>

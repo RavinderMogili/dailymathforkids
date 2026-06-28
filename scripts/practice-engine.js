@@ -152,7 +152,7 @@ function genPatterns(grade, difficulty) {
     const ans = start + 4 * step;
     return { question: `What comes next? ${seq.join(', ')}, ?`, answer: String(ans), choices: makeChoices(ans, 4, () => ans + randInt(-2, 2) * step) };
   } else if (difficulty === 'medium') {
-    const shapes = ['🔴', '🔵', '🟢', '🟡', '⭐', '🔺'];
+    const shapes = ['circle', 'square', 'triangle', 'star', 'diamond', 'heart'];
     const a = pick(shapes), b = pick(shapes.filter(s => s !== a));
     const pattern = [a, b, a, b, a, b];
     const ans = a;

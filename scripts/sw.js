@@ -15,8 +15,8 @@ self.addEventListener('activate', e => {
 self.addEventListener('push', e => {
   const data = e.data ? e.data.json() : {};
   e.waitUntil(
-    self.registration.showNotification(data.title || '🧮 Daily Math for Kids', {
-      body: data.body || "Today's problems are ready — keep your streak alive! 🔥",
+    self.registration.showNotification(data.title || 'Daily Math for Kids', {
+      body: data.body || "Today's problems are ready — keep your streak alive!",
       icon: data.icon || '/favicon.ico',
       badge: data.badge || '/favicon.ico',
       tag: 'dmk-daily',
@@ -43,8 +43,8 @@ self.addEventListener('notificationclick', e => {
 self.addEventListener('periodicsync', e => {
   if (e.tag === 'dmk-daily-reminder') {
     e.waitUntil(
-      self.registration.showNotification('🧮 Daily Math for Kids', {
-        body: "Don't forget your daily practice — keep your streak alive! 🔥",
+      self.registration.showNotification('Daily Math for Kids', {
+        body: "Don't forget your daily practice — keep your streak alive!",
         icon: '/favicon.ico',
         tag: 'dmk-daily',
         data: { url: '/' },
