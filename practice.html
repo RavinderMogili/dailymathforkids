@@ -500,6 +500,20 @@
     const u = typeof getUser === 'function' ? getUser() : null;
     if (!u) return;
     const api = window.DMK_API || '';
+
+    // Collect wrong answers to send to server
+    const wrongAnswers = practiceState.questions
+      .filter(q => q._userAnswer && q._userAnswer !== q.answer)
+      .map((q, i) => ({
+        questionNum: i + 1,
+        questionText: q.question || '',
+        correctAnswer: q.answer || '',
+        userAnswer: q._userAnswer || '',
+        choices: q.choices || null,
+        hint: q.hint || '',
+        topic: q.topic || '',
+      }));
+
     try {
       await fetch(`${api}/api/practice-submit`, {
         method: 'POST',
@@ -512,6 +526,7 @@
           topics: practiceState.topics,
           timeSeconds,
           pointsEarned,
+          wrongAnswers,
         }),
       });
     } catch { /* silent fail for practice */ }
@@ -569,7 +584,42 @@
   function renderMistakeHistory() {
     const el = document.getElementById('mistake-history-list');
     if (!el) return;
-    const items = JSON.parse(localStorage.getItem(REVIEW_KEY) || '[]');
+
+    // Show local data immediately
+    const localItems = JSON.parse(localStorage.getItem(REVIEW_KEY) || '[]');
+    renderMistakeList(el, localItems, 'practice');
+
+    // Also fetch from server (enhances with quiz mistakes + persistence)
+    const u = typeof getUser === 'function' ? getUser() : null;
+    const api = window.DMK_API || '';
+    if (u && api) {
+      fetch(`${api}/api/mistakes?userId=${encodeURIComponent(u.userId)}&resolved=false`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.mistakes && data.mistakes.length > 0) {
+            const serverItems = data.mistakes.map(m => ({
+              question: m.question_text,
+              answer: m.correct_answer,
+              userAnswer: m.user_answer,
+              topic: m.topic || '',
+              date: (m.created_at || '').slice(0, 10),
+              source: m.source,
+              id: m.id,
+            }));
+            // Merge: local practice + server (deduplicate by question text + date)
+            const merged = [...localItems.map(it => ({ ...it, source: 'practice' }))];
+            serverItems.forEach(s => {
+              const dup = merged.find(m => m.question === s.question && m.date === s.date);
+              if (!dup) merged.push(s);
+            });
+            renderMistakeList(el, merged, 'all');
+          }
+        })
+        .catch(() => { /* keep local view */ });
+    }
+  }
+
+  function renderMistakeList(el, items, mode) {
     if (items.length === 0) {
       el.innerHTML = '<p style="color:var(--muted);font-size:.9rem;padding:4px 0">No mistakes yet — great job!</p>';
       return;
@@ -589,15 +639,19 @@
       html += '<div style="margin-bottom:12px">';
       html += '<div style="font-weight:700;font-size:.9rem;color:var(--primary);margin-bottom:4px;border-bottom:1px solid var(--border);padding-bottom:4px">' + label + '</div>';
       grouped[date].forEach(item => {
+        const sourceBadge = item.source === 'quiz'
+          ? '<span style="display:inline-block;padding:1px 6px;border-radius:10px;font-size:.7rem;font-weight:600;background:#dbeafe;color:#1d4ed8;margin-right:6px">Quiz</span>'
+          : '<span style="display:inline-block;padding:1px 6px;border-radius:10px;font-size:.7rem;font-weight:600;background:#fef3c7;color:#92400e;margin-right:6px">Practice</span>';
         const topicBadge = item.topic ? '<span style="display:inline-block;padding:1px 8px;border-radius:10px;font-size:.72rem;font-weight:600;background:#ede9fe;color:#7c3aed;margin-right:6px">' + item.topic + '</span>' : '';
         html += '<div style="padding:6px 10px;margin:4px 0;background:var(--surface);border-radius:8px;border:1px solid var(--border);font-size:.88rem">';
-        html += topicBadge + '<strong>Q:</strong> ' + (item.question || '?');
+        html += sourceBadge + topicBadge + '<strong>Q:</strong> ' + (item.question || '?');
         html += ' <span style="color:var(--success);font-weight:600">→ ' + (item.answer || '?') + '</span>';
+        if (item.userAnswer) html += ' <span style="color:var(--muted);font-size:.8rem">(you said: ' + item.userAnswer + ')</span>';
         html += '</div>';
       });
       html += '</div>';
     });
-    html += '<button onclick="if(confirm(\'Clear all mistake history?\')){ localStorage.removeItem(\'' + REVIEW_KEY + '\'); updateReviewButton(); }" style="margin-top:6px;padding:6px 14px;font-size:.8rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;cursor:pointer;color:var(--muted);font-family:inherit">Clear History</button>';
+    html += '<button onclick="if(confirm(\'Clear all mistake history?\')){ localStorage.removeItem(\'' + REVIEW_KEY + '\'); updateReviewButton(); }" style="margin-top:6px;padding:6px 14px;font-size:.8rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;cursor:pointer;color:var(--muted);font-family:inherit">Clear Local History</button>';
     el.innerHTML = html;
   }
 

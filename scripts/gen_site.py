@@ -330,7 +330,7 @@ def safe_generate_today():
                 content = grade_sections.get(code, "")
                 if content:
                     qs  = re.findall(r'^\s*-\s*EN:\s*(.+)',      content, re.MULTILINE)
-                    ans = re.findall(r'^\s*-\s*Answer:\s*(\S+)', content, re.MULTILINE)
+                    ans = re.findall(r'^\s*-\s*Answer:\s*(.+?)(?:\s*$)', content, re.MULTILINE)
                     upsert_quiz_to_supabase(f"{today}-{code}", qs, ans)
         rebuild_index_and_sitemap()
         return
