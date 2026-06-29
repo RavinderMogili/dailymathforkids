@@ -162,16 +162,16 @@ HELPERS_JS = r"""
 """
 
 def auto_fix_answers(text):
-    """Auto-fix common LLM answer mistakes: stripped fractions, currency, time, decimals."""
+    """Auto-fix common LLM answer mistakes: stripped fractions, currency, time, decimals, units, partial expressions."""
     lines = text.split('\n')
     fixed_count = 0
 
     for i, line in enumerate(lines):
-        ans_match = re.match(r'^(\s*-\s*Answer:\s*)(\S+)\s*$', line)
+        ans_match = re.match(r'^(\s*-\s*Answer:\s*)(.+?)\s*$', line)
         if not ans_match:
             continue
         prefix = ans_match.group(1)
-        answer = ans_match.group(2)
+        answer = ans_match.group(2).strip()
 
         # Look backwards for the Choices line
         choices_line = None
@@ -195,19 +195,52 @@ def auto_fix_answers(text):
         if answer in choice_values:
             continue
 
-        # Try to find the correct choice by matching the stripped answer
+        # Smart matching: strip trailing punctuation, match with units, partial expressions
+        cleaned = answer.rstrip('.,;:')
         fixed = None
-        for cv in choice_values:
-            # Strip special chars from choice and compare
-            stripped = re.sub(r'[$/:.,¢]', '', cv)
-            if stripped == answer:
-                fixed = cv
-                break
+
+        # Direct match after stripping punctuation
+        if cleaned in choice_values:
+            fixed = cleaned
+        else:
+            for cv in choice_values:
+                if cleaned.lower() == cv.lower():
+                    fixed = cv
+                    break
+
+        # Numeric prefix with units: "17" -> "17 cents"
+        if not fixed:
+            for cv in choice_values:
+                if re.match(r'^' + re.escape(cleaned) + r'\s', cv):
+                    fixed = cv
+                    break
+
+        # Partial expression: "x" -> "x = 4" (only if unique match)
+        if not fixed:
+            candidates = [cv for cv in choice_values if cv.startswith(cleaned)]
+            if len(candidates) == 1:
+                fixed = candidates[0]
+
+        # Strip special chars from choice: "14" -> "1/4"
+        if not fixed:
+            for cv in choice_values:
+                stripped = re.sub(r'[$/:.,¢°%]', '', cv)
+                if stripped == cleaned or stripped == answer:
+                    fixed = cv
+                    break
+
+        # Numeric match with unit suffix stripped from choice
+        if not fixed:
+            for cv in choice_values:
+                cv_no_units = re.sub(r'\s*(cm²|cm³|cm|m²|m³|m|km/h|km|mm|kg|g|ml|L|cents?|hours?|minutes?|seconds?|pts?|°)\s*$', '', cv, flags=re.IGNORECASE).strip()
+                if cv_no_units == cleaned or cv_no_units.lower() == cleaned.lower():
+                    fixed = cv
+                    break
 
         if fixed:
             lines[i] = f"{prefix}{fixed}"
             fixed_count += 1
-            print(f"  AUTO-FIX: Answer '{answer}' → '{fixed}'")
+            print(f"  AUTO-FIX: Answer '{answer}' -> '{fixed}'")
 
     if fixed_count:
         print(f"INFO: Auto-fixed {fixed_count} answer(s)")

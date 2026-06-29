@@ -51,7 +51,7 @@ def parse_questions_from_md(md_text):
             en = _extract(body, r'-\s*EN:\s*(.+)')
             fr = _extract(body, r'-\s*FR:\s*(.+)')
             choices_raw = _extract(body, r'-\s*Choices:\s*(.+)')
-            answer = _extract(body, r'-\s*Answer:\s*(\S+)')
+            answer = _extract(body, r'-\s*Answer:\s*(.+)')
             hint = _extract(body, r'-\s*Hint:\s*(.+)')
 
             choices = parse_choices(choices_raw) if choices_raw else []
@@ -156,6 +156,63 @@ class Issue:
         return f"  {icon} [{self.grade} Q{self.qnum}] {self.msg}"
 
 
+def _find_best_choice_match(answer, choices):
+    """
+    Try to fuzzy-match an answer to one of the choices.
+    Handles common LLM errors:
+      - Trailing punctuation: "93." -> "93"
+      - Missing units: "17" -> "17 cents"
+      - Partial expression: "x" -> "x = 4", "(x" -> "(x + 1)(x + 6)"
+      - Stripped special chars: "14" -> "1/4"
+    Returns the matching choice or None.
+    """
+    # Step 1: Strip trailing punctuation (periods, commas) from answer
+    cleaned = answer.rstrip('.,;:')
+
+    # Direct match after stripping
+    if cleaned in choices:
+        return cleaned
+    for c in choices:
+        if cleaned.lower() == c.lower():
+            return c
+
+    # Step 2: Answer is numeric prefix — find choice that starts with it + units
+    # e.g., "17" matches "17 cents", "5" matches "5 cm"
+    for c in choices:
+        # Choice starts with the cleaned answer followed by space + unit
+        if re.match(r'^' + re.escape(cleaned) + r'\s', c):
+            return c
+        # Choice starts with the cleaned answer and has non-digit suffix
+        if c.startswith(cleaned) and len(c) > len(cleaned) and not c[len(cleaned)].isdigit():
+            return c
+
+    # Step 3: Partial expression match — answer is start of a choice
+    # e.g., "x" -> "x = 4", "(x" -> "(x + 1)(x + 6)", "5x" -> "5x − 1"
+    candidates = [c for c in choices if c.startswith(cleaned)]
+    if len(candidates) == 1:
+        return candidates[0]
+
+    # Step 4: Check if answer is a stripped version of a choice (remove $/:.,¢ and units)
+    for c in choices:
+        stripped = re.sub(r'[$/:.,¢°%]', '', c)
+        if stripped == cleaned or stripped == answer:
+            return c
+
+    # Step 5: Numeric match ignoring units — extract leading number from each choice
+    for c in choices:
+        num_match = re.match(r'^(-?[\d.]+(?:/\d+)?)', c)
+        if num_match and num_match.group(1) == cleaned:
+            return c
+
+    # Step 6: answer matches if we strip units from choice and compare
+    for c in choices:
+        c_no_units = re.sub(r'\s*(cm²|cm³|cm|m²|m³|m|km/h|km|mm|kg|g|ml|L|cents?|hours?|minutes?|seconds?|pts?|°)\s*$', '', c, flags=re.IGNORECASE).strip()
+        if c_no_units == cleaned or c_no_units.lower() == cleaned.lower():
+            return c
+
+    return None
+
+
 def validate_questions(questions):
     """Run all validation checks. Returns list of Issue objects."""
     issues = []
@@ -183,19 +240,11 @@ def validate_questions(questions):
             # Case-insensitive check
             lower_choices = [c.lower() for c in choices]
             if answer.lower() not in lower_choices:
-                # Check if answer is a stripped version of a choice
-                # (e.g. 14->1/4, 30->$30, 1230->12:30, 03->0.3)
-                possible_fix = None
-                for c in choices:
-                    stripped = re.sub(r'[$/:.,¢]', '', c)
-                    if stripped == answer:
-                        possible_fix = c
-                        break
+                possible_fix = _find_best_choice_match(answer, choices)
 
                 if possible_fix:
                     issues.append(Issue('error', grade, num,
-                        f'Answer "{answer}" looks like a stripped version of "{possible_fix}". '
-                        f'Should be "{possible_fix}" (matches choice)',
+                        f'Answer "{answer}" does not match any choice: {choices}',
                         fix=possible_fix))
                 else:
                     issues.append(Issue('error', grade, num,
