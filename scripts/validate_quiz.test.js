@@ -86,7 +86,7 @@ describe('Quiz answer validation', () => {
       expect(issues.length).toBeGreaterThan(0);
       const err = issues.find(i => i.level === 'error');
       expect(err).toBeDefined();
-      expect(err.msg).toMatch(/stripped/i);
+      expect(err.msg).toMatch(/does not match/i);
       expect(err.fix).toBe('1/4');
     });
 
