@@ -642,6 +642,10 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
         (!perfect ? `<button class="btn-secondary" onclick="retryQuiz()">Try again</button>` : '') +
         reviewButton +
         `</div>`;
+      if (perfect && typeof confetti === 'function') {
+        confetti({ particleCount: 120, spread: 80, origin: { y: 0.7 } });
+        setTimeout(() => confetti({ particleCount: 60, spread: 100, origin: { y: 0.5 } }), 400);
+      }
       checkAndRevealFadedHints(quizId, answers);
       saveWrongAnswersForReview(quizId, answers);
       if (typeof addSolvedQuestions === 'function') addSolvedQuestions(answers.length);

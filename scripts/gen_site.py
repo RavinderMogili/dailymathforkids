@@ -99,6 +99,17 @@ HELPERS_JS = r"""
         btn.style.borderColor = 'var(--primary)';
         btn.style.color       = '#fff';
         li.dataset.selected   = btn.dataset.value;
+        // Update progress bar
+        var sec = li.closest('.grade-section');
+        if (sec) {
+          var total = sec.querySelectorAll('.problems-list > li').length;
+          var done = sec.querySelectorAll('.problems-list > li[data-selected]').length;
+          var pb = document.getElementById('quiz-progress');
+          if (pb) {
+            pb.style.display = 'block';
+            pb.innerHTML = '<div style="background:var(--border);border-radius:6px;height:8px;overflow:hidden;margin-bottom:4px"><div style="background:var(--primary);height:100%;width:' + (done/total*100) + '%;transition:width .3s ease;border-radius:6px"></div></div><span style="font-size:.82rem;color:var(--muted)">' + done + '/' + total + ' answered</span>';
+          }
+        }
       });
     });
 
@@ -495,7 +506,8 @@ def generate_html_from_text(text, today):
     page_html = f"""<!doctype html>
 <html lang="en">
 <head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>{TITLE} - {today}</title><link rel="stylesheet" href="../styles.css"/></head>
+<title>{TITLE} - {today}</title><link rel="stylesheet" href="../styles.css"/>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js" defer></script></head>
 <body>
 <header>
   <a href="../index.html">&#129518; {TITLE}</a>
@@ -503,6 +515,7 @@ def generate_html_from_text(text, today):
 </header>
 <main class="container">
 <h1>Daily Math &#8212; {today}</h1>
+<div id="math-fact" style="background:var(--primary-light);border-left:4px solid var(--primary);padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:.92rem"></div>
 <div id="review-section"></div>
 {all_sections_html}
 {enc_html}
@@ -512,6 +525,7 @@ def generate_html_from_text(text, today):
 <div id="quiz-feelings"></div>
 <section class="hero" id="quiz-box">
   <h2>Test Yourself! &#128221;</h2>
+  <div id="quiz-progress" style="display:none;margin-bottom:10px"></div>
   <div id="quiz-timer" style="display:none;font-size:1.1rem;font-weight:700;color:var(--primary);margin-bottom:8px">&#9201; <span id="timer-display"></span></div>
   <p id="hello">Log in and select your grade &#8212; problems will appear above!</p>
   <form id="quiz" aria-label="Enter answers">
@@ -529,6 +543,7 @@ def generate_html_from_text(text, today):
   window.DMK_ROOT = '../';
 </script>
 <script src="../scripts/app.js?v=2"></script>
+<script src="../scripts/math-facts.js"></script>
 <script src="../scripts/goals.js"></script>
 <script>
   const QUIZ_DATE = '{today}';
