@@ -361,13 +361,19 @@ Each grade: EXACTLY 10 problems (4 Easy, 4 Medium, 2 Hard). Order: Easy first, t
 
 CRITICAL RULES — violations will break the quiz:
 
-1. ANSWER FORMATTING (most common bug):
-   - The Answer field must be COPIED from the Choices — character for character.
+1. ANSWER FORMATTING (most common bug — READ CAREFULLY):
+   - The Answer field must be the EXACT FULL TEXT of the correct choice. Copy-paste it verbatim.
    - If the correct choice is "$6.75", write Answer: $6.75 (NOT "675" or "6.75")
    - If the correct choice is "1/4", write Answer: 1/4 (NOT "14")
    - If the correct choice is "3:30", write Answer: 3:30 (NOT "330")
    - If the correct choice is "0.3", write Answer: 0.3 (NOT "03")
-   - NEVER strip $, /, :, or decimal points from the answer.
+   - If the correct choice is "17 cents", write Answer: 17 cents (NOT "17")
+   - If the correct choice is "5 cm", write Answer: 5 cm (NOT "5")
+   - If the correct choice is "x = 4", write Answer: x = 4 (NOT "x" or "4")
+   - If the correct choice is "2 hours", write Answer: 2 hours (NOT "2")
+   - If the correct choice is "(x + 2)(x + 3)", write Answer: (x + 2)(x + 3) (NOT "(x")
+   - NEVER strip units, NEVER abbreviate, NEVER add trailing periods.
+   - NEVER write just the number — always include the unit if the choice has one.
 
 2. MATH ACCURACY:
    - Solve each problem yourself before writing the answer. Double-check the arithmetic.
