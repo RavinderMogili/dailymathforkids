@@ -528,7 +528,7 @@ def generate_html_from_text(text, today):
   window.DMK_API  = '{PUBLIC_API}';
   window.DMK_ROOT = '../';
 </script>
-<script src="../scripts/app.js"></script>
+<script src="../scripts/app.js?v=2"></script>
 <script src="../scripts/goals.js"></script>
 <script>
   const QUIZ_DATE = '{today}';
@@ -571,9 +571,13 @@ def generate_html_from_text(text, today):
       else if (e.target.closest('#start-test-btn')) {{ startTest(); }}
     }});
   }});
+  var _submitting = false;
   document.getElementById('quiz').addEventListener('submit', async function(e) {{
     e.preventDefault();
-    const grade = (window.QUIZ_ID || QUIZ_ID).replace(/^.*-(G\d+)$/, '$1');
+    if (_submitting) return;
+    _submitting = true;
+    const qid = window.QUIZ_ID || QUIZ_ID;
+    const grade = qid.replace(/^.*-(G\d+)$/, '$1');
     const section = document.querySelector('.grade-section[data-grade="' + grade + '"]');
     const lis = section ? section.querySelectorAll('.problems-list > li') : [];
     const qCount = lis.length || 5;
@@ -589,8 +593,9 @@ def generate_html_from_text(text, today):
       return inp ? inp.value.trim() : '';
     }});
     const resultEl = document.getElementById('result');
-    resultEl.textContent = 'Checking\u2026';
-    const qid = window.QUIZ_ID || QUIZ_ID;
+    resultEl.textContent = 'Submitting\u2026';
+    const submitBtn = document.querySelector('#quiz button[type="submit"]');
+    if (submitBtn) {{ submitBtn.disabled = true; submitBtn.textContent = 'Submitting\u2026'; }}
     const secs = dmkTimer.stop();
     const timerEl = document.getElementById('quiz-timer');
     if (timerEl) timerEl.style.display = 'none';
@@ -600,39 +605,44 @@ def generate_html_from_text(text, today):
       markDayDone(qid);
       setQuizState(qid, 'done');
       store.set('dmk_active_quiz_url', null);
-      const streak = calcStreak(qid);
-      const streakEl = document.getElementById('streak-msg');
-      streakEl.textContent = streak > 1
-        ? '\U0001F525 ' + streak + '-day streak! Keep it up!'
-        : '\u2B50 Day 1 \u2014 great start!';
+      if (submitBtn) {{ submitBtn.disabled = true; submitBtn.textContent = 'Submitted'; }}
+      try {{
+        const streak = calcStreak(qid);
+        const streakEl = document.getElementById('streak-msg');
+        if (streakEl) streakEl.textContent = streak > 1
+          ? '' + streak + '-day streak! Keep it up!'
+          : 'Day 1 \u2014 great start!';
+      }} catch(e) {{}}
 
-      const feedbackEl = document.getElementById('corrective-feedback');
-      if (section && feedbackEl) {{
-        let html = '<h3 style="margin-bottom:10px">Your Results</h3><ol style="list-style:none;padding:0;margin:0">';
-        let totalPts = 0, earnedPts = 0;
-        answers.forEach((userAns, i) => {{
-          const li = lis[i];
-          const correct = li ? (li.dataset.answer || '').trim() : '';
-          const q = li ? (li.dataset.question || '') : '';
-          const diff = li ? (li.dataset.difficulty || 'easy') : 'easy';
-          const pts = diff === 'hard' ? 3 : diff === 'medium' ? 2 : 1;
-          totalPts += pts;
-          const isRight = userAns.trim().toLowerCase() === correct.toLowerCase();
-          if (isRight) earnedPts += pts;
-          const badge = diff === 'hard' ? '\U0001F525' : diff === 'medium' ? '\u26A1' : '\U0001F7E2';
-          html += '<li style="margin:8px 0;padding:10px 14px;border-radius:10px;background:' +
-            (isRight ? 'var(--success-light)' : 'var(--danger-light)') + ';border:1px solid ' +
-            (isRight ? 'var(--success)' : 'var(--danger)') + '">';
-          html += (isRight ? '&#9989;' : '&#10060;') + ' ' + badge + ' <strong>Q' + (i+1) + ' (' + pts + 'pt):</strong> ' + (q || '(question ' + (i+1) + ')') + '<br>';
-          html += 'Your answer: <strong>' + (userAns || '\u2014') + '</strong>';
-          if (!isRight) html += ' &nbsp;&middot;&nbsp; <span style="color:#6366f1;font-size:.85rem">Click \U0001F9D1\u200D\U0001F3EB Need Help? on this question to learn the method!</span>';
-          html += '</li>';
-        }});
-        html += '</ol>';
-        html += '<p style="margin-top:12px;font-size:1.1rem;font-weight:700">\U0001F3AF Weighted score: ' + earnedPts + ' / ' + totalPts + ' points</p>';
-        feedbackEl.innerHTML = html;
-        feedbackEl.scrollIntoView({{behavior:'smooth', block:'nearest'}});
-      }}
+      try {{
+        const feedbackEl = document.getElementById('corrective-feedback');
+        if (lis.length && feedbackEl) {{
+          let html = '<h3 style="margin-bottom:10px">Your Results</h3><ol style="list-style:none;padding:0;margin:0">';
+          answers.forEach((userAns, i) => {{
+            const li = lis[i];
+            const correct = li ? (li.dataset.answer || '').trim() : '';
+            const q = li ? (li.dataset.question || '') : '';
+            const isRight = userAns.trim().toLowerCase() === correct.toLowerCase();
+            html += '<li style="margin:8px 0;padding:10px 14px;border-radius:10px;background:' +
+              (isRight ? 'var(--success-light)' : 'var(--danger-light)') + ';border:1px solid ' +
+              (isRight ? 'var(--success)' : 'var(--danger)') + '">';
+            html += (isRight ? '&#9989;' : '&#10060;') + ' <strong>Q' + (i+1) + ':</strong> ' + (q || '(question ' + (i+1) + ')') + '<br>';
+            html += 'Your answer: <strong>' + (userAns || '\u2014') + '</strong>';
+            if (!isRight) html += ' &nbsp;&middot;&nbsp; Correct: <strong>' + correct + '</strong>';
+            if (!isRight) html += '<br><span style="color:#6366f1;font-size:.85rem">Click Need Help? on this question to learn the method!</span>';
+            html += '</li>';
+          }});
+          html += '</ol>';
+          if (ok && ok.score != null) {{
+            html += '<p style="margin-top:12px;font-size:1.1rem;font-weight:700">Score: ' + ok.score + ' / ' + ok.outOf + ' &mdash; +' + ok.points_earned + ' points earned</p>';
+          }}
+          feedbackEl.innerHTML = html;
+          feedbackEl.scrollIntoView({{behavior:'smooth', block:'nearest'}});
+        }}
+      }} catch(e) {{}}
+    }} else {{
+      _submitting = false;
+      if (submitBtn) {{ submitBtn.disabled = false; submitBtn.textContent = 'Submit Answers'; }}
     }}
   }});
 </script>
@@ -708,7 +718,7 @@ def rebuild_index_and_sitemap():
     window.DMK_API  = '{PUBLIC_API}';
     window.DMK_ROOT = './';
   </script>
-  <script src="scripts/app.js"></script>
+  <script src="scripts/app.js?v=2"></script>
   <script src="scripts/goals.js"></script>
   <script>
     (function() {{

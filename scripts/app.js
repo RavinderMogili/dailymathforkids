@@ -4,6 +4,9 @@
 const API = (window.DMK_API || '').replace(/\/$/, '');
 const ROOT = window.DMK_ROOT || './';
 
+// Warm up Vercel serverless function on page load to avoid cold start timeout on submit
+if (API) fetch(`${API}/api/submit`, { method: 'OPTIONS' }).catch(() => {});
+
 // ── LocalStorage helpers ─────────────────────────────────────────────────────
 
 const store = {
@@ -562,27 +565,15 @@ async function submitQuizAnswers(quizId, answers, resultEl, timeSeconds) {
   }
 
   try {
-    let res, attempts = 0;
     const payload = JSON.stringify({ userId: u.userId, quizId, answers, timeSeconds: timeSeconds ?? null });
-    while (attempts < 3) {
-      attempts++;
-      try {
-        const ctrl = new AbortController();
-        const timer = setTimeout(() => ctrl.abort(), 30000);
-        res = await fetch(`${API}/api/submit`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: payload,
-          signal: ctrl.signal,
-        });
-        clearTimeout(timer);
-        break;
-      } catch (e) {
-        if (attempts >= 3) throw e;
-        resultEl.textContent = 'Retrying (attempt ' + (attempts + 1) + ')\u2026';
-        await new Promise(r => setTimeout(r, 2000));
-      }
-    }
+    // Show progress message if taking long (Vercel cold start)
+    const slowTimer = setTimeout(() => { resultEl.textContent = 'Still submitting\u2026 please wait'; }, 8000);
+    const res = await fetch(`${API}/api/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload,
+    });
+    clearTimeout(slowTimer);
     const data = await res.json();
     if (!res.ok) {
       // If user account doesn't exist in DB (guest or deleted), prompt re-registration
