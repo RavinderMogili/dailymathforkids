@@ -548,6 +548,7 @@ def generate_html_from_text(text, today):
 <title>{TITLE} - {today}</title><link rel="stylesheet" href="../styles.css"/>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js" defer></script></head>
 <body>
+<canvas id="math-canvas" aria-hidden="true"></canvas>
 <header>
   <a href="../index.html">&#129518; {TITLE}</a>
   <span class="user-badge"></span>
@@ -703,6 +704,8 @@ def generate_html_from_text(text, today):
 {HELPERS_JS}
 <script src="../scripts/math-helper.js"></script>
 <script src="../scripts/feedback-widget.js"></script>
+<script src="../scripts/math-bg.js"></script>
+<script src="../scripts/extras.js"></script>
 </body></html>"""
     return page_html
 
@@ -731,6 +734,7 @@ def rebuild_index_and_sitemap():
   <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
+  <canvas id="math-canvas" aria-hidden="true"></canvas>
   <header>
     <a href="index.html">{TITLE}</a>
     <span class="user-badge"></span>
@@ -782,6 +786,8 @@ def rebuild_index_and_sitemap():
     }})();
   </script>
 <script src="scripts/feedback-widget.js"></script>
+<script src="scripts/math-bg.js"></script>
+<script src="scripts/extras.js"></script>
 </body></html>"""
     (ROOT / "index.html").write_text(index_html, encoding="utf-8")
 
