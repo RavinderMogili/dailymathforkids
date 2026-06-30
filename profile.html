@@ -589,11 +589,24 @@ async function loadMistakes() {
   if (!u) return;
   const api = window.DMK_API || '';
   const wrap = document.getElementById('mistakes-wrap');
+
+  // Load localStorage practice mistakes (may predate server tracking)
+  const localPractice = JSON.parse(localStorage.getItem('dmk_practice_review') || '[]').map(it => ({
+    question: it.question || '',
+    correctAnswer: it.answer || '',
+    userAnswer: '',
+    source: 'practice',
+    topic: it.topic || '',
+    date: it.date || '',
+    quizId: '',
+    id: null,
+  }));
+
   try {
     const res = await fetch(`${api}/api/mistakes?userId=${encodeURIComponent(u.userId)}&resolved=false`);
     if (!res.ok) throw new Error('Failed');
     const data = await res.json();
-    _allMistakes = (data.mistakes || []).map(m => ({
+    const serverItems = (data.mistakes || []).map(m => ({
       question: m.question_text,
       correctAnswer: m.correct_answer,
       userAnswer: m.user_answer,
@@ -603,9 +616,20 @@ async function loadMistakes() {
       quizId: m.quiz_id || '',
       id: m.id,
     }));
+
+    // Merge: server items + localStorage practice (deduplicate by question + date)
+    const merged = [...serverItems];
+    localPractice.forEach(lp => {
+      const dup = merged.find(m => m.question === lp.question && m.date === lp.date);
+      if (!dup) merged.push(lp);
+    });
+    _allMistakes = merged;
     renderMistakes();
   } catch {
-    wrap.innerHTML = '<p style="color:var(--muted);font-size:.9rem">Could not load mistakes.</p>';
+    // Fallback: show localStorage only
+    _allMistakes = localPractice;
+    if (localPractice.length > 0) { renderMistakes(); }
+    else { wrap.innerHTML = '<p style="color:var(--muted);font-size:.9rem">Could not load mistakes.</p>'; }
   }
 }
 
@@ -652,7 +676,13 @@ function renderMistakes() {
     });
     html += `</div>`;
   });
-  html += `<p style="font-size:.8rem;color:var(--muted);margin-top:8px">Showing ${items.length} unresolved mistake${items.length !== 1 ? 's' : ''}. Practice these on the <a href="practice.html">Practice page</a>!</p>`;
+  const quizCount = items.filter(m => m.source === 'quiz').length;
+  const practiceCount = items.filter(m => m.source === 'practice').length;
+  const parts = [];
+  if (quizCount) parts.push(quizCount + ' from quizzes');
+  if (practiceCount) parts.push(practiceCount + ' from practice');
+  const breakdown = parts.length ? ' (' + parts.join(', ') + ')' : '';
+  html += `<p style="font-size:.8rem;color:var(--muted);margin-top:8px">${items.length} unresolved mistake${items.length !== 1 ? 's' : ''}${breakdown}. Review them on the <a href="practice.html">Practice page</a>!</p>`;
   wrap.innerHTML = html;
 }
 
