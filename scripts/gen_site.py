@@ -29,7 +29,7 @@ HELPERS_JS = r"""
     const choiceStr = (text.match(/Choices:\s*([^\n]+)/i)              || [])[1]?.trim() || '';
     const hint    = (text.match(/Hint:\s*([\s\S]*?)(?=\n\s*Steps:)/i)  || [])[1]?.trim() || '';
     const steps   = (text.match(/Steps:\s*([\s\S]*?)(?=\n\s*Answer:)/i)|| [])[1]?.trim() || '';
-    const ans     = (text.match(/Answer:\s*(\S+)/i)                    || [])[1]?.trim() || '';
+    const ans     = (text.match(/Answer:\s*(.+)/i)                     || [])[1]?.trim() || '';
 
     const choiceParts = choiceStr.split(/\s{2,}(?=[A-D]\))/i);
     const choicePairs = choiceParts.map(p => {
