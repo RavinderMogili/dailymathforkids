@@ -29,6 +29,12 @@
     }
     .stat-box .stat-num { font-size: 1.8rem; font-weight: 700; color: #2e7d32; }
     .stat-box .stat-lbl { font-size: .8rem; color: #555; margin-top: 2px; }
+    .filter-btn { padding: 4px 14px; border-radius: 20px; border: 1px solid var(--border, #ddd); background: var(--surface, #fff); cursor: pointer; font-size: .82rem; font-weight: 600; font-family: inherit; }
+    .filter-btn.active { background: var(--primary, #2563eb); color: #fff; border-color: var(--primary, #2563eb); }
+    .mistake-card { padding: 10px 14px; margin: 6px 0; background: var(--surface, #fff); border-radius: 10px; border: 1px solid var(--border, #eee); font-size: .88rem; }
+    .mistake-card .source-badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: .7rem; font-weight: 600; margin-right: 6px; }
+    .mistake-card .badge-quiz { background: #dbeafe; color: #1d4ed8; }
+    .mistake-card .badge-practice { background: #fef3c7; color: #92400e; }
     .history-table { width: 100%; border-collapse: collapse; font-size: .95rem; }
     .history-table th {
       text-align: left; padding: 8px 12px;
@@ -221,6 +227,19 @@
         <p class="loading-msg">Loading…</p>
       </div>
     </div>
+
+    <div class="profile-card">
+      <h2>Mistake History</h2>
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:8px">Questions you got wrong — review them to learn from your mistakes!</p>
+      <div style="margin-bottom:10px;display:flex;gap:8px">
+        <button onclick="filterMistakes('all')" class="filter-btn active" id="filter-all">All</button>
+        <button onclick="filterMistakes('quiz')" class="filter-btn" id="filter-quiz">Quiz</button>
+        <button onclick="filterMistakes('practice')" class="filter-btn" id="filter-practice">Practice</button>
+      </div>
+      <div id="mistakes-wrap">
+        <p class="loading-msg">Loading…</p>
+      </div>
+    </div>
   </div>
 
   <p class="back"><a href="index.html">← Back to Home</a></p>
@@ -289,7 +308,7 @@ async function loadProfile() {
   document.getElementById('stat-quizzes').textContent   = subs.length;
   document.getElementById('stat-streak').textContent    = streak;
   document.getElementById('stat-perfect').textContent   =
-    subs.filter(s => s.score !== null && s.score === 5).length;
+    subs.filter(s => s.score !== null && s.outOf && s.score === s.outOf).length;
 
   // Render rank progress bar
   if (data.gradeRank && data.gradeTotal) {
@@ -401,11 +420,12 @@ async function loadProfile() {
   if (avgEl) avgEl.textContent = avgTime != null ? fmtTime(avgTime) : '—';
 
   const rows = subs.map(s => {
-    const pct   = s.score != null ? s.score / 5 : 0;
-    const cls   = s.score === 5 ? 'score-perfect' : pct >= 0.6 ? 'score-good' : 'score-low';
+    const outOf = s.outOf || 10;
+    const pct   = s.score != null ? s.score / outOf : 0;
+    const cls   = s.score === outOf ? 'score-perfect' : pct >= 0.6 ? 'score-good' : 'score-low';
     const grade = (s.quizId || '').split('-').pop();
     const date  = s.date || '—';
-    const scoreText = s.score != null ? `${s.score}/5` : '—';
+    const scoreText = s.score != null ? `${s.score}/${outOf}` : '—';
     const time = s.timeSeconds != null ? fmtTime(s.timeSeconds) : '—';
     return `<tr>
       <td>${date}</td>
@@ -560,7 +580,89 @@ async function saveGrade() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', loadProfile);
+// ── Mistake History ──────────────────────────────────────────────────────────
+let _allMistakes = [];
+let _mistakeFilter = 'all';
+
+async function loadMistakes() {
+  const u = getUser();
+  if (!u) return;
+  const api = window.DMK_API || '';
+  const wrap = document.getElementById('mistakes-wrap');
+  try {
+    const res = await fetch(`${api}/api/mistakes?userId=${encodeURIComponent(u.userId)}&resolved=false`);
+    if (!res.ok) throw new Error('Failed');
+    const data = await res.json();
+    _allMistakes = (data.mistakes || []).map(m => ({
+      question: m.question_text,
+      correctAnswer: m.correct_answer,
+      userAnswer: m.user_answer,
+      source: m.source || 'quiz',
+      topic: m.topic || '',
+      date: (m.created_at || '').slice(0, 10),
+      quizId: m.quiz_id || '',
+      id: m.id,
+    }));
+    renderMistakes();
+  } catch {
+    wrap.innerHTML = '<p style="color:var(--muted);font-size:.9rem">Could not load mistakes.</p>';
+  }
+}
+
+function filterMistakes(type) {
+  _mistakeFilter = type;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('filter-' + type).classList.add('active');
+  renderMistakes();
+}
+
+function renderMistakes() {
+  const wrap = document.getElementById('mistakes-wrap');
+  const items = _mistakeFilter === 'all' ? _allMistakes : _allMistakes.filter(m => m.source === _mistakeFilter);
+
+  if (items.length === 0) {
+    wrap.innerHTML = '<p style="color:var(--muted);font-size:.9rem;padding:4px 0">No mistakes found — keep it up!</p>';
+    return;
+  }
+
+  // Group by date
+  const grouped = {};
+  items.forEach(item => {
+    const d = item.date || 'Unknown';
+    if (!grouped[d]) grouped[d] = [];
+    grouped[d].push(item);
+  });
+  const today = new Date().toISOString().slice(0, 10);
+  const dates = Object.keys(grouped).sort().reverse();
+
+  let html = '';
+  dates.forEach(date => {
+    const label = date === today ? 'Today' : date;
+    html += `<div style="margin-bottom:14px">`;
+    html += `<div style="font-weight:700;font-size:.85rem;color:var(--primary,#2563eb);margin-bottom:4px;border-bottom:1px solid var(--border,#eee);padding-bottom:4px">${label}</div>`;
+    grouped[date].forEach(item => {
+      const badgeCls = item.source === 'quiz' ? 'badge-quiz' : 'badge-practice';
+      const badgeText = item.source === 'quiz' ? 'Quiz' : 'Practice';
+      html += `<div class="mistake-card">`;
+      html += `<span class="source-badge ${badgeCls}">${badgeText}</span>`;
+      html += `<strong>Q:</strong> ${escHtml(item.question)}`;
+      html += `<br><span style="color:#dc2626;font-size:.82rem">Your answer: ${escHtml(item.userAnswer)}</span>`;
+      html += ` <span style="color:#16a34a;font-size:.82rem;font-weight:600">Correct: ${escHtml(item.correctAnswer)}</span>`;
+      html += `</div>`;
+    });
+    html += `</div>`;
+  });
+  html += `<p style="font-size:.8rem;color:var(--muted);margin-top:8px">Showing ${items.length} unresolved mistake${items.length !== 1 ? 's' : ''}. Practice these on the <a href="practice.html">Practice page</a>!</p>`;
+  wrap.innerHTML = html;
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s || '';
+  return d.innerHTML;
+}
+
+document.addEventListener('DOMContentLoaded', () => { loadProfile(); loadMistakes(); });
 </script>
 <script src="scripts/feedback-widget.js"></script>
 </body>
