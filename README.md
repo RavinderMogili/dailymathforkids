@@ -5,7 +5,9 @@ Kids can register, solve daily quizzes, practice by topic, earn points and badge
 and track their progress. Built with ❤️ for students in Moncton, NB, Canada (and anywhere else!).
 
 ## Live Site
-https://ravindermogili.github.io/dailymathforkids/
+https://dailymathforkids.com
+
+Backend API repo: [dailymathforkids-api](https://github.com/RavinderMogili/dailymathforkids-api)
 
 ## Features
 - Fresh problems every day covering Grades 1–12 (Canadian curriculum contexts)
