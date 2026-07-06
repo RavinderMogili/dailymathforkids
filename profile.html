@@ -671,7 +671,7 @@ function renderMistakes() {
       html += `<div class="mistake-card">`;
       html += `<span class="source-badge ${badgeCls}">${badgeText}</span>`;
       html += `<strong>Q:</strong> ${escHtml(item.question)}`;
-      html += `<br><span style="color:#dc2626;font-size:.82rem">Your answer: ${escHtml(item.userAnswer)}</span>`;
+      html += `<br><span style="color:#dc2626;font-size:.82rem">Your answer: ${escHtml(item.userAnswer) || '<em>(no answer)</em>'}</span>`;
       html += ` <span style="color:#16a34a;font-size:.82rem;font-weight:600">Correct: ${escHtml(item.correctAnswer)}</span>`;
       html += `</div>`;
     });

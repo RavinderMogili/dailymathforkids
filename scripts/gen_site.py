@@ -256,6 +256,37 @@ def parse_grade_sections(text):
     return sections
 
 
+def extract_qa_pairs(content):
+    """Extract aligned (question, answer) lists from a grade section.
+
+    Parses each numbered question block separately so questions and answers
+    always stay paired — even if the LLM writes extra '- Answer:' lines inside
+    the Steps list (which previously shifted all following answers).
+    """
+    qs, ans = [], []
+    blocks = re.split(r'^\s*\d+\.\s', content, flags=re.MULTILINE)[1:]
+    for block in blocks:
+        en_m = re.search(r'^(\s*)-\s*EN:\s*(.+)', block, re.MULTILINE)
+        if not en_m:
+            continue
+        en_indent = en_m.group(1)
+        answer_lines = re.findall(r'^(\s*)-\s*Answer:\s*(.+?)\s*$', block, re.MULTILINE)
+        # The real answer is a direct child (same indent as EN); nested ones
+        # inside Steps are indented deeper. Take the last same-level match.
+        same_level = [a for ind, a in answer_lines if ind == en_indent]
+        if same_level:
+            answer = same_level[-1]
+        elif answer_lines:
+            answer = answer_lines[-1][1]
+        else:
+            # Question with no Answer line: keep a placeholder so the
+            # remaining questions stay aligned with the page's numbering.
+            answer = ''
+        qs.append(en_m.group(2).strip())
+        ans.append(answer.strip())
+    return qs, ans
+
+
 def upsert_quiz_to_supabase(quiz_id, questions, answers):
     api_base     = os.environ.get("PUBLIC_API_BASE", "").strip().rstrip("/")
     service_role = os.environ.get("SUPABASE_SERVICE_ROLE", "").strip()
@@ -329,8 +360,7 @@ def safe_generate_today():
             for code in GRADE_CODES:
                 content = grade_sections.get(code, "")
                 if content:
-                    qs  = re.findall(r'^\s*-\s*EN:\s*(.+)',      content, re.MULTILINE)
-                    ans = re.findall(r'^\s*-\s*Answer:\s*(.+?)(?:\s*$)', content, re.MULTILINE)
+                    qs, ans = extract_qa_pairs(content)
                     upsert_quiz_to_supabase(f"{today}-{code}", qs, ans)
         rebuild_index_and_sitemap()
         return
@@ -506,8 +536,7 @@ FINAL CHECK before outputting: Verify you have 12 grade sections (G1-G12), each 
         for code in GRADE_CODES:
             content = grade_sections.get(code, "")
             if content:
-                qs  = re.findall(r'^\s*-\s*EN:\s*(.+)',      content, re.MULTILINE)
-                ans = re.findall(r'^\s*-\s*Answer:\s*(.+?)(?:\s*$)', content, re.MULTILINE)
+                qs, ans = extract_qa_pairs(content)
                 upsert_quiz_to_supabase(f"{today}-{code}", qs, ans)
     except Exception as e:
         import traceback
