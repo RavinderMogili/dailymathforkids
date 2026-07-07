@@ -2051,8 +2051,9 @@
     const fr      = (text.match(/FR:\s*([\s\S]*?)(?=\n\s*Choices:)/i)  || [])[1]?.trim() || '';
     const choiceStr = (text.match(/Choices:\s*([^\n]+)/i)              || [])[1]?.trim() || '';
     const hint    = (text.match(/Hint:\s*([\s\S]*?)(?=\n\s*Steps:)/i)  || [])[1]?.trim() || '';
-    const steps   = (text.match(/Steps:\s*([\s\S]*?)(?=\n\s*Answer:)/i)|| [])[1]?.trim() || '';
-    const ans     = (text.match(/Answer:\\s*(.+)/i)                    || [])[1]?.trim() || '';
+    const steps   = (text.match(/Steps:\s*([\s\S]*)(?=\n\s*Answer:)/i) || [])[1]?.trim() || '';
+    const ansM    = text.match(/Answer:\s*(.+)/gi) || [];
+    const ans     = ansM.length ? ansM[ansM.length - 1].replace(/^Answer:\s*/i, '').trim() : '';
 
     const choiceParts = choiceStr.split(/\s{2,}(?=[A-D]\))/i);
     const choicePairs = choiceParts.map(p => {

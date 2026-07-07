@@ -296,3 +296,49 @@ describe('All grades coverage check', () => {
     expect(missing).toEqual([]);
   });
 });
+
+describe('Nested Answer line inside Steps (2026-07-05 regression)', () => {
+  let pythonAvailable = true;
+  beforeAll(() => {
+    try {
+      execSync('python --version', { encoding: 'utf-8' });
+    } catch {
+      pythonAvailable = false;
+    }
+  });
+
+  it('warns when a question has an extra "- Answer:" line inside Steps', () => {
+    if (!pythonAvailable) return;
+    const md = `# Daily Math - 2026-01-01
+
+## G4
+1. **[Medium] Decimal Operations**
+   - EN: What is 2.5 + 1.3?
+   - FR: Combien font 2,5 + 1,3?
+   - Choices: A) 3.5  B) 3.7  C) 3.8  D) 4.0
+   - Hint: Line up the decimal points.
+   - Steps:
+     - Ones: 2 + 1 = 3.
+     - Tenths: 5 + 3 = 8.
+     - Answer: 3.8
+   - Answer: 3.8
+
+## Today's Encouragement
+Keep it up!
+`;
+    const issues = validateMd(md);
+    if (!issues) return;
+    const nested = issues.filter(i => /Answer:' lines found/.test(i.msg));
+    expect(nested).toHaveLength(1);
+    expect(nested[0].level).toBe('warning');
+  });
+
+  it('does not warn on a normal question with a single Answer line', () => {
+    if (!pythonAvailable) return;
+    const md = buildMd({ answer: '4' });
+    const issues = validateMd(md);
+    if (!issues) return;
+    const nested = issues.filter(i => /Answer:' lines found/.test(i.msg));
+    expect(nested).toHaveLength(0);
+  });
+});

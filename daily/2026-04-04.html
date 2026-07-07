@@ -883,7 +883,8 @@
     const fr    = (text.match(/FR:\s*([\s\S]*?)\n\s*-\s*Hint:/i)    || [])[1]?.trim() || '';
     const hint  = (text.match(/Hint:\s*([\s\S]*?)\n\s*-\s*Steps:/i) || [])[1]?.trim() || '';
     const steps = (text.match(/Steps:\s*([\s\S]*?)\n\s*-\s*Answer:/i) || [])[1]?.trim() || '';
-    const ans   = (text.match(/Answer:\s*([\S]+)/i) || [])[1]?.trim() || '';
+    const ansM  = text.match(/Answer:\s*(.+)/gi) || [];
+    const ans   = ansM.length ? ansM[ansM.length - 1].replace(/^Answer:\s*/i, '').trim() : '';
 
     li.dataset.answer   = ans;
     li.dataset.hint     = hint;

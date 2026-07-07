@@ -51,7 +51,10 @@ def parse_questions_from_md(md_text):
             en = _extract(body, r'-\s*EN:\s*(.+)')
             fr = _extract(body, r'-\s*FR:\s*(.+)')
             choices_raw = _extract(body, r'-\s*Choices:\s*(.+)')
-            answer = _extract(body, r'-\s*Answer:\s*(.+)')
+            # The real Answer line comes last; the LLM sometimes writes an
+            # extra '- Answer:' inside Steps, which must not be picked up.
+            answer_matches = re.findall(r'-\s*Answer:\s*(.+)', body)
+            answer = answer_matches[-1].strip() if answer_matches else None
             hint = _extract(body, r'-\s*Hint:\s*(.+)')
 
             choices = parse_choices(choices_raw) if choices_raw else []
@@ -66,6 +69,7 @@ def parse_questions_from_md(md_text):
                 'choices_raw': choices_raw,
                 'choices': choices,
                 'answer': answer,
+                'answer_line_count': len(answer_matches),
                 'hint': hint,
             })
 
@@ -220,6 +224,12 @@ def validate_questions(questions):
     for q in questions:
         grade = q['grade']
         num = q['num']
+
+        # Check 0: Extra '- Answer:' lines (usually inside Steps) confuse parsers
+        if q.get('answer_line_count', 1) > 1:
+            issues.append(Issue('warning', grade, num,
+                f"{q['answer_line_count']} '- Answer:' lines found (extra one likely inside Steps) — "
+                f"LLM formatting glitch, only the last is used"))
 
         # Check 1: Required fields
         if not q['en']:

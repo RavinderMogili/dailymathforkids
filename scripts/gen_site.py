@@ -28,8 +28,9 @@ HELPERS_JS = r"""
     const fr      = (text.match(/FR:\s*([\s\S]*?)(?=\n\s*Choices:)/i)  || [])[1]?.trim() || '';
     const choiceStr = (text.match(/Choices:\s*([^\n]+)/i)              || [])[1]?.trim() || '';
     const hint    = (text.match(/Hint:\s*([\s\S]*?)(?=\n\s*Steps:)/i)  || [])[1]?.trim() || '';
-    const steps   = (text.match(/Steps:\s*([\s\S]*?)(?=\n\s*Answer:)/i)|| [])[1]?.trim() || '';
-    const ans     = (text.match(/Answer:\s*(.+)/i)                     || [])[1]?.trim() || '';
+    const steps   = (text.match(/Steps:\s*([\s\S]*)(?=\n\s*Answer:)/i) || [])[1]?.trim() || '';
+    const ansM    = text.match(/Answer:\s*(.+)/gi) || [];
+    const ans     = ansM.length ? ansM[ansM.length - 1].replace(/^Answer:\s*/i, '').trim() : '';
 
     const choiceParts = choiceStr.split(/\s{2,}(?=[A-D]\))/i);
     const choicePairs = choiceParts.map(p => {
@@ -384,6 +385,30 @@ CANADIAN MATH CURRICULUM GUIDE — use this to calibrate each problem:
   G11 (Grade 11): functions (linear/quadratic/exponential), logarithms intro, sequences and series, financial math (compound interest, annuities), trigonometric identities
   G12 (Grade 12): advanced functions (polynomial/rational/trig), derivatives intro (rates of change), combinations and permutations, vectors intro, probability distributions"""
 
+    # Rotate encouragement themes and story settings by weekday so the daily
+    # message doesn't converge on the same reworded sentence every day.
+    _enc_themes = [
+        "having the courage to try hard things",
+        "curiosity — asking questions is how discoveries happen",
+        "mistakes are proof your brain is growing",
+        "practice makes progress, not perfection",
+        "celebrating how far you have already come",
+        "noticing the math hiding all around you",
+        "helping someone else learn makes you both stronger",
+    ]
+    _story_settings = [
+        "at a hockey rink",
+        "on a snowy school morning",
+        "at the public library",
+        "helping a grandparent at home",
+        "on the school bus",
+        "at a community garden",
+        "at a local farmers' market",
+    ]
+    _dow = datetime.date.fromisoformat(today).weekday()
+    enc_theme = _enc_themes[_dow]
+    story_setting = _story_settings[_dow]
+
     prompt = f"""Create daily math problems for Canadian students, Grades 1–12.
 You MUST generate ALL 12 grades (G1 through G12) — do NOT stop early.
 Each grade: EXACTLY 10 problems (4 Easy, 4 Medium, 2 Hard). Order: Easy first, then Medium, then Hard.
@@ -404,11 +429,16 @@ CRITICAL RULES — violations will break the quiz:
    - If the correct choice is "(x + 2)(x + 3)", write Answer: (x + 2)(x + 3) (NOT "(x")
    - NEVER strip units, NEVER abbreviate, NEVER add trailing periods.
    - NEVER write just the number — always include the unit if the choice has one.
+   - The Answer line appears EXACTLY ONCE per problem, as its LAST line.
+   - NEVER write "Answer:" inside the Steps list. Steps end with the worked example's
+     result written as a plain step (e.g., "- So the result is 8."), NOT as "- Answer: 8".
 
 2. MATH ACCURACY:
    - Solve each problem yourself before writing the answer. Double-check the arithmetic.
    - The correct answer MUST appear as exactly one of the four choices.
    - All four choices must be plausible (no obviously silly options).
+   - No two choices may start with the same number (never offer both "9" and "9 remainder 2",
+     or both "16" and "16 hours 30 minutes" — kids could be graded wrong).
    - Division problems must have whole-number results only.
 
 3. CONTENT:
@@ -422,6 +452,8 @@ CRITICAL RULES — violations will break the quiz:
    - You MUST output all sections: G1, G2, G3, G4, G5, G6, G7, G8, G9, G10, G11, G12.
    - Each grade MUST have exactly 10 numbered problems.
    - Do NOT stop or summarize. Write every problem in full.
+   - NEVER truncate a problem mid-sentence (bad: "Solve the" — every EN/FR line must be a
+     complete question ending with "?" or ".").
 
 FORMAT (follow exactly — no deviations):
 
@@ -474,11 +506,13 @@ FORMAT (follow exactly — no deviations):
 
 ## Today's Encouragement
 One cheerful sentence (10–16 words, English only). No emojis.
+Today's theme: {enc_theme}. Do NOT start with "Every problem you..." — write something fresh.
 
 ## Mini Story of Kindness
 A 3–4 sentence story about a child helping someone in Canada (English, Grade 3 reading level).
+Today's setting: {story_setting}. Vary the child's name and community each day.
 
-FINAL CHECK before outputting: Verify you have 12 grade sections (G1-G12), each with exactly 10 problems, and every Answer exactly matches one of its Choices.
+FINAL CHECK before outputting: Verify you have 12 grade sections (G1-G12), each with exactly 10 problems, every Answer exactly matches one of its Choices, every problem has EXACTLY ONE Answer line (none inside Steps), every question is a complete sentence, and no two choices in a problem start with the same number.
 """
     # (original prompt replaced — keep variable name for compatibility)
     _unused_prompt = f"""
