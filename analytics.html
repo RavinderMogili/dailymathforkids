@@ -103,7 +103,19 @@
     const content = document.getElementById('dash-content');
 
     try {
-      const res = await fetch(`${api}/api/analytics`);
+      let key = localStorage.getItem('dmk_analytics_key') || '';
+      if (!key) {
+        key = (prompt('Enter the analytics admin key:') || '').trim();
+        if (!key) throw new Error('No key provided');
+        localStorage.setItem('dmk_analytics_key', key);
+      }
+      const res = await fetch(`${api}/api/analytics`, {
+        headers: { 'Authorization': 'Bearer ' + key },
+      });
+      if (res.status === 401) {
+        localStorage.removeItem('dmk_analytics_key');
+        throw new Error('Wrong key — reload the page to try again');
+      }
       if (!res.ok) throw new Error('API returned ' + res.status);
       const d = await res.json();
 
