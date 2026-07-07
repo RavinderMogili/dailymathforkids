@@ -17,8 +17,15 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
       - name: Install dependencies
-        run: npm install
+        run: |
+          npm install
+          pip install markdown2
 
       - name: Run Jest unit tests (math helper)
         run: npm run test:unit

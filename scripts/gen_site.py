@@ -1,5 +1,9 @@
 import os, pathlib, datetime, sys, re
-import markdown2
+
+try:
+    import markdown2
+except Exception:
+    markdown2 = None  # only needed for HTML generation, not for parsing/tests
 
 try:
     from openai import OpenAI
@@ -603,6 +607,8 @@ def generate_html_from_text(text, today):
         )
 
     enc_html   = f'<h2>Today\'s Encouragement</h2>\n<blockquote class="encouragement"><p>{enc_text}</p></blockquote>'
+    if story_text and markdown2 is None:
+        raise RuntimeError("markdown2 is required for HTML generation — pip install markdown2")
     story_html = f'<h2>A Story of Kindness</h2>\n{markdown2.markdown(story_text)}' if story_text else ""
 
     page_html = f"""<!doctype html>
@@ -665,7 +671,7 @@ def generate_html_from_text(text, today):
     }}, 1000);
   }}
   function buildQuizInputs() {{
-    const grade = (window.QUIZ_ID || QUIZ_ID).replace(/^.*-(G\d+)$/, '$1');
+    const grade = (window.QUIZ_ID || QUIZ_ID).replace(/^.*-(G\\d+)$/, '$1');
     const section = document.querySelector('.grade-section[data-grade="' + grade + '"]');
     const count = section ? section.querySelectorAll('.problems-list > li').length : 5;
     const ol = document.getElementById('quiz-inputs');
@@ -695,7 +701,7 @@ def generate_html_from_text(text, today):
     if (_submitting) return;
     _submitting = true;
     const qid = window.QUIZ_ID || QUIZ_ID;
-    const grade = qid.replace(/^.*-(G\d+)$/, '$1');
+    const grade = qid.replace(/^.*-(G\\d+)$/, '$1');
     const section = document.querySelector('.grade-section[data-grade="' + grade + '"]');
     const lis = section ? section.querySelectorAll('.problems-list > li') : [];
     const qCount = lis.length || 5;
