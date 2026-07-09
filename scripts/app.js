@@ -349,6 +349,7 @@ async function submitReg(e) {
     hideRegModal(); renderBadge();
     if (typeof showGradeProblems === 'function') showGradeProblems();
     if (typeof resumeOrLockQuiz === 'function') resumeOrLockQuiz();
+    _restoreSubmittedDays(data.userId);
     loadUserGroup();
     _retryPendingSubmit();
     if (typeof loadProfile === 'function') window.location.reload();
@@ -404,6 +405,7 @@ async function submitLogin(e) {
     }
     if (typeof showGradeProblems === 'function') showGradeProblems();
     if (typeof resumeOrLockQuiz === 'function') resumeOrLockQuiz();
+    _restoreSubmittedDays(data.userId);
     loadUserGroup();
     _retryPendingSubmit();
     if (typeof loadProfile === 'function') window.location.reload();
@@ -411,6 +413,27 @@ async function submitLogin(e) {
     msg.textContent = 'Could not connect. Please try again.';
     msg.className = 'form-msg error';
   }
+}
+
+async function _restoreSubmittedDays(userId) {
+  const API = (window.DMK_API || '').replace(/\/$/, '');
+  if (!API || !userId) return;
+  try {
+    const res = await fetch(`${API}/api/history?userId=${encodeURIComponent(userId)}&limit=10`);
+    if (!res.ok) return;
+    const data = await res.json();
+    const subs = data.submissions || data || [];
+    if (!Array.isArray(subs) || subs.length === 0) return;
+    const today = new Date().toISOString().slice(0, 10);
+    const doneDays = store.get('doneDays', {});
+    subs.forEach(s => {
+      if (s.quiz_id && s.quiz_id.startsWith(today)) {
+        doneDays[s.quiz_id] = true;
+      }
+    });
+    store.set('doneDays', doneDays);
+    if (typeof resumeOrLockQuiz === 'function') resumeOrLockQuiz();
+  } catch (e) { /* silently ignore */ }
 }
 
 function _retryPendingSubmit() {
