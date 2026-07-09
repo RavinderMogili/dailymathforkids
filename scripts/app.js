@@ -419,16 +419,18 @@ async function _restoreSubmittedDays(userId) {
   const API = (window.DMK_API || '').replace(/\/$/, '');
   if (!API || !userId) return;
   try {
-    const res = await fetch(`${API}/api/history?userId=${encodeURIComponent(userId)}&limit=10`);
+    const res = await fetch(`${API}/api/history?userId=${encodeURIComponent(userId)}`);
     if (!res.ok) return;
     const data = await res.json();
-    const subs = data.submissions || data || [];
+    const subs = data.submissions || [];
     if (!Array.isArray(subs) || subs.length === 0) return;
     const today = new Date().toISOString().slice(0, 10);
     const doneDays = store.get('doneDays', {});
     subs.forEach(s => {
-      if (s.quiz_id && s.quiz_id.startsWith(today)) {
-        doneDays[s.quiz_id] = true;
+      // history API returns camelCase: { quizId, date }
+      const qid = s.quizId || s.quiz_id;
+      if (qid && (s.date === today || qid.startsWith(today))) {
+        doneDays[qid] = true;
       }
     });
     store.set('doneDays', doneDays);
