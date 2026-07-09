@@ -431,6 +431,8 @@ async function _restoreSubmittedDays(userId) {
       const qid = s.quizId || s.quiz_id;
       if (qid && (s.date === today || qid.startsWith(today))) {
         doneDays[qid] = true;
+        // Also restore quiz state so resumeOrLockQuiz() locks the page
+        if (typeof setQuizState === 'function') setQuizState(qid, 'done');
       }
     });
     store.set('doneDays', doneDays);
