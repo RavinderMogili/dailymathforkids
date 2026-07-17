@@ -252,6 +252,84 @@ def auto_fix_answers(text):
     return '\n'.join(lines)
 
 
+def replace_grade_section(text, code, new_content):
+    """Replace the content of a single '## {code}' section in the full markdown text."""
+    pattern = rf'(## {re.escape(code)}\n).*?(?=\n## |\Z)'
+    cleaned = new_content.strip() + '\n'
+    new_text, n = re.subn(pattern, lambda m: m.group(1) + cleaned, text, count=1, flags=re.DOTALL)
+    return new_text if n else text
+
+
+def review_and_fix_quiz(text, max_rounds=1):
+    """Second AI review pass: re-validate the generated quiz and ask the LLM to
+    fix ONLY the grades/questions flagged as errors, before publishing.
+    This catches mistakes (wrong answers, ambiguous choices, truncated
+    questions, etc.) that auto_fix_answers can't repair automatically.
+    """
+    try:
+        from validate_quiz import parse_questions_from_md, validate_questions
+    except Exception as e:
+        print(f"INFO: Review pass skipped (validate_quiz unavailable: {e})")
+        return text
+
+    for round_num in range(1, max_rounds + 1):
+        questions = parse_questions_from_md(text)
+        issues = validate_questions(questions)
+        errors = [i for i in issues if i.level == 'error']
+        if not errors:
+            print("INFO: Review pass — no errors found, quiz looks good.")
+            return text
+
+        affected_grades = sorted(set(i.grade for i in errors), key=lambda g: GRADE_CODES.index(g) if g in GRADE_CODES else 99)
+        print(f"INFO: Review pass round {round_num} — found {len(errors)} error(s) in grades {affected_grades}. Requesting fixes...")
+
+        grade_sections = parse_grade_sections(text)
+        issue_lines = "\n".join(f"- {i.grade} Q{i.qnum}: {i.msg}" for i in errors[:30])
+        sections_text = "\n\n".join(f"## {g}\n{grade_sections.get(g, '')}" for g in affected_grades)
+
+        fix_prompt = f"""You previously generated math problems for a kids' quiz site. A validator found
+mistakes in the following grade section(s). Fix ONLY the specific problems mentioned in the
+issues below. Keep everything else (format, other problems in the same grade) unchanged.
+Output the corrected grade section(s) in EXACTLY the same markdown format as given, with the
+same '## {{GRADE}}' headers, same number of problems per grade, and each problem must keep its
+[Easy]/[Medium]/[Hard] tag, EN/FR lines, Choices, Hint, Steps, and exactly ONE Answer line.
+
+ISSUES FOUND:
+{issue_lines}
+
+CURRENT SECTION(S) TO FIX:
+{sections_text}
+
+Output ONLY the corrected '## {{GRADE}}' section(s), nothing else — no explanations."""
+
+        fixed_text = call_llm(fix_prompt)
+        if not fixed_text:
+            print("WARN: Review pass — LLM returned no fix; keeping original.")
+            return text
+
+        fixed_text = auto_fix_answers(fixed_text)
+        fixed_sections = parse_grade_sections(fixed_text)
+        if not fixed_sections:
+            print("WARN: Review pass — could not parse fixed sections; keeping original.")
+            return text
+
+        for g, content in fixed_sections.items():
+            if content.strip():
+                text = replace_grade_section(text, g, content)
+
+    # Final check after last round
+    questions = parse_questions_from_md(text)
+    issues = validate_questions(questions)
+    remaining = [i for i in issues if i.level == 'error']
+    if remaining:
+        print(f"WARN: Review pass — {len(remaining)} error(s) remain after {max_rounds} round(s):")
+        for i in remaining[:10]:
+            print(f"  - [{i.grade} Q{i.qnum}] {i.msg}")
+    else:
+        print("INFO: Review pass — all errors fixed.")
+    return text
+
+
 def parse_grade_sections(text):
     sections = {}
     for code in GRADE_CODES:
@@ -551,24 +629,14 @@ FINAL CHECK before outputting: Verify you have 12 grade sections (G1-G12), each 
                 else:
                     print(f"INFO: All 12 grades now present after retry.")
 
+        # Second AI review pass: fix any validation errors before publishing
+        text = review_and_fix_quiz(text)
+
         md_path.write_text(text + "\n", encoding="utf-8")
 
         page_html = generate_html_from_text(text, today)
         html_path.write_text(page_html, encoding="utf-8")
         print(f"INFO: Wrote {html_path}")
-
-        # Run validation and warn about remaining issues
-        try:
-            from validate_quiz import parse_questions_from_md, validate_questions
-            questions = parse_questions_from_md(text)
-            issues = validate_questions(questions)
-            errors = [i for i in issues if i.level == 'error']
-            if errors:
-                print(f"WARN: Quiz validation found {len(errors)} errors after auto-fix:")
-                for i in errors[:10]:
-                    print(f"  - [{i.grade} Q{i.qnum}] {i.msg}")
-        except Exception as ve:
-            print(f"INFO: Validation skipped: {ve}")
 
         grade_sections = parse_grade_sections(text)
         for code in GRADE_CODES:
