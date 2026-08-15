@@ -2,14 +2,59 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Leaderboard – Daily Math for Kids</title>
-  <meta name="description" content="See the top math students! Filter by grade and track your progress."/>
-  <meta property="og:title" content="Leaderboard – Daily Math for Kids"/>
-  <meta property="og:description" content="See the top math stars! Leaderboard sorted by points and speed."/>
+  <title>Our Math Stars – Daily Math for Kids</title>
+  <meta name="description" content="Celebrating Math Stars who earned the most points this week on Daily Math for Kids!"/>
+  <meta property="og:title" content="Our Math Stars – Daily Math for Kids"/>
+  <meta property="og:description" content="See this week's top Math Stars — celebrating practice and learning!"/>
   <meta property="og:image" content="https://dailymathforkids.com/assets/og-image.svg"/>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>+</text></svg>"/>
   <link rel="stylesheet" href="styles.css"/>
-  <script>window.location.href = 'index.html';</script>
+  <style>
+    .stars-header { text-align: center; margin-bottom: 20px; }
+    .stars-header h1 { margin-bottom: 4px; }
+    .stars-subtitle { color: var(--muted); font-size: .95rem; margin-bottom: 8px; }
+    .stars-encouragement {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 16px; margin-bottom: 20px;
+      font-size: .88rem; color: var(--muted); text-align: center;
+    }
+    .stars-table { width: 100%; border-collapse: collapse; font-size: .97rem; }
+    .stars-table th {
+      text-align: left; padding: 10px 16px; font-size: .82rem;
+      font-weight: 700; text-transform: uppercase; color: var(--muted);
+      border-bottom: 2px solid var(--border); background: var(--surface);
+    }
+    .stars-table th:first-child { border-radius: var(--radius-md, 8px) 0 0 0; }
+    .stars-table th:last-child  { border-radius: 0 var(--radius-md, 8px) 0 0; }
+    .stars-table td {
+      padding: 10px 16px; border-bottom: 1px solid var(--border);
+      vertical-align: middle; background: var(--surface);
+    }
+    .stars-table tr:last-child td { border-bottom: none; }
+    .stars-table tr.my-row td { background: var(--primary-light, #dbeafe); font-weight: 700; }
+    .stars-rank { font-weight: 700; color: var(--primary, #2563eb); min-width: 32px; }
+    .stars-rank-1 { font-size: 1.2rem; }
+    .stars-rank-2 { font-size: 1.1rem; }
+    .stars-rank-3 { font-size: 1.05rem; }
+    .stars-pts {
+      display: inline-block; padding: 2px 10px; border-radius: 20px;
+      font-weight: 700; font-size: .9rem;
+      background: var(--primary-light, #dbeafe); color: var(--primary, #2563eb);
+    }
+    .stars-empty {
+      text-align: center; padding: 40px 20px; color: var(--muted);
+      font-size: .95rem;
+    }
+    .stars-loading { text-align: center; padding: 32px; color: var(--muted); }
+    .stars-join-cta {
+      margin-top: 20px; padding: 16px; text-align: center;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; font-size: .9rem;
+    }
+    @media (max-width: 600px) {
+      .stars-table th, .stars-table td { padding: 8px 10px; font-size: .88rem; }
+    }
+  </style>
 </head>
 <body>
   <canvas id="math-canvas" aria-hidden="true"></canvas>
@@ -18,104 +63,60 @@
     <span class="user-badge"></span>
   </header>
   <main class="container">
-    <h1>Leaderboard</h1>
-    <p style="color:var(--muted)">Top students earning points through daily practice!</p>
-
-    <div style="background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;border-radius:14px;padding:14px 18px;margin-bottom:16px;text-align:center;box-shadow:0 4px 15px rgba(239,68,68,.3)">
-      <strong>Prize Challenge:</strong> Every student who earns <strong>300 points</strong> wins a <strong>$10 Walmart gift card!</strong> Keep practicing!
+    <div class="stars-header">
+      <h1>Our Math Stars</h1>
+      <p class="stars-subtitle">Celebrating Math Stars who earned the most points this week.</p>
+      <p class="stars-subtitle">Everyone learns at their own pace!</p>
     </div>
 
-    <div class="points-info">
-      <strong>Points:</strong> 1 pt per correct answer &nbsp;|&nbsp; +3 bonus for a perfect score (5/5)!
-      &nbsp; <strong>Speed tab</strong> shows today's fastest perfect-score completions!
+    <div class="stars-encouragement">
+      <strong>How it works:</strong> Earn points by completing daily quizzes and practice sessions.
+      1 point per correct answer + 3 bonus for a perfect score!
     </div>
 
-    <div style="display:flex;gap:8px;margin:16px 0">
-      <button id="tab-points" onclick="switchTab('points')" style="min-height:38px;padding:6px 20px">Points</button>
-      <button id="tab-speed"  onclick="switchTab('speed')"  style="min-height:38px;padding:6px 20px;background:var(--surface);color:var(--primary);border:2px solid var(--primary)">Speed</button>
+    <!-- Weekly leaderboard table -->
+    <div class="board-wrap">
+      <table class="stars-table" aria-label="This week's Math Stars">
+        <thead>
+          <tr>
+            <th scope="col">Rank</th>
+            <th scope="col">Nickname</th>
+            <th scope="col">This Week's Points</th>
+          </tr>
+        </thead>
+        <tbody id="stars-body">
+          <tr><td colspan="3" class="stars-loading">Finding this week's Math Stars...</td></tr>
+        </tbody>
+      </table>
     </div>
 
-    <div class="filter-bar" id="filter-bar-points">
-      <label>Grade:
-        <select id="grade-filter">
-          <option value="">All Grades</option>
-          <option value="Grade 1">Grade 1</option>
-          <option value="Grade 2">Grade 2</option>
-          <option value="Grade 3">Grade 3</option>
-          <option value="Grade 4">Grade 4</option>
-          <option value="Grade 5">Grade 5</option>
-          <option value="Grade 6">Grade 6</option>
-          <option value="Grade 7">Grade 7</option>
-          <option value="Grade 8">Grade 8</option>
-          <option value="Grade 9">Grade 9</option>
-          <option value="Grade 10">Grade 10</option>
-          <option value="Grade 11">Grade 11</option>
-          <option value="Grade 12">Grade 12</option>
-        </select>
-      </label>
-      <label>City:
-        <select id="city-filter">
-          <option value="">All Cities</option>
-          <option value="Moncton" selected>Moncton</option>
-        </select>
-      </label>
-      <button onclick="loadBoard()" style="min-height:40px;padding:6px 18px">Refresh</button>
+    <div id="stars-join-cta" class="stars-join-cta" style="display:none">
+      <p>Want to appear on Math Stars?</p>
+      <p style="margin-top:6px">
+        <button class="btn-primary" onclick="window.location.href='profile.html'" style="padding:8px 20px">
+          Go to My Progress to join
+        </button>
+      </p>
+      <p style="margin-top:8px;font-size:.82rem;color:var(--muted)">
+        Only your nickname and weekly points are shown. You can leave anytime.
+      </p>
     </div>
-
-    <div class="filter-bar" id="filter-bar-speed" style="display:none">
-      <label>Grade:
-        <select id="speed-grade-filter">
-          <option value="">All Grades</option>
-          <option value="Grade 1">Grade 1</option>
-          <option value="Grade 2">Grade 2</option>
-          <option value="Grade 3">Grade 3</option>
-          <option value="Grade 4">Grade 4</option>
-          <option value="Grade 5">Grade 5</option>
-          <option value="Grade 6">Grade 6</option>
-          <option value="Grade 7">Grade 7</option>
-          <option value="Grade 8">Grade 8</option>
-          <option value="Grade 9">Grade 9</option>
-          <option value="Grade 10">Grade 10</option>
-          <option value="Grade 11">Grade 11</option>
-          <option value="Grade 12">Grade 12</option>
-        </select>
-      </label>
-      <button onclick="loadSpeedBoard()" style="min-height:40px;padding:6px 18px">Refresh</button>
-    </div>
-
-    <div id="board-points">
-      <div class="board-wrap">
-        <table class="board-table">
-          <thead><tr><th>Name</th><th>Grade</th><th>Points</th><th>Days</th></tr></thead>
-          <tbody id="board-body"><tr><td colspan="4" class="loading-msg">Loading…</td></tr></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div id="board-speed" style="display:none">
-      <p style="color:var(--muted);font-size:.9rem">Only <strong>perfect scores (5/5)</strong> qualify. Today's fastest completions:</p>
-      <div class="board-wrap">
-        <table class="board-table">
-          <thead><tr><th>Name</th><th>Grade</th><th>Time</th><th>Date</th></tr></thead>
-          <tbody id="speed-board-body"><tr><td colspan="4" class="loading-msg">Loading…</td></tr></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div id="my-rank-box" class="my-rank-box" style="display:none"></div>
-    <div id="my-speed-box" class="my-rank-box" style="display:none"></div>
 
     <p class="privacy-note" style="margin-top:16px">
-      Only nicknames and grades appear here. School names and cities are never shown publicly.
-    </p>
-    <p style="margin-top:12px;color:var(--muted);font-size:.9rem">
-      Not on the list yet?
-      <button class="link-btn" onclick="showRegModal()">Join for free</button> and start earning points today!
+      Only nicknames and weekly points appear here. Grade, school, city, and other account information are never shown publicly.
+      Students choose to participate — they can join or leave Math Stars anytime.
     </p>
 
-    <p class="back"><a href="index.html">← Back to Home</a></p>
+    <p class="back"><a href="index.html">&larr; Back to Home</a></p>
   </main>
-  <footer>© 2026 • Free math practice for kids • Moncton, NB</footer>
+  <footer>&copy; 2026 &bull; Free math practice for kids &bull; Moncton, NB</footer>
+
+  <!-- Hidden legacy elements preserved for future use -->
+  <div style="display:none" aria-hidden="true" inert>
+    <div id="legacy-speed-tab"></div>
+    <div id="legacy-grade-filter"></div>
+    <div id="legacy-city-filter"></div>
+  </div>
 
   <script>
     window.DMK_API  = 'https://dailymathforkids-api.vercel.app';
@@ -123,129 +124,51 @@
   </script>
   <script src="scripts/app.js?v=2"></script>
   <script>
-
-    async function loadBoard() {
-      const tbody    = document.getElementById('board-body');
-      const grade    = document.getElementById('grade-filter').value;
-      const city     = document.getElementById('city-filter').value;
-      const myRankEl = document.getElementById('my-rank-box');
-
-      tbody.innerHTML = '<tr><td colspan="4" class="loading-msg">Loading…</td></tr>';
-      myRankEl.style.display = 'none';
-
+    (async function loadMathStars() {
+      const tbody = document.getElementById('stars-body');
       const api = (window.DMK_API || '').replace(/\/$/, '');
+
       if (!api || api.includes('YOUR_BACKEND_URL')) {
-        tbody.innerHTML = '<tr><td colspan="4" class="empty-msg">Leaderboard will appear once the backend is connected.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" class="stars-empty">Math Stars will appear once the backend is connected.</td></tr>';
         return;
       }
 
       try {
-        let url = `${api}/api/leaderboard?limit=50`;
-        if (grade) url += `&grade=${encodeURIComponent(grade)}`;
-        if (city)  url += `&city=${encodeURIComponent(city)}`;
-
-        const res  = await fetch(url);
+        const res = await fetch(`${api}/api/math-stars?limit=50`);
+        if (!res.ok) throw new Error('API error');
         const data = await res.json();
-        const rows = data.leaderboard || [];
+        const rows = data.students || [];
 
         if (!rows.length) {
-          tbody.innerHTML = '<tr><td colspan="4" class="empty-msg">No students yet — be the first!</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="3" class="stars-empty">No Math Stars yet this week. Complete a quiz, earn points and choose to join Math Stars!</td></tr>';
+          showJoinCta();
           return;
         }
 
         const u = getUser();
         tbody.innerHTML = rows.map(r => {
           const isMe = u && r.nickname === u.nickname;
+          const rankClass = r.rank <= 3 ? ` stars-rank-${r.rank}` : '';
+          const rankDisplay = r.rank === 1 ? '&#11088;' : r.rank === 2 ? '&#11088;' : r.rank === 3 ? '&#11088;' : r.rank;
           return `<tr class="${isMe ? 'my-row' : ''}">
-            <td>${isMe ? '★ ' : ''}${escHtml(r.nickname)}</td>
-            <td>${escHtml(r.grade || '–')}</td>
-            <td><span class="pts-chip">${r.total_points} pts</span></td>
-            <td><span class="days-chip">${r.days_played}d</span></td>
+            <td class="stars-rank${rankClass}">${rankDisplay}</td>
+            <td>${escHtml(r.nickname)}</td>
+            <td><span class="stars-pts">${r.weeklyPoints} pts</span></td>
           </tr>`;
         }).join('');
 
-        if (u) {
-          const me = rows.find(r => r.nickname === u.nickname);
-          if (me) {
-            myRankEl.innerHTML =
-              `<strong>Your stats:</strong> ` +
-              `<strong>${me.total_points} points</strong> &nbsp;|&nbsp; ` +
-              `${me.days_played} days completed`;
-            myRankEl.style.display = 'block';
-          }
-        }
+        showJoinCta();
       } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="4" class="empty-msg">Could not load data. Please try again later.</td></tr>`;
+        tbody.innerHTML = '<tr><td colspan="3" class="stars-empty">We couldn\'t load Math Stars right now. Please try again soon.</td></tr>';
       }
+    })();
+
+    function showJoinCta() {
+      const u = getUser();
+      const cta = document.getElementById('stars-join-cta');
+      if (u && cta) cta.style.display = 'block';
     }
-
-    let _activeTab = 'points';
-    function switchTab(tab) {
-      _activeTab = tab;
-      document.getElementById('board-points').style.display    = tab === 'points' ? '' : 'none';
-      document.getElementById('board-speed').style.display     = tab === 'speed'  ? '' : 'none';
-      document.getElementById('filter-bar-points').style.display = tab === 'points' ? '' : 'none';
-      document.getElementById('filter-bar-speed').style.display  = tab === 'speed'  ? '' : 'none';
-      document.getElementById('tab-points').style.cssText = tab === 'points'
-        ? 'min-height:38px;padding:6px 20px'
-        : 'min-height:38px;padding:6px 20px;background:var(--surface);color:var(--primary);border:2px solid var(--primary)';
-      document.getElementById('tab-speed').style.cssText = tab === 'speed'
-        ? 'min-height:38px;padding:6px 20px'
-        : 'min-height:38px;padding:6px 20px;background:var(--surface);color:var(--primary);border:2px solid var(--primary)';
-      if (tab === 'speed') loadSpeedBoard();
-    }
-
-    function fmtTime(s) {
-      const m = Math.floor(s/60), sec = s%60;
-      return m + ':' + String(sec).padStart(2,'0');
-    }
-
-    async function loadSpeedBoard() {
-      const tbody  = document.getElementById('speed-board-body');
-      const grade  = document.getElementById('speed-grade-filter').value;
-      const myEl   = document.getElementById('my-speed-box');
-      tbody.innerHTML = '<tr><td colspan="4" class="loading-msg">Loading…</td></tr>';
-      myEl.style.display = 'none';
-      const api = (window.DMK_API || '').replace(/\/$/, '');
-      const today = new Date().toISOString().slice(0,10);
-      try {
-        let url = `${api}/api/leaderboard?type=speed&date=${today}&limit=50`;
-        if (grade) url += `&grade=${encodeURIComponent(grade)}`;
-        const res  = await fetch(url);
-        const data = await res.json();
-        const rows = data.leaderboard || [];
-        if (!rows.length) {
-          tbody.innerHTML = '<tr><td colspan="4" class="empty-msg">No speed entries yet today — be the first with a perfect score!</td></tr>';
-          return;
-        }
-        const u = getUser();
-        tbody.innerHTML = rows.map(r => {
-          const isMe = u && r.nickname === u.nickname;
-          return `<tr class="${isMe ? 'my-row' : ''}">
-            <td>${isMe ? '★ ' : ''}${escHtml(r.nickname)}</td>
-            <td>${escHtml(r.grade || '–')}</td>
-            <td><strong>${fmtTime(r.timeSeconds)}</strong></td>
-            <td>${r.date}</td>
-          </tr>`;
-        }).join('');
-        if (u) {
-          const me = rows.find(r => r.nickname === u.nickname);
-          if (me) {
-            myEl.innerHTML = `<strong>Your best time:</strong> <strong>${fmtTime(me.timeSeconds)}</strong>`;
-            myEl.style.display = 'block';
-          }
-        }
-      } catch {
-        tbody.innerHTML = '<tr><td colspan="4" class="empty-msg">Could not load speed data.</td></tr>';
-      }
-    }
-
-    document.getElementById('grade-filter').addEventListener('change', loadBoard);
-    document.getElementById('city-filter').addEventListener('change', loadBoard);
-    document.getElementById('speed-grade-filter').addEventListener('change', loadSpeedBoard);
-
-    document.addEventListener('DOMContentLoaded', loadBoard);
   </script>
-<script src="scripts/feedback-widget.js"></script>
+<script src="scripts/math-bg.js"></script>
 </body>
 </html>

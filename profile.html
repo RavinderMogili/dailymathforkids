@@ -143,6 +143,27 @@
         <span id="security-save-msg" style="font-size:.85rem;font-weight:600"></span>
       </div>
       <div id="email-note" style="margin-top:4px;font-size:.78rem;color:var(--muted,#64748b)">We send a weekly progress report to this email. Never shared or used for marketing.</div>
+
+      <!-- Math Stars opt-in section -->
+      <div id="math-stars-section" style="margin-top:16px;padding:14px 16px;background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:12px;border:1px solid #fbbf24">
+        <div id="math-stars-prompt" style="display:none">
+          <strong style="font-size:1rem">Join Our Math Stars?</strong>
+          <p style="margin:6px 0;font-size:.88rem;color:#92400e">Your nickname and weekly points will be visible to everyone. Your grade and other account information will not be shown. Please ask a parent or guardian before joining.</p>
+          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+            <button onclick="toggleMathStars(true)" style="padding:8px 18px;border-radius:8px;background:#2563eb;color:#fff;border:none;font-weight:700;cursor:pointer;font-family:inherit">Join Math Stars</button>
+            <button onclick="dismissMathStarsPrompt()" style="padding:8px 18px;border-radius:8px;background:transparent;color:#92400e;border:1px solid #d97706;font-weight:600;cursor:pointer;font-family:inherit">Not Now</button>
+          </div>
+        </div>
+        <div id="math-stars-toggle" style="display:none">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <label for="math-stars-switch" style="font-weight:600;font-size:.9rem;cursor:pointer">Show my nickname on Math Stars</label>
+            <input type="checkbox" id="math-stars-switch" onchange="toggleMathStars(this.checked)" style="width:20px;height:20px;cursor:pointer"/>
+            <span id="math-stars-status" style="font-size:.82rem;font-weight:600"></span>
+          </div>
+          <p style="margin:6px 0 0;font-size:.8rem;color:#92400e">Only your nickname and weekly points are shown. Turning this off hides you without affecting your points.</p>
+        </div>
+      </div>
+
       <div class="stat-row">
         <div class="stat-box">
           <div class="stat-num" id="stat-total-pts">—</div>
@@ -693,7 +714,112 @@ function escHtml(s) {
   return d.innerHTML;
 }
 
-document.addEventListener('DOMContentLoaded', () => { loadProfile(); loadMistakes(); });
+// ── Math Stars opt-in/out ─────────────────────────────────────────────────
+async function initMathStarsSection() {
+  const u = getUser();
+  if (!u) return;
+  const section = document.getElementById('math-stars-section');
+  const prompt = document.getElementById('math-stars-prompt');
+  const toggle = document.getElementById('math-stars-toggle');
+  const switchEl = document.getElementById('math-stars-switch');
+  const statusEl = document.getElementById('math-stars-status');
+  if (!section) return;
+
+  // Check current opt-in status from server
+  const api = (window.DMK_API || '').replace(/\/$/, '');
+  let isOptedIn = false;
+  try {
+    const res = await fetch(`${api}/api/history?userId=${encodeURIComponent(u.userId)}`);
+    if (res.ok) {
+      const data = await res.json();
+      isOptedIn = data.show_on_leaderboard === true;
+    }
+  } catch (e) { /* use default false */ }
+
+  if (isOptedIn) {
+    // Show toggle in "on" state
+    prompt.style.display = 'none';
+    toggle.style.display = 'block';
+    switchEl.checked = true;
+    statusEl.textContent = 'You are visible on Math Stars!';
+    statusEl.style.color = '#16a34a';
+  } else {
+    // Show the opt-in prompt if never dismissed this session, else show toggle
+    const dismissed = sessionStorage.getItem('dmk_stars_dismissed');
+    if (dismissed) {
+      prompt.style.display = 'none';
+      toggle.style.display = 'block';
+      switchEl.checked = false;
+      statusEl.textContent = 'You are hidden from Math Stars.';
+      statusEl.style.color = 'var(--muted, #666)';
+    } else {
+      prompt.style.display = 'block';
+      toggle.style.display = 'none';
+    }
+  }
+}
+
+function dismissMathStarsPrompt() {
+  sessionStorage.setItem('dmk_stars_dismissed', '1');
+  document.getElementById('math-stars-prompt').style.display = 'none';
+  document.getElementById('math-stars-toggle').style.display = 'block';
+  const statusEl = document.getElementById('math-stars-status');
+  statusEl.textContent = 'You are hidden from Math Stars.';
+  statusEl.style.color = 'var(--muted, #666)';
+}
+
+async function toggleMathStars(optIn) {
+  const u = getUser();
+  if (!u) { showLoginModal(); return; }
+  const api = (window.DMK_API || '').replace(/\/$/, '');
+  const statusEl = document.getElementById('math-stars-status');
+  const switchEl = document.getElementById('math-stars-switch');
+
+  statusEl.textContent = 'Saving...';
+  statusEl.style.color = 'var(--muted, #666)';
+
+  try {
+    const res = await fetch(`${api}/api/math-stars-opt`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: u.userId, optIn: !!optIn }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      if (data.needsNicknameChange) {
+        statusEl.textContent = data.error || 'Your nickname needs to be changed before joining.';
+        statusEl.style.color = '#dc2626';
+        switchEl.checked = false;
+      } else {
+        statusEl.textContent = data.error || 'Could not update. Try again.';
+        statusEl.style.color = '#dc2626';
+        switchEl.checked = !optIn;
+      }
+      return;
+    }
+
+    // Success
+    if (optIn) {
+      statusEl.textContent = 'You are visible on Math Stars!';
+      statusEl.style.color = '#16a34a';
+      switchEl.checked = true;
+      // Show toggle view
+      document.getElementById('math-stars-prompt').style.display = 'none';
+      document.getElementById('math-stars-toggle').style.display = 'block';
+    } else {
+      statusEl.textContent = 'You are hidden from Math Stars.';
+      statusEl.style.color = 'var(--muted, #666)';
+      switchEl.checked = false;
+    }
+  } catch (e) {
+    statusEl.textContent = 'Could not connect. Try again.';
+    statusEl.style.color = '#dc2626';
+    switchEl.checked = !optIn;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => { loadProfile(); loadMistakes(); initMathStarsSection(); });
 </script>
 <script src="scripts/feedback-widget.js"></script>
 <script src="scripts/math-bg.js"></script>

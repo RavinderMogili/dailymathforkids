@@ -29,12 +29,14 @@ function renderBadge() {
         `<span class="badge-name">${escHtml(u.nickname)}</span>` +
         `<a class="badge-link" href="${ROOT}profile.html">My Progress</a>` +
         `<a class="badge-link" href="${ROOT}practice.html">Practice</a>` +
+        `<a class="badge-link" href="${ROOT}leaderboard.html">Math Stars</a>` +
         `<button class="badge-link" onclick="showGroupModal()">Group</button>` +
         `<button class="badge-link" onclick="logOut()">Log out</button>`;
     } else {
       el.innerHTML =
         `<button class="badge-btn" onclick="showRegModal()">Join Free</button>` +
-        `<button class="badge-link" onclick="showLoginModal()">Log in</button>`;
+        `<button class="badge-link" onclick="showLoginModal()">Log in</button>` +
+        `<a class="badge-link" href="${ROOT}leaderboard.html">Math Stars</a>`;
     }
   });
   const joinCta = document.getElementById('join-cta');

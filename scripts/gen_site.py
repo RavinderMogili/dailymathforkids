@@ -712,7 +712,7 @@ def generate_html_from_text(text, today):
   <p id="result"></p>
   <p id="streak-msg" style="margin-top:8px;font-size:.95rem;color:var(--muted)"></p>
 </section>
-<p class="back"><a href="../index.html">&#8592; Back to Home</a> &nbsp;&middot;&nbsp; <a href="../profile.html">&#128202; My Progress</a> &nbsp;&middot;&nbsp; <a href="../leaderboard.html">&#127942; Rankings</a></p>
+<p class="back"><a href="../index.html">&#8592; Back to Home</a> &nbsp;&middot;&nbsp; <a href="../profile.html">&#128202; My Progress</a> &nbsp;&middot;&nbsp; <a href="../leaderboard.html">&#11088; Math Stars</a></p>
 </main>
 <footer>&#169; {datetime.date.today().year} &#8226; Free math practice for kids &#8226; Moncton, NB</footer>
 <script>
