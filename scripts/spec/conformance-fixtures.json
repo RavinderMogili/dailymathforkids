@@ -310,6 +310,24 @@
       "why": "improper fractions are legitimate from Grade 5 up (spec section 6.1)"
     },
     {
+      "id": "stated-denominator-unreduced-allowed",
+      "grade": 3,
+      "question": "What is 1/2 + 1/4? How many eighths is the result?",
+      "choices": ["4/8", "5/8", "6/8", "7/8"],
+      "answer": "6/8",
+      "expect": { "verdict": "VALID", "codes": [] },
+      "why": "an explicitly stated denominator waives the lowest-terms requirement for the answer and distractors"
+    },
+    {
+      "id": "unstated-denominator-unreduced-rejected",
+      "grade": 3,
+      "question": "What fraction of the pizza did Tom eat?",
+      "choices": ["4/8", "5/8", "3/8", "7/8"],
+      "answer": "5/8",
+      "expect": { "verdict": "ERROR", "codes": ["FRACTION_NOT_LOWEST_TERMS"] },
+      "why": "without a stated denominator, authored fractions must be in lowest terms"
+    },
+    {
       "id": "missing-french",
       "grade": 3, "question": "24 + 18 = ?", "fr": "",
       "choices": ["42", "41", "43", "32"], "answer": "42",

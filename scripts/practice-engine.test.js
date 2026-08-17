@@ -67,6 +67,16 @@ describe('practice engine safety seams', () => {
     }
   });
 
+  test('pool verification record excludes only its quarantined indexes', () => {
+    const pool = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'practice-pool.json'), 'utf8'));
+    const review = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'review', 'practice-pool-verification.json'), 'utf8'));
+    const excluded = engine.quarantinedPoolIndexes(review, pool.length);
+    expect([...excluded].sort((a, b) => a - b)).toEqual(review.quarantined_indexes);
+    expect(pool.filter((_, index) => !excluded.has(index))).toHaveLength(56);
+    expect(pool[0]).toEqual(expect.objectContaining({ question: review.items[0].question }));
+    expect(pool[8]).toEqual(expect.objectContaining({ question: review.items[8].question }));
+  });
+
   test('affected generators terminate across seeded regression cases', () => {
     const cases = [
       [5, 'Percentages'], [6, 'Statistics'], [9, 'Data Analysis'],

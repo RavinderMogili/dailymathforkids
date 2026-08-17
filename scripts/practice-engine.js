@@ -1159,17 +1159,42 @@ function generateQuestion(grade, topic, difficulty) {
 let _practicePool = null;
 let _poolLoading = false;
 
+function quarantinedPoolIndexes(review, poolLength) {
+  if (!review || !Array.isArray(review.items) || !Array.isArray(review.quarantined_indexes)) {
+    throw new Error('PRACTICE_POOL_VERIFICATION');
+  }
+  if (review.reviewed !== poolLength || review.items.length !== poolLength) {
+    throw new Error('PRACTICE_POOL_VERIFICATION');
+  }
+  const itemIndexes = review.items
+    .filter(item => item && item.status === 'quarantined')
+    .map(item => item.pool_index)
+    .sort((a, b) => a - b);
+  const listedIndexes = [...review.quarantined_indexes].sort((a, b) => a - b);
+  if (JSON.stringify(itemIndexes) !== JSON.stringify(listedIndexes)) {
+    throw new Error('PRACTICE_POOL_VERIFICATION');
+  }
+  if (review.verified + review.quarantined !== poolLength || listedIndexes.some(
+    index => !Number.isInteger(index) || index < 0 || index >= poolLength
+  )) {
+    throw new Error('PRACTICE_POOL_VERIFICATION');
+  }
+  return new Set(listedIndexes);
+}
+
 function loadPracticePool() {
   if (_practicePool !== null || _poolLoading) return;
   _poolLoading = true;
   const root = window.DMK_ROOT || './';
-  fetch(root + 'data/practice-pool.json')
-    .then(r => r.ok ? r.json() : Promise.reject('not found'))
-    .then(data => {
+  Promise.all([
+    fetch(root + 'data/practice-pool.json').then(r => r.ok ? r.json() : Promise.reject('not found')),
+    fetch(root + 'data/review/practice-pool-verification.json').then(r => r.ok ? r.json() : Promise.reject('not found')),
+  ]).then(([data, review]) => {
       if (Array.isArray(data) && data.length > 0) {
         validatePracticePool(data);
-        _practicePool = data;
-        console.log('Practice pool loaded:', data.length, 'questions');
+        const excluded = quarantinedPoolIndexes(review, data.length);
+        _practicePool = data.filter((_, index) => !excluded.has(index));
+        console.log('Practice pool loaded:', _practicePool.length, 'questions');
       } else {
         _practicePool = [];
       }
@@ -1260,6 +1285,7 @@ function generateQuiz(grade, topics, difficulty, count) {
 const practiceEngineApi = {
   TOPICS_BY_GRADE, POOL_TOPIC_MAP, getTopicsForGrade, setRandomSource, resetRandomSource,
   makeChoices, generateQuestion, generateQuiz, getPoolQuestions, validatePracticePool,
+  quarantinedPoolIndexes,
   normalizeFraction,
 };
 if (typeof module !== 'undefined' && module.exports) module.exports = practiceEngineApi;

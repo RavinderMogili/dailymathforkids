@@ -15,6 +15,28 @@ from typing import Any
 
 
 PLACEHOLDERS = {"todo", "tbd", "undefined", "nan", "null", "infinity"}
+STATED_DENOMINATORS = {
+    "half": 2,
+    "halves": 2,
+    "third": 3,
+    "thirds": 3,
+    "fourth": 4,
+    "fourths": 4,
+    "quarter": 4,
+    "quarters": 4,
+    "fifth": 5,
+    "fifths": 5,
+    "sixth": 6,
+    "sixths": 6,
+    "seventh": 7,
+    "sevenths": 7,
+    "eighth": 8,
+    "eighths": 8,
+    "ninth": 9,
+    "ninths": 9,
+    "tenth": 10,
+    "tenths": 10,
+}
 UNITS = (
     "degC", "cm2", "cm3", "m2", "m3", "mL", "km", "mm", "kg",
     "cm", "deg", "min", "h", "s", "L", "m", "g",
@@ -526,12 +548,24 @@ def _round_fraction(value: Fraction, decimals: int) -> Fraction:
     return Fraction(quotient, factor)
 
 
-def _fraction_issues(value: dict[str, Any] | None, grade: int) -> list[str]:
+def _stated_denominator(text: str) -> int | None:
+    match = re.search(r"\bhow many\s+(\d+|[a-z]+)\b", text, re.I)
+    if not match:
+        return None
+    token = match.group(1).casefold()
+    return int(token) if token.isdigit() and int(token) > 0 else STATED_DENOMINATORS.get(token)
+
+
+def _fraction_issues(
+    value: dict[str, Any] | None,
+    grade: int,
+    stated_denominator: int | None = None,
+) -> list[str]:
     if not value or value.get("kind") != "number" or "written_den" not in value:
         return []
     issues: list[str] = []
     written_num, written_den = value["written_num"], value["written_den"]
-    if _gcd(written_num, written_den) != 1:
+    if stated_denominator is None and _gcd(written_num, written_den) != 1:
         issues.append("FRACTION_NOT_LOWEST_TERMS")
     if value.get("den") == 1:
         issues.append("FRACTION_DENOMINATOR_ONE")
@@ -581,9 +615,10 @@ def validate_question(question: dict[str, Any], require_french: bool = False) ->
         choice_errors.append(error)
 
     answer_value, answer_error = parse_value(answer)
+    stated_denominator = _stated_denominator(text)
     fraction_codes: list[str] = []
     for value in [answer_value, *parsed_choices]:
-        for code in _fraction_issues(value, grade):
+        for code in _fraction_issues(value, grade, stated_denominator):
             if code not in fraction_codes:
                 fraction_codes.append(code)
     if answer_value and (

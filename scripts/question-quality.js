@@ -4,6 +4,13 @@
 // rationals; Number is used only when emitting small fixture integers.
 
 const PLACEHOLDERS = new Set(['todo', 'tbd', 'undefined', 'nan', 'null', 'infinity']);
+const STATED_DENOMINATORS = new Map([
+  ['half', 2], ['halves', 2], ['third', 3], ['thirds', 3],
+  ['fourth', 4], ['fourths', 4], ['quarter', 4], ['quarters', 4],
+  ['fifth', 5], ['fifths', 5], ['sixth', 6], ['sixths', 6],
+  ['seventh', 7], ['sevenths', 7], ['eighth', 8], ['eighths', 8],
+  ['ninth', 9], ['ninths', 9], ['tenth', 10], ['tenths', 10],
+]);
 const UNITS = ['degC', 'cm2', 'cm3', 'm2', 'm3', 'mL', 'km', 'mm', 'kg', 'cm', 'deg', 'min', 'h', 's', 'L', 'm', 'g'];
 const UNIT_DIMENSION = {
   mm: 'length', cm: 'length', m: 'length', km: 'length',
@@ -366,10 +373,19 @@ function solveQuestion(question) {
   if (m) { const a = Number(m[1]), b = Number(m[2]); if (b) return [{ kind: 'quotrem', q: Math.floor(a / b), r: a % b }, null]; }
   return [null, 'UNVERIFIED'];
 }
-function fractionIssues(value, grade) {
+function statedDenominator(text) {
+  const match = String(text).match(/\bhow many\s+(\d+|[a-z]+)\b/i);
+  if (!match) return null;
+  if (/^\d+$/.test(match[1])) {
+    const value = Number(match[1]);
+    return value > 0 ? value : null;
+  }
+  return STATED_DENOMINATORS.get(match[1].toLocaleLowerCase('en')) || null;
+}
+function fractionIssues(value, grade, denominator = null) {
   if (!value || value.kind !== 'number' || value.written_den == null) return [];
   const n = BigInt(value.written_num), d = BigInt(value.written_den), issues = [];
-  if (gcd(n, d) !== 1n) issues.push('FRACTION_NOT_LOWEST_TERMS');
+  if (denominator == null && gcd(n, d) !== 1n) issues.push('FRACTION_NOT_LOWEST_TERMS');
   if (BigInt(value.den) === 1n) issues.push('FRACTION_DENOMINATOR_ONE');
   if (Number(grade) <= 4 && abs(n) > d && !value.mixed) issues.push('IMPROPER_FRACTION_FOR_GRADE');
   return issues;
@@ -397,7 +413,8 @@ function validateQuestion(question, options = {}) {
   const choiceValues = parsedChoices.map(item => item[0]), choiceErrors = parsedChoices.map(item => item[1]);
   const [answerValue, answerError] = answerParsed;
   const fractionCodes = [];
-  [answerValue, ...choiceValues].forEach(value => fractionIssues(value, grade).forEach(code => { if (!fractionCodes.includes(code)) fractionCodes.push(code); }));
+  const stated = statedDenominator(text);
+  [answerValue, ...choiceValues].forEach(value => fractionIssues(value, grade, stated).forEach(code => { if (!fractionCodes.includes(code)) fractionCodes.push(code); }));
   if (answerValue && answerValue.written_den != null && (answerValue.den === 1 || Math.abs(answerValue.written_num) > answerValue.written_den)) {
     while (fractionCodes.includes('FRACTION_NOT_LOWEST_TERMS')) fractionCodes.splice(fractionCodes.indexOf('FRACTION_NOT_LOWEST_TERMS'), 1);
   }

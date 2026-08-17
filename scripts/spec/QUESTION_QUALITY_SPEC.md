@@ -145,6 +145,11 @@ auto-fixer's behavior and must be visible in reports.
 - Grades 1–4: `|num| > den` → `IMPROPER_FRACTION_FOR_GRADE`; the mixed-number form
   is required. Grades 5–12: improper fractions are permitted, because fraction
   operations that legitimately produce them (e.g. `3/4 ÷ 1/2 = 3/2`) begin there.
+- The lowest-terms requirement is waived, for the answer and the distractors alike,
+  when the stem explicitly asks for the result in a stated denominator ("how many
+  eighths did Tom eat?" → `5/8`, with `4/8` and `6/8` as legitimate distractors).
+  Absent such an instruction the reduced form is required, so "what fraction of the
+  pizza was eaten?" may not be answered `4/8`.
 - These rules apply to distractors as well as to the answer. A `Fractions` item
   whose distractors are unreduced or improper is an `ERROR`, because it teaches
   the wrong normal form.
@@ -211,6 +216,24 @@ output, curated pool entry). All are blocking.
 | `MISSING_FRENCH` | the French rendering is present where the path requires it |
 | `DUPLICATE_RECENT_QUESTION` | no repeat of a normalized `(grade, question)` fingerprint within 30 days |
 | `NONTERMINATING_GENERATION` | a generator must produce a question within a bounded step budget |
+| `DUPLICATE_QUESTION_NUMBER` | within a grade, no two items may carry the same authored number |
+
+### 7.1 Item identity
+
+A question's identity is its **ordinal position within its grade** (1-based, by order
+of appearance), not the number the author wrote. Authored numbers collide in real
+content — `2026-08-17` grade G1 contains twelve items, three of them numbered `10` —
+so a number-keyed identity is ambiguous and would make the review manifest and the
+quarantine manifest point at the wrong item. Every report, manifest entry and
+quarantine record therefore keys on `(date, grade, ordinal)` and carries the
+authored number as a separate, non-identifying field.
+
+Field extraction must key on each item's own field indentation, which varies with
+the width of the item number: a one-digit item indents its fields by three spaces
+and a two-digit item by four. An extractor anchored to a fixed indent silently
+loses every field of item 10 and above. Nested `Steps` bullets are indented deeper
+than the item's field level, and that difference — not a hard-coded column — is
+what distinguishes a real `Answer:` line from an `Answer:` written inside `Steps`.
 
 Two checks are reported but do not block, because they describe pedagogical quality
 rather than mathematical or structural invalidity, and blocking on them would stop
