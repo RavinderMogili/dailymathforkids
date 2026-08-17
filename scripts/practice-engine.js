@@ -6,14 +6,90 @@ const TOPICS_BY_GRADE = {
   2: ['Addition & Subtraction', 'Place Value', 'Comparing Numbers', 'Patterns', 'Telling Time', 'Measurement', 'Money', 'Geometry', 'Word Problems'],
   3: ['Multiplication & Division', 'Fractions', 'Place Value', 'Elapsed Time', 'Perimeter', 'Measurement', 'Geometry', 'Word Problems'],
   4: ['Multi-digit Arithmetic', 'Fractions', 'Decimals', 'Factors & Multiples', 'Angles', 'Measurement', 'Geometry', 'Word Problems'],
-  5: ['Decimals', 'Fractions', 'Percentages', 'Order of Operations', 'Volume', 'Metric Conversions', 'Coordinate Plane', 'Word Problems'],
+  5: ['Decimals', 'Fractions', 'Percentages', 'Order of Operations', 'Volume', 'Metric Conversions', 'Word Problems'],
   6: ['Ratios & Proportions', 'Percent & Discount', 'Integers', 'Expressions & Equations', 'Area & Surface Area', 'Statistics', 'Word Problems'],
-  7: ['Proportional Relationships', 'Operations with Rationals', 'Expressions & Equations', 'Geometry', 'Probability & Statistics', 'Word Problems'],
-  8: ['Linear Equations', 'Functions', 'Exponents & Roots', 'Pythagorean Theorem', 'Transformations', 'Word Problems'],
+  7: ['Proportional Relationships', 'Expressions & Equations', 'Geometry', 'Probability & Statistics', 'Word Problems'],
+  8: ['Linear Equations', 'Functions', 'Exponents & Roots', 'Pythagorean Theorem', 'Word Problems'],
   9: ['Linear Functions', 'Quadratic Equations', 'Polynomials', 'Inequalities', 'Data Analysis', 'Word Problems'],
-  10: ['Quadratics', 'Trigonometry', 'Circle Geometry', 'Coordinate Geometry', 'Systems of Equations', 'Word Problems'],
-  11: ['Functions', 'Exponential & Logarithmic', 'Sequences & Series', 'Trigonometric Functions', 'Financial Math', 'Word Problems'],
-  12: ['Limits & Derivatives', 'Advanced Functions', 'Probability & Statistics', 'Vectors', 'Proof & Logic', 'Word Problems'],
+  10: ['Quadratics', 'Trigonometry', 'Systems of Equations', 'Word Problems'],
+  11: ['Exponential & Logarithmic', 'Sequences & Series', 'Trigonometric Functions', 'Financial Math', 'Word Problems'],
+  12: ['Limits & Derivatives', 'Advanced Functions', 'Probability & Statistics', 'Vectors', 'Word Problems'],
+};
+
+const UNSUPPORTED_TOPICS_BY_GRADE = {
+  5: new Set(['Coordinate Plane']),
+  7: new Set(['Operations with Rationals']),
+  8: new Set(['Transformations']),
+  10: new Set(['Circle Geometry', 'Coordinate Geometry']),
+  11: new Set(['Functions']),
+  12: new Set(['Proof & Logic']),
+};
+
+const QUESTION_QUALITY = typeof module !== 'undefined' && module.exports
+  ? require('./question-quality.js')
+  : (typeof window !== 'undefined' ? window.DMKQuestionQuality : null);
+
+const POOL_TOPIC_MAP = {
+  'Addition within 20': ['Addition & Subtraction'],
+  'Counting Coins': ['Counting'],
+  'Skip Counting': ['Counting'],
+  'Subtraction within 20': ['Addition & Subtraction'],
+  'Comparing Numbers': ['Comparing Numbers'],
+  'Addition within 100': ['Addition & Subtraction'],
+  'Telling Time': ['Telling Time'],
+  'Measurement (cm/m)': ['Measurement'],
+  'Counting Coins to $1': ['Money'],
+  'Patterns': ['Patterns'],
+  'Multiplication': ['Multiplication & Division'],
+  'Basic Division': ['Multiplication & Division'],
+  'Fractions': ['Fractions'],
+  'Perimeter': ['Perimeter'],
+  'Reading Graphs': ['Measurement'],
+  'Multiplication Tables': ['Multi-digit Arithmetic'],
+  'Long Division': ['Multi-digit Arithmetic'],
+  'Decimal Place Value': ['Decimals', 'Place Value'],
+  'Area': ['Geometry', 'Area & Surface Area'],
+  'Elapsed Time': ['Measurement'],
+  'Multi-digit Multiplication': ['Decimals'],
+  'Fractions with Like Denominators': ['Fractions'],
+  'Decimal Operations': ['Decimals'],
+  'Percent Introduction': ['Percentages'],
+  'Volume': ['Volume'],
+  'Fraction Multiplication': ['Ratios & Proportions'],
+  'Ratios and Rates': ['Ratios & Proportions'],
+  'Percent of a Number': ['Percentages', 'Percent & Discount'],
+  'BEDMAS': ['Expressions & Equations'],
+  'Algebra Introduction': ['Expressions & Equations'],
+  'Integer Operations': ['Expressions & Equations'],
+  'Percent Problems': ['Proportional Relationships'],
+  'One-Step Equations': ['Expressions & Equations'],
+  'Surface Area': ['Geometry'],
+  'Probability': ['Probability & Statistics'],
+  'Two-Step Equations': ['Linear Equations'],
+  'Pythagorean Theorem': ['Pythagorean Theorem'],
+  'Percent Increase/Decrease': ['Functions'],
+  'Square Roots': ['Exponents & Roots'],
+  'Slope': ['Linear Equations'],
+  'Linear Equations': ['Linear Functions'],
+  'Polynomials': ['Polynomials'],
+  'Graphing Lines': ['Linear Functions'],
+  'Similar Triangles': ['Linear Functions'],
+  'Trigonometry Introduction': ['Linear Functions'],
+  'Quadratics': ['Quadratics'],
+  'Systems of Equations': ['Systems of Equations'],
+  'Circle Geometry': ['Trigonometry'],
+  'Trigonometry': ['Trigonometry'],
+  'Surface Area and Volume of 3D Shapes': ['Trigonometry'],
+  'Functions': ['Exponential & Logarithmic'],
+  'Logarithms': ['Exponential & Logarithmic'],
+  'Arithmetic Sequences': ['Sequences & Series'],
+  'Financial Math': ['Financial Math'],
+  'Trigonometric Identities': ['Trigonometric Functions'],
+  'Derivatives Introduction': ['Limits & Derivatives'],
+  'Combinations and Permutations': ['Probability & Statistics'],
+  'Vectors': ['Vectors'],
+  'Advanced Functions': ['Advanced Functions'],
+  'Probability Distributions': ['Probability & Statistics'],
 };
 
 function getTopicsForGrade(grade) {
@@ -21,21 +97,69 @@ function getTopicsForGrade(grade) {
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────
-function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+let randomSource = () => Math.random();
+function setRandomSource(source) {
+  if (typeof source !== 'function') throw new TypeError('random source must be a function');
+  randomSource = source;
+}
+function resetRandomSource() { randomSource = () => Math.random(); }
+function randInt(min, max) { return Math.floor(randomSource() * (max - min + 1)) + min; }
 function shuffle(arr) { for (let i = arr.length - 1; i > 0; i--) { const j = randInt(0, i); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; }
 function pick(arr) { return arr[randInt(0, arr.length - 1)]; }
 function round2(n) { return Math.round(n * 100) / 100; }
 function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
-
-function makeChoices(correct, count = 4, gen) {
-  const choices = new Set([String(correct)]);
-  let tries = 0;
-  while (choices.size < count && tries < 50) {
-    const wrong = gen();
-    if (String(wrong) !== String(correct)) choices.add(String(wrong));
-    tries++;
+function normalizeFraction(numerator, denominator, grade) {
+  if (!Number.isInteger(numerator) || !Number.isInteger(denominator) || denominator <= 0) throw new Error('INVALID_FRACTION');
+  const divisor = gcd(Math.abs(numerator), denominator);
+  const n = numerator / divisor;
+  const d = denominator / divisor;
+  if (d === 1) return String(n);
+  if (grade <= 4 && Math.abs(n) > d) {
+    const whole = Math.trunc(n / d);
+    const remainder = Math.abs(n % d);
+    if (!remainder) return String(whole);
+    return `${whole} ${remainder}/${d}`;
   }
-  while (choices.size < count) choices.add(String(correct + choices.size));
+  return `${n}/${d}`;
+}
+
+function fractionDistractors(answer, grade) {
+  const values = [];
+  for (let denominator = 2; denominator <= 12; denominator++) {
+    for (let numerator = 1; numerator <= denominator * 2; numerator++) {
+      const value = normalizeFraction(numerator, denominator, grade);
+      if (value !== answer && !values.includes(value)) values.push(value);
+    }
+  }
+  return values;
+}
+
+function canonicalChoice(value) {
+  if (value === undefined || value === null) throw new Error('INVALID_CHOICE');
+  const result = String(value).trim().replace(/\s+/g, ' ');
+  if (!result || result === 'NaN' || result === 'undefined' || result === 'null') throw new Error('INVALID_CHOICE');
+  return result;
+}
+
+function insufficientDistractorSpace() {
+  const error = new Error('INSUFFICIENT_DISTRACTOR_SPACE');
+  error.code = 'INSUFFICIENT_DISTRACTOR_SPACE';
+  return error;
+}
+
+function makeChoices(correct, count = 4, gen, options = {}) {
+  if (!Number.isInteger(count) || count < 1 || typeof gen !== 'function') throw new Error('INVALID_CHOICE_GENERATOR');
+  const choices = new Set([canonicalChoice(correct)]);
+  const maxAttempts = options.maxAttempts || Math.max(100, count * 50);
+  for (let tries = 0; choices.size < count && tries < maxAttempts; tries++) {
+    let candidate;
+    try { candidate = canonicalChoice(gen()); } catch (error) {
+      if (error.code === 'INSUFFICIENT_DISTRACTOR_SPACE') throw error;
+      continue;
+    }
+    choices.add(candidate);
+  }
+  if (choices.size < count) throw insufficientDistractorSpace();
   return shuffle([...choices]);
 }
 
@@ -47,7 +171,7 @@ function genAddSub(grade, difficulty) {
     hard:   grade <= 2 ? [5, 50] : [20, 100],
   };
   const [lo, hi] = ranges[difficulty];
-  const isAdd = Math.random() > 0.4;
+  const isAdd = randomSource() > 0.4;
   if (isAdd) {
     const a = randInt(lo, hi), b = randInt(lo, hi);
     const ans = a + b;
@@ -64,7 +188,7 @@ function genPlaceValue(grade, difficulty) {
   if (difficulty === 'easy') {
     const n = randInt(10, 99);
     const tens = Math.floor(n / 10), ones = n % 10;
-    const askTens = Math.random() > 0.5;
+    const askTens = randomSource() > 0.5;
     const ans = askTens ? tens : ones;
     return { question: `What is the ${askTens ? 'tens' : 'ones'} digit of ${n}?`, answer: String(ans), choices: makeChoices(ans, 4, () => randInt(0, 9)) };
   } else if (difficulty === 'medium') {
@@ -76,7 +200,7 @@ function genPlaceValue(grade, difficulty) {
   } else {
     const a = randInt(100, 999), b = randInt(100, 999);
     const ans = a > b ? '>' : a < b ? '<' : '=';
-    return { question: `Compare: ${a} ___ ${b}`, answer: ans, choices: ['>', '<', '=', `${a > b ? '<' : '>'}`] };
+    return { question: `Compare: ${a} ___ ${b}`, answer: ans, choices: shuffle(['>', '<', '=', '≠']) };
   }
 }
 
@@ -100,7 +224,8 @@ function genMeasurement12(grade, difficulty) {
     const items = ['pencil', 'book', 'desk', 'eraser', 'ruler'];
     const a = pick(items), aLen = randInt(3, 30);
     let b; do { b = pick(items); } while (b === a);
-    const bLen = randInt(3, 30);
+    let bLen = randInt(3, 30);
+    while (bLen === aLen) bLen = randInt(3, 30);
     const ans = aLen > bLen ? a : b;
     return { question: `A ${a} is ${aLen} cm. A ${b} is ${bLen} cm. Which is longer?`, answer: ans, choices: [a, b, 'Same', 'Not sure'] };
   }
@@ -111,7 +236,6 @@ function genGeometry12(grade, difficulty) {
   const shapes = [
     { name: 'triangle', sides: 3 },
     { name: 'square', sides: 4 },
-    { name: 'rectangle', sides: 4 },
     { name: 'pentagon', sides: 5 },
     { name: 'hexagon', sides: 6 },
     { name: 'circle', sides: 0 },
@@ -120,7 +244,9 @@ function genGeometry12(grade, difficulty) {
   if (difficulty === 'easy') {
     return { question: `How many sides does a ${s.name} have?`, answer: String(s.sides), choices: makeChoices(s.sides, 4, () => randInt(2, 8)) };
   } else {
-    return { question: `Which shape has ${s.sides} sides?`, answer: s.name, choices: shuffle(shapes.filter(x => x.sides > 0).slice(0, 4).map(x => x.name)) };
+    const options = shapes.filter(x => x.sides > 0);
+    const others = options.filter(x => x.name !== s.name);
+    return { question: `Which shape has ${s.sides} sides?`, answer: s.name, choices: shuffle([s.name, ...others.slice(0, 3).map(x => x.name)]) };
   }
 }
 
@@ -129,17 +255,23 @@ function genComparing(grade, difficulty) {
   if (difficulty === 'easy') {
     const a = randInt(1, 20), b = randInt(1, 20);
     const ans = a > b ? '>' : a < b ? '<' : '=';
-    return { question: `Compare: ${a} ___ ${b}`, answer: ans, choices: shuffle(['>', '<', '=', a > b ? '<' : '>']) };
+    return { question: `Compare: ${a} ___ ${b}`, answer: ans, choices: shuffle(['>', '<', '=', '≠']) };
   } else if (difficulty === 'medium') {
     const a = randInt(10, 100), b = randInt(10, 100);
     const ans = a > b ? '>' : a < b ? '<' : '=';
-    return { question: `Compare: ${a} ___ ${b}`, answer: ans, choices: shuffle(['>', '<', '=', a > b ? '<' : '>']) };
+    return { question: `Compare: ${a} ___ ${b}`, answer: ans, choices: shuffle(['>', '<', '=', '≠']) };
   } else {
-    const nums = [randInt(10, 99), randInt(10, 99), randInt(10, 99)];
+    const nums = [];
+    while (nums.length < 3) {
+      const value = randInt(10, 99);
+      if (!nums.includes(value)) nums.push(value);
+    }
     const sorted = [...nums].sort((a, b) => a - b);
     const askType = pick(['smallest', 'largest']);
     const ans = askType === 'smallest' ? sorted[0] : sorted[sorted.length - 1];
-    return { question: `Which is the ${askType}? ${nums.join(', ')}`, answer: String(ans), choices: shuffle(nums.map(String).concat([String(randInt(10, 99))])).slice(0, 4) };
+    let extra = randInt(10, 99);
+    while (nums.includes(extra)) extra = randInt(10, 99);
+    return { question: `Which is the ${askType}? ${nums.join(', ')}`, answer: String(ans), choices: shuffle(nums.map(String).concat(String(extra))) };
   }
 }
 
@@ -156,7 +288,8 @@ function genPatterns(grade, difficulty) {
     const a = pick(shapes), b = pick(shapes.filter(s => s !== a));
     const pattern = [a, b, a, b, a, b];
     const ans = a;
-    return { question: `What comes next? ${pattern.join(' ')} ?`, answer: ans, choices: shuffle([a, b, pick(shapes.filter(s => s !== a && s !== b)), pick(shapes.filter(s => s !== a))]) };
+    const choices = [a, ...shapes.filter(s => s !== a).slice(0, 3)];
+    return { question: `What comes next? ${pattern.join(' ')} ?`, answer: ans, choices: shuffle(choices) };
   } else {
     const step = pick([3, 4, 6, 7]);
     const start = randInt(1, 5) * step;
@@ -243,7 +376,7 @@ function genFactorsMultiples(grade, difficulty) {
     const n = pick([6, 8, 10, 12, 15, 18, 20, 24]);
     const factor = pick([2, 3, 4, 5, 6]);
     const isFactor = n % factor === 0;
-    return { question: `Is ${factor} a factor of ${n}?`, answer: isFactor ? 'Yes' : 'No', choices: ['Yes', 'No', 'Maybe', 'Not sure'] };
+    return { question: `Is ${factor} a factor of ${n}?`, answer: isFactor ? 'Yes' : 'No', choices: ['Yes', 'No', 'Maybe', 'Unknown'] };
   } else if (difficulty === 'medium') {
     const n = pick([3, 4, 5, 6, 7, 8, 9]);
     const mult = randInt(2, 10);
@@ -280,7 +413,7 @@ function genPercentages(grade, difficulty) {
     const pct = pick([10, 25, 50]);
     const total = pick([20, 40, 50, 80, 100, 200]);
     const ans = total * pct / 100;
-    return { question: `What is ${pct}% of ${total}?`, answer: String(ans), choices: makeChoices(ans, 4, () => total * pick([10, 25, 50]) / 100) };
+    return { question: `What is ${pct}% of ${total}?`, answer: String(ans), choices: makeChoices(ans, 4, () => total * pick([5, 10, 15, 20, 25, 30, 40, 50, 60, 75]) / 100) };
   } else if (difficulty === 'medium') {
     const pct = pick([5, 10, 15, 20, 25, 30, 40, 50, 75]);
     const total = pick([40, 60, 80, 100, 120, 200]);
@@ -340,7 +473,8 @@ function genPercentDiscount(grade, difficulty) {
     return { question: `A $${price} item has a ${pct}% discount. How much do you save?`, answer: '$' + discount, choices: makeChoices('$' + discount, 4, () => '$' + round2(price * randInt(5, 30) / 100)) };
   } else {
     const original = pick([40, 50, 60, 80, 100]);
-    const sale = pick([30, 36, 45, 48, 60, 70, 75]);
+    const saleOptions = [30, 36, 45, 48, 60, 70, 75].filter(value => value < original);
+    const sale = pick(saleOptions);
     const saved = original - sale;
     const ans = round2(saved / original * 100);
     return { question: `Original price: $${original}. Sale price: $${sale}. What percent off?`, answer: ans + '%', choices: makeChoices(ans + '%', 4, () => round2(randInt(5, 50)) + '%') };
@@ -360,7 +494,7 @@ function genMoney(grade, difficulty) {
 // ── Grade 3+: Multiplication & Division ─────────────────────────────────
 function genMulDiv(grade, difficulty) {
   const maxFactor = difficulty === 'easy' ? 5 : difficulty === 'medium' ? 10 : 12;
-  const isMul = Math.random() > 0.4;
+  const isMul = randomSource() > 0.4;
   if (isMul) {
     const a = randInt(2, maxFactor), b = randInt(2, maxFactor);
     const ans = a * b;
@@ -379,21 +513,28 @@ function genFractions(grade, difficulty) {
     const n = randInt(1, d - 1);
     const g = gcd(n, d);
     const sn = n / g, sd = d / g;
-    return { question: `Simplify ${n}/${d}`, answer: `${sn}/${sd}`, choices: makeChoices(`${sn}/${sd}`, 4, () => `${randInt(1, d)}/${randInt(2, d + 2)}`) };
+    const answer = normalizeFraction(sn, sd, grade);
+    const distractors = fractionDistractors(answer, grade);
+    let index = 0;
+    return { question: `Simplify ${n}/${d}`, answer, choices: makeChoices(answer, 4, () => distractors[index++]) };
   } else if (difficulty === 'medium') {
     const d = pick([2, 4, 5, 8, 10]);
     const n1 = randInt(1, d - 1), n2 = randInt(1, d - 1);
     const sum = n1 + n2;
     const g = gcd(sum, d);
-    const ans = sum >= d ? `${Math.floor(sum / d)} ${(sum % d) / g}/${d / g}` : `${sum / g}/${d / g}`;
-    return { question: `${n1}/${d} + ${n2}/${d} = ?`, answer: ans.replace(/ 0\/\d+/, ''), choices: makeChoices(ans, 4, () => `${randInt(1, d * 2)}/${d}`) };
+    const ans = normalizeFraction(sum, d, grade);
+    const distractors = fractionDistractors(ans, grade);
+    let index = 0;
+    return { question: `${n1}/${d} + ${n2}/${d} = ?`, answer: ans, choices: makeChoices(ans, 4, () => distractors[index++]) };
   } else {
     const d1 = pick([2, 3, 4, 5, 6]), d2 = pick([2, 3, 4, 5, 6]);
     const n1 = randInt(1, d1), n2 = randInt(1, d2);
     const lcd = (d1 * d2) / gcd(d1, d2);
     const sum = n1 * (lcd / d1) + n2 * (lcd / d2);
-    const g = gcd(sum, lcd);
-    return { question: `${n1}/${d1} + ${n2}/${d2} = ?`, answer: `${sum / g}/${lcd / g}`, choices: makeChoices(`${sum / g}/${lcd / g}`, 4, () => `${randInt(1, 12)}/${randInt(2, 12)}`) };
+    const answer = normalizeFraction(sum, lcd, grade);
+    const distractors = fractionDistractors(answer, grade);
+    let index = 0;
+    return { question: `${n1}/${d1} + ${n2}/${d2} = ?`, answer, choices: makeChoices(answer, 4, () => distractors[index++]) };
   }
 }
 
@@ -413,7 +554,8 @@ function genMultiDigit(grade, difficulty) {
     const q = Math.floor(a / b);
     const r = a % b;
     const ansStr = r > 0 ? `${q} R${r}` : String(q);
-    return { question: `${a} ÷ ${b} = ?`, answer: ansStr, choices: makeChoices(ansStr, 4, () => r > 0 ? `${q + randInt(-3, 3)} R${randInt(0, b)}` : String(q + randInt(-5, 5))) };
+    const distractor = () => r > 0 ? `${q + randInt(-3, 3)} R${randInt(0, b - 1)}` : String(q + randInt(-5, 5));
+    return { question: `${a} ÷ ${b} = ?`, answer: ansStr, choices: makeChoices(ansStr, 4, distractor) };
   }
 }
 
@@ -428,12 +570,12 @@ function genDecimals(grade, difficulty) {
     const a = round2(randInt(1, 15) + randInt(1, 99) / 100);
     const b = round2(randInt(1, 9) + randInt(1, 99) / 100);
     const ans = round2(a * b);
-    return { question: `${a} × ${b} = ?`, answer: String(ans), choices: makeChoices(ans, 4, () => round2(ans + randInt(-5, 5))) };
+    return { question: `Round to 2 decimal places: ${a} × ${b} = ?`, answer: String(ans), choices: makeChoices(ans, 4, () => round2(ans + randInt(-5, 5))) };
   } else {
     const b = round2(randInt(2, 9) + randInt(1, 9) / 10);
     const ans = round2(randInt(2, 20) + randInt(0, 9) / 10);
     const a = round2(b * ans);
-    return { question: `${a} ÷ ${b} = ?`, answer: String(ans), choices: makeChoices(ans, 4, () => round2(ans + randInt(-3, 3))) };
+    return { question: `Round to 1 decimal places: ${a} ÷ ${b} = ?`, answer: String(ans), choices: makeChoices(ans, 4, () => round2(ans + randInt(-3, 3))) };
   }
 }
 
@@ -544,19 +686,21 @@ function genProbability(grade, difficulty) {
   const total = pick([6, 8, 10, 12]);
   const favorable = randInt(1, total - 1);
   const g = gcd(favorable, total);
-  return { question: `A bag has ${total} balls. ${favorable} are red. What is the probability of picking red?`, answer: `${favorable / g}/${total / g}`, choices: makeChoices(`${favorable / g}/${total / g}`, 4, () => `${randInt(1, total)}/${total}`) };
+  const answer = normalizeFraction(favorable / g, total / g, grade);
+  return { question: `A bag has ${total} balls. ${favorable} are red. What is the probability of picking red?`, answer, choices: makeChoices(answer, 4, () => normalizeFraction(randInt(1, total), total, grade)) };
 }
 
 // ── Grade 8: Linear Equations ───────────────────────────────────────────
 function genLinearEq(grade, difficulty) {
   const m = randInt(-5, 5) || 1;
   const b = randInt(-10, 10);
+  const formatSigned = value => value < 0 ? `- ${Math.abs(value)}` : `+ ${value}`;
   if (difficulty === 'easy') {
     const x = randInt(-5, 5);
     const y = m * x + b;
-    return { question: `If y = ${m}x + ${b}, what is y when x = ${x}?`, answer: String(y), choices: makeChoices(y, 4, () => y + randInt(-6, 6)) };
+    return { question: `If y = ${m}x ${formatSigned(b)}, what is y when x = ${x}?`, answer: String(y), choices: makeChoices(y, 4, () => y + randInt(-6, 6)) };
   } else {
-    return { question: `What is the slope of y = ${m}x + ${b}?`, answer: String(m), choices: makeChoices(m, 4, () => randInt(-5, 5)) };
+    return { question: `What is the slope of y = ${m}x ${formatSigned(b)}?`, answer: String(m), choices: makeChoices(m, 4, () => randInt(-5, 5)) };
   }
 }
 
@@ -582,7 +726,7 @@ function genExponents(grade, difficulty) {
 function genPythagoras(grade, difficulty) {
   const triples = [[3, 4, 5], [5, 12, 13], [6, 8, 10], [8, 15, 17], [7, 24, 25]];
   const [a, b, c] = pick(difficulty === 'easy' ? triples.slice(0, 3) : triples);
-  const askC = Math.random() > 0.3;
+  const askC = randomSource() > 0.3;
   if (askC) {
     return { question: `Right triangle: a = ${a}, b = ${b}. Find c.`, answer: String(c), choices: makeChoices(c, 4, () => randInt(c - 4, c + 4)) };
   } else {
@@ -626,7 +770,8 @@ function genTrig(grade, difficulty) {
   const [opp, adj, hyp] = pick(triples);
   const func = pick(['sin', 'cos', 'tan']);
   const ans = func === 'sin' ? `${opp}/${hyp}` : func === 'cos' ? `${adj}/${hyp}` : `${opp}/${adj}`;
-  return { question: `Right triangle: opposite = ${opp}, adjacent = ${adj}, hypotenuse = ${hyp}. ${func}(θ) = ?`, answer: ans, choices: makeChoices(ans, 4, () => `${pick([opp, adj, hyp])}/${pick([opp, adj, hyp])}`) };
+  const answer = normalizeFraction(...ans.split('/').map(Number), grade);
+  return { question: `Right triangle: opposite = ${opp}, adjacent = ${adj}, hypotenuse = ${hyp}. ${func}(θ) = ?`, answer, choices: makeChoices(answer, 4, () => normalizeFraction(pick([opp, adj, hyp]), pick([opp, adj, hyp]), grade)) };
 }
 
 // ── Grade 10+: Systems of Equations ─────────────────────────────────────
@@ -969,17 +1114,45 @@ function translateToFrench(question) {
 }
 
 function generateQuestion(grade, topic, difficulty) {
+  if (UNSUPPORTED_TOPICS_BY_GRADE[grade]?.has(topic) || !(TOPICS_BY_GRADE[grade] || []).includes(topic)) {
+    const error = new Error(`UNSUPPORTED_TOPIC: ${topic}`);
+    error.code = 'UNSUPPORTED_TOPIC';
+    throw error;
+  }
   const gen = GENERATORS[topic];
-  if (!gen) return genAddSub(grade, difficulty);
-  const q = gen(grade, difficulty);
-  // Attach hint
-  const hintFn = HINTS[topic];
-  q.hint = hintFn ? hintFn(q) : 'Think carefully about the problem.';
-  // Attach steps
-  q.steps = generateSteps(q);
-  // Attach French translation
-  q.questionFr = translateToFrench(q.question);
-  return q;
+  if (!gen) {
+    const error = new Error(`UNSUPPORTED_TOPIC: ${topic}`);
+    error.code = 'UNSUPPORTED_TOPIC';
+    throw error;
+  }
+  let lastError;
+  for (let attempt = 0; attempt < 8; attempt++) {
+    try {
+      const q = gen(grade, difficulty);
+      const hintFn = HINTS[topic];
+      q.hint = hintFn ? hintFn(q) : 'Think carefully about the problem.';
+      q.steps = generateSteps(q);
+      q.questionFr = translateToFrench(q.question);
+      if (QUESTION_QUALITY) {
+        const result = QUESTION_QUALITY.validateQuestion({
+          grade, question: q.question, en: q.question, choices: q.choices, answer: q.answer, hint: q.hint,
+        });
+        if (result.verdict === 'ERROR') {
+          const error = new Error(result.codes.join(',') || 'INVALID_GENERATED_QUESTION');
+          error.code = result.codes[0] || 'INVALID_GENERATED_QUESTION';
+          throw error;
+        }
+      }
+      return q;
+    } catch (error) {
+      lastError = error;
+      if (error && error.code === 'UNSUPPORTED_TOPIC') throw error;
+    }
+  }
+  const error = new Error(`NONTERMINATING_GENERATION: ${lastError?.code || 'INVALID_GENERATED_QUESTION'}`);
+  error.code = lastError?.code === 'INSUFFICIENT_DISTRACTOR_SPACE'
+    ? 'INSUFFICIENT_DISTRACTOR_SPACE' : 'NONTERMINATING_GENERATION';
+  throw error;
 }
 
 // ── ChatGPT practice pool ────────────────────────────────────────────────
@@ -994,6 +1167,7 @@ function loadPracticePool() {
     .then(r => r.ok ? r.json() : Promise.reject('not found'))
     .then(data => {
       if (Array.isArray(data) && data.length > 0) {
+        validatePracticePool(data);
         _practicePool = data;
         console.log('Practice pool loaded:', data.length, 'questions');
       } else {
@@ -1007,15 +1181,33 @@ function getPoolQuestions(grade, topics) {
   if (!_practicePool || _practicePool.length === 0) return [];
   return _practicePool.filter(q =>
     q.grade === grade &&
-    (topics.length === 0 || topics.some(t =>
-      t.toLowerCase().includes(q.topic?.toLowerCase()?.split(' ')[0] || '') ||
-      q.topic?.toLowerCase().includes(t.toLowerCase().split(' ')[0] || '')
-    ))
+    (topics.length === 0 || (POOL_TOPIC_MAP[q.topic] || []).some(topic => topics.includes(topic)))
   );
 }
 
+function validatePracticePool(pool) {
+  if (!Array.isArray(pool)) throw new Error('PRACTICE_POOL_NOT_ARRAY');
+  const counts = new Map();
+  for (const item of pool) {
+    if (!item || !Number.isInteger(item.grade) || item.grade < 1 || item.grade > 12 ||
+      typeof item.topic !== 'string' || !POOL_TOPIC_MAP[item.topic] ||
+      !Array.isArray(item.choices) || item.choices.length !== 4 ||
+      typeof item.question !== 'string' || item.answer == null) {
+      throw new Error('PRACTICE_POOL_SCHEMA');
+    }
+    counts.set(item.grade, (counts.get(item.grade) || 0) + 1);
+    if (!POOL_TOPIC_MAP[item.topic].some(topic => TOPICS_BY_GRADE[item.grade].includes(topic))) {
+      throw new Error('PRACTICE_POOL_UNREACHABLE');
+    }
+  }
+  for (let grade = 1; grade <= 12; grade++) {
+    if (counts.get(grade) !== 5) throw new Error('PRACTICE_POOL_GRADE_COUNT');
+  }
+  return true;
+}
+
 // Auto-load pool on script load
-if (typeof window !== 'undefined') loadPracticePool();
+if (typeof window !== 'undefined' && typeof fetch === 'function') loadPracticePool();
 
 function makePoolQuestion(pq) {
   return {
@@ -1064,3 +1256,11 @@ function generateQuiz(grade, topics, difficulty, count) {
   }
   return shuffle(questions);
 }
+
+const practiceEngineApi = {
+  TOPICS_BY_GRADE, POOL_TOPIC_MAP, getTopicsForGrade, setRandomSource, resetRandomSource,
+  makeChoices, generateQuestion, generateQuiz, getPoolQuestions, validatePracticePool,
+  normalizeFraction,
+};
+if (typeof module !== 'undefined' && module.exports) module.exports = practiceEngineApi;
+if (typeof window !== 'undefined') window.DMKPracticeEngine = practiceEngineApi;
