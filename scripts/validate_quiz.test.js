@@ -1,344 +1,83 @@
-/**
- * Unit tests for quiz answer validation scenarios.
- * Covers: stripped fractions, stripped currency, stripped time,
- * non-integer division, answer-choice mismatch, missing fields.
- *
- * Run with: npm run test:unit
- */
-
-const { execSync } = require('child_process');
+const { execFileSync } = require('child_process');
 const fs = require('fs');
-const path = require('path');
 const os = require('os');
+const path = require('path');
 
-// Helper: run validate_quiz.py's logic via a Python subprocess on inline markdown
-function validateMd(md) {
-  const runnerPath = path.join(os.tmpdir(), '_validate_quiz_runner.py');
+const scripts = __dirname;
+
+function validateMd(md, allowNonvalid = 0) {
+  const runnerPath = path.join(os.tmpdir(), `_validate_quiz_runner_${process.pid}.py`);
+  const quizPath = path.join(os.tmpdir(), `_validate_quiz_${process.pid}.md`);
   const runner = `
-import sys, json
-sys.path.insert(0, r'${path.join(__dirname).replace(/\\/g, '\\\\')}')
-from validate_quiz import parse_questions_from_md, validate_questions
-text = sys.stdin.read()
-questions = parse_questions_from_md(text)
-issues = validate_questions(questions)
-result = [{'level': i.level, 'grade': i.grade, 'qnum': i.qnum, 'msg': i.msg, 'fix': i.fix} for i in issues]
-print(json.dumps(result))
+import json, pathlib, sys
+sys.path.insert(0, r'${scripts.replace(/\\/g, '\\\\')}')
+from validate_quiz import validate_run
+path = pathlib.Path(r'${quizPath.replace(/\\/g, '\\\\')}')
+path.write_text(sys.stdin.read(), encoding='utf-8')
+print(json.dumps(validate_run(path, '2026-01-01', allow_nonvalid=${allowNonvalid})))
 `;
-  fs.writeFileSync(runnerPath, runner, 'utf-8');
+  fs.writeFileSync(runnerPath, runner, 'utf8');
   try {
-    const out = execSync(`python "${runnerPath}"`, {
-      input: md,
-      encoding: 'utf-8',
-      cwd: __dirname,
-    });
-    return JSON.parse(out.trim());
-  } catch (e) {
-    if (e.message && e.message.includes('ENOENT')) return null;
-    throw e;
+    return JSON.parse(execFileSync('python', [runnerPath], { input: md, encoding: 'utf8' }));
+  } finally {
+    fs.rmSync(runnerPath, { force: true });
+    fs.rmSync(quizPath, { force: true });
   }
 }
 
-// Helper: build a minimal markdown question block
-function buildMd({ grade = 'G3', num = 1, difficulty = 'Easy', title = 'Test', en = 'What is 2+2?', fr = 'Combien fait 2+2?', choices = 'A) 3  B) 4  C) 5  D) 6', answer = '4' }) {
-  return `# Daily Math - 2026-01-01
+function question() {
+  return `# Daily Math - fixture
 
-## ${grade}
-${num}. **[${difficulty}] ${title}**
-   - EN: ${en}
-   - FR: ${fr}
-   - Choices: ${choices}
-   - Hint: Think carefully.
+## G3
+1. **[Easy] Addition**
+   - EN: 2 + 2 = ?
+   - FR: 2 + 2 = ?
+   - Choices: A) 4  B) 3  C) 5  D) 6
+   - Hint: Add two different numbers.
    - Steps:
-     - step 1
-     - step 2
-   - Answer: ${answer}
-
-## Today's Encouragement
-Keep it up!
+     - 1 + 1 = 2.
+   - Answer: 4
 `;
 }
 
-describe('Quiz answer validation', () => {
-  // Check if Python is available
-  let pythonAvailable = true;
-  beforeAll(() => {
-    try {
-      execSync('python --version', { encoding: 'utf-8' });
-    } catch {
-      pythonAvailable = false;
-    }
+describe('fail-closed quiz validation', () => {
+  test('valid deterministic question has no question-level errors', () => {
+    const result = validateMd(question());
+    const item = result.questions.find(entry => entry.grade === 'G3');
+    expect(item.verdict).toBe('VALID');
+    expect(item.codes).toEqual([]);
   });
 
-  function skipIfNoPython() {
-    if (!pythonAvailable) return true;
-    return false;
-  }
-
-  describe('Stripped fractions (e.g. 14 instead of 1/4)', () => {
-    it('flags answer "14" when choices contain "1/4"', () => {
-      if (skipIfNoPython()) return;
-      const md = buildMd({
-        en: 'A pizza is cut into 4 equal slices. Emma eats 1. What fraction?',
-        choices: 'A) 1/2  B) 1/3  C) 2/4  D) 1/4',
-        answer: '14',
-      });
-      const issues = validateMd(md);
-      expect(issues.length).toBeGreaterThan(0);
-      const err = issues.find(i => i.level === 'error');
-      expect(err).toBeDefined();
-      expect(err.msg).toMatch(/does not match/i);
-      expect(err.fix).toBe('1/4');
-    });
-
-    it('flags answer "12" when choices contain "1/2"', () => {
-      if (skipIfNoPython()) return;
-      const md = buildMd({
-        en: 'Which is bigger: 1/2 or 1/4?',
-        choices: 'A) 1/4  B) They are equal  C) 1/2  D) Cannot tell',
-        answer: '12',
-      });
-      const issues = validateMd(md);
-      const err = issues.find(i => i.level === 'error');
-      expect(err).toBeDefined();
-      expect(err.fix).toBe('1/2');
-    });
-
-    it('flags answer "34" when choices contain "3/4"', () => {
-      if (skipIfNoPython()) return;
-      const md = buildMd({
-        en: 'What fraction is shaded?',
-        choices: 'A) 1/4  B) 1/2  C) 3/4  D) 2/3',
-        answer: '34',
-      });
-      const issues = validateMd(md);
-      const err = issues.find(i => i.level === 'error');
-      expect(err).toBeDefined();
-      expect(err.fix).toBe('3/4');
-    });
+  test('no correct option blocks publication', () => {
+    const result = validateMd(question().replace('Answer: 4', 'Answer: 9'));
+    expect(result.publication_allowed).toBe(false);
+    expect(result.issues.some(item => item.code === 'NO_CORRECT_OPTION')).toBe(true);
   });
 
-  describe('Stripped currency (e.g. 30 instead of $30)', () => {
-    it('flags answer "30" when choices contain "$30"', () => {
-      if (skipIfNoPython()) return;
-      const md = buildMd({
-        en: 'How much does it cost?',
-        choices: 'A) $20  B) $30  C) $40  D) $50',
-        answer: '30',
-      });
-      const issues = validateMd(md);
-      const err = issues.find(i => i.level === 'error');
-      expect(err).toBeDefined();
-      expect(err.fix).toBe('$30');
-    });
-
-    it('flags answer "675" when choices contain "$6.75"', () => {
-      if (skipIfNoPython()) return;
-      const md = buildMd({
-        en: 'What is the total cost?',
-        choices: 'A) $5.75  B) $6.75  C) $7.25  D) $6.25',
-        answer: '675',
-      });
-      const issues = validateMd(md);
-      const err = issues.find(i => i.level === 'error');
-      expect(err).toBeDefined();
-      expect(err.fix).toBe('$6.75');
-    });
+  test('duplicate choices block publication', () => {
+    const result = validateMd(question().replace('A) 4  B) 3', 'A) 4  B) 4'));
+    expect(result.publication_allowed).toBe(false);
+    expect(result.issues.some(item => item.code === 'DUPLICATE_CHOICES')).toBe(true);
   });
 
-  describe('Stripped time (e.g. 1230 instead of 12:30)', () => {
-    it('flags answer "1230" when choices contain "12:30"', () => {
-      if (skipIfNoPython()) return;
-      const md = buildMd({
-        en: 'What time is half past 12?',
-        choices: 'A) 12:00  B) 12:15  C) 1:00  D) 12:30',
-        answer: '1230',
-      });
-      const issues = validateMd(md);
-      const err = issues.find(i => i.level === 'error');
-      expect(err).toBeDefined();
-      expect(err.fix).toBe('12:30');
-    });
+  test('missing French blocks markdown publication', () => {
+    const result = validateMd(question().replace('   - FR: 2 + 2 = ?\n', ''));
+    expect(result.publication_allowed).toBe(false);
+    expect(result.issues.some(item => item.code === 'MISSING_FIELD')).toBe(true);
   });
 
-  describe('Stripped decimals (e.g. 03 instead of 0.3)', () => {
-    it('flags answer "03" when choices contain "0.3"', () => {
-      if (skipIfNoPython()) return;
-      const md = buildMd({
-        en: 'What is 3 tenths as a decimal?',
-        choices: 'A) 3  B) 0.03  C) 0.3  D) 30',
-        answer: '03',
-      });
-      const issues = validateMd(md);
-      const err = issues.find(i => i.level === 'error');
-      expect(err).toBeDefined();
-      expect(err.fix).toBe('0.3');
-    });
+  test('unsupported question is non-valid and allowance remains fail-closed by default', () => {
+    const unsupported = question().replace('2 + 2 = ?', 'Explain why numbers exist.');
+    const result = validateMd(unsupported);
+    expect(result.publication_allowed).toBe(false);
+    expect(result.issues.some(item => item.code === 'UNVERIFIED')).toBe(true);
   });
 
-  describe('Answer matches no choice at all', () => {
-    it('flags answer "99" that does not match any choice', () => {
-      if (skipIfNoPython()) return;
-      const md = buildMd({
-        en: 'What is 5 + 3?',
-        choices: 'A) 7  B) 8  C) 9  D) 6',
-        answer: '99',
-      });
-      const issues = validateMd(md);
-      const err = issues.find(i => i.level === 'error');
-      expect(err).toBeDefined();
-      expect(err.msg).toMatch(/does not match any choice/);
-    });
-  });
-
-  describe('Correct answers pass validation', () => {
-    it('no issues for correct integer answer', () => {
-      if (skipIfNoPython()) return;
-      const md = buildMd({
-        en: 'What is 2 + 2?',
-        choices: 'A) 3  B) 4  C) 5  D) 6',
-        answer: '4',
-      });
-      const issues = validateMd(md);
-      expect(issues.length).toBe(0);
-    });
-
-    it('no issues for correct fraction answer', () => {
-      if (skipIfNoPython()) return;
-      const md = buildMd({
-        en: 'What fraction is 1 out of 4?',
-        choices: 'A) 1/2  B) 1/3  C) 1/4  D) 2/4',
-        answer: '1/4',
-      });
-      const issues = validateMd(md);
-      expect(issues.length).toBe(0);
-    });
-
-    it('no issues for correct currency answer', () => {
-      if (skipIfNoPython()) return;
-      const md = buildMd({
-        en: 'What is the total?',
-        choices: 'A) $10  B) $20  C) $30  D) $40',
-        answer: '$20',
-      });
-      const issues = validateMd(md);
-      expect(issues.length).toBe(0);
-    });
-
-    it('no issues for correct time answer', () => {
-      if (skipIfNoPython()) return;
-      const md = buildMd({
-        en: 'What time?',
-        choices: 'A) 3:00  B) 3:30  C) 4:00  D) 4:30',
-        answer: '3:30',
-      });
-      const issues = validateMd(md);
-      expect(issues.length).toBe(0);
-    });
-  });
-});
-
-describe('All grades coverage check', () => {
-  const ALL_GRADES = ['G1','G2','G3','G4','G5','G6','G7','G8','G9','G10','G11','G12'];
-  const DAILY_DIR = path.join(__dirname, '..', 'daily');
-
-  function getTodayFile() {
-    const today = new Date().toISOString().slice(0, 10);
-    const htmlPath = path.join(DAILY_DIR, `${today}.html`);
-    if (fs.existsSync(htmlPath)) return htmlPath;
-    // Find the most recent quiz file
-    const files = fs.readdirSync(DAILY_DIR)
-      .filter(f => f.endsWith('.html') && /^\d{4}-\d{2}-\d{2}\.html$/.test(f))
-      .sort()
-      .reverse();
-    return files.length ? path.join(DAILY_DIR, files[0]) : null;
-  }
-
-  it('latest quiz HTML has all 12 grades (G1-G12)', () => {
-    const quizFile = getTodayFile();
-    if (!quizFile) { console.warn('No quiz HTML found — skipping'); return; }
-    const html = fs.readFileSync(quizFile, 'utf-8');
-    const foundGrades = [];
-    for (const g of ALL_GRADES) {
-      if (html.includes(`data-grade="${g}"`)) foundGrades.push(g);
-    }
-    const missing = ALL_GRADES.filter(g => !foundGrades.includes(g));
-    expect(missing).toEqual([]);
-  });
-
-  it('each grade has at least 10 questions', () => {
-    const quizFile = getTodayFile();
-    if (!quizFile) { console.warn('No quiz HTML found — skipping'); return; }
-    const html = fs.readFileSync(quizFile, 'utf-8');
-    const tooFew = [];
-    for (const g of ALL_GRADES) {
-      const regex = new RegExp(`data-grade="${g}"[^>]*>[\\s\\S]*?<ol class="problems-list">([\\s\\S]*?)</ol>`, 'm');
-      const match = html.match(regex);
-      if (!match) { tooFew.push(`${g}: missing`); continue; }
-      // Count problems by Answer fields (one per question)
-      const count = (match[1].match(/<li>Answer:/g) || []).length;
-      if (count < 10) tooFew.push(`${g}: only ${count} questions`);
-    }
-    expect(tooFew).toEqual([]);
-  });
-
-  it('every question has an Answer field', () => {
-    const quizFile = getTodayFile();
-    if (!quizFile) { console.warn('No quiz HTML found — skipping'); return; }
-    const html = fs.readFileSync(quizFile, 'utf-8');
-    const missing = [];
-    for (const g of ALL_GRADES) {
-      const regex = new RegExp(`data-grade="${g}"[^>]*>[\\s\\S]*?<ol class="problems-list">([\\s\\S]*?)</ol>`, 'm');
-      const match = html.match(regex);
-      if (!match) continue;
-      const answers = (match[1].match(/<li>Answer:/g) || []).length;
-      if (answers < 10) missing.push(`${g}: only ${answers} answers (need 10)`);
-    }
-    expect(missing).toEqual([]);
-  });
-});
-
-describe('Nested Answer line inside Steps (2026-07-05 regression)', () => {
-  let pythonAvailable = true;
-  beforeAll(() => {
-    try {
-      execSync('python --version', { encoding: 'utf-8' });
-    } catch {
-      pythonAvailable = false;
-    }
-  });
-
-  it('warns when a question has an extra "- Answer:" line inside Steps', () => {
-    if (!pythonAvailable) return;
-    const md = `# Daily Math - 2026-01-01
-
-## G4
-1. **[Medium] Decimal Operations**
-   - EN: What is 2.5 + 1.3?
-   - FR: Combien font 2,5 + 1,3?
-   - Choices: A) 3.5  B) 3.7  C) 3.8  D) 4.0
-   - Hint: Line up the decimal points.
-   - Steps:
-     - Ones: 2 + 1 = 3.
-     - Tenths: 5 + 3 = 8.
-     - Answer: 3.8
-   - Answer: 3.8
-
-## Today's Encouragement
-Keep it up!
-`;
-    const issues = validateMd(md);
-    if (!issues) return;
-    const nested = issues.filter(i => /Answer:' lines found/.test(i.msg));
-    expect(nested).toHaveLength(1);
-    expect(nested[0].level).toBe('warning');
-  });
-
-  it('does not warn on a normal question with a single Answer line', () => {
-    if (!pythonAvailable) return;
-    const md = buildMd({ answer: '4' });
-    const issues = validateMd(md);
-    if (!issues) return;
-    const nested = issues.filter(i => /Answer:' lines found/.test(i.msg));
-    expect(nested).toHaveLength(0);
+  test('validator reports errors without a fix or content mutation', () => {
+    const source = question().replace('Answer: 4', 'Answer: 44');
+    const result = validateMd(source);
+    expect(result.publication_allowed).toBe(false);
+    expect(result.issues.some(item => item.code === 'NO_CORRECT_OPTION')).toBe(true);
+    expect(source).toBe(question().replace('Answer: 4', 'Answer: 44'));
   });
 });

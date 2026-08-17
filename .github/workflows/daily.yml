@@ -1,7 +1,8 @@
 name: Daily Math
+
 on:
   schedule:
-    - cron: "0 8 * * *"    # 08:00 UTC = 5:00 AM Moncton (ADT, summer)
+    - cron: "0 8 * * *"
   workflow_dispatch: {}
 
 jobs:
@@ -11,6 +12,7 @@ jobs:
       contents: write
     env:
       PYTHONUNBUFFERED: "1"
+
     steps:
       - uses: actions/checkout@v4
 
@@ -19,12 +21,12 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install deps
+      - name: Install generation dependencies
         run: |
           pip install --upgrade pip
           pip install "openai==1.43.0" "anthropic>=0.30" "httpx>=0.25,<1" "httpcore>=0.17,<1" markdown2
 
-      - name: Generate today's page (and rebuild index+sitemap)
+      - name: Generate candidate quiz
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -34,77 +36,36 @@ jobs:
           PUBLIC_API_BASE: "https://dailymathforkids-api.vercel.app"
         run: python scripts/gen_site.py
 
-      - name: Validate and auto-fix quiz answers
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+      - name: Validate candidate before publication
         run: |
-          echo "=== Step 1: Auto-fix any stripped answers ==="
-          python scripts/validate_quiz.py --fix || true
+          TODAY=$(python -c 'import sys; sys.path.insert(0, "scripts"); from gen_site import quiz_date_today; print(quiz_date_today())')
+          python scripts/validate_quiz.py "$TODAY" --result-file data/validation/today.json
 
-          echo ""
-          echo "=== Step 2: Check if errors remain ==="
-          if ! python scripts/validate_quiz.py 2>&1; then
-            echo ""
-            echo "⚠️ Errors found after auto-fix. Retrying generation..."
-            python scripts/gen_site.py || true
-            echo ""
-            echo "=== Step 3: Auto-fix the regenerated version ==="
-            python scripts/validate_quiz.py --fix || true
-          fi
-
-          echo ""
-          echo "=== Final validation (deploy regardless — kids must get their quiz) ==="
-          python scripts/validate_quiz.py || true
-
-      - name: Ensure all 12 grades are present (retry up to 3 times if any missing)
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
-          SITE_TITLE: "Daily Math for Kids"
-          PUBLIC_API_BASE: "https://dailymathforkids-api.vercel.app"
+      - name: Run Python and JavaScript conformance twins
         run: |
-          TODAY=$(date +%Y-%m-%d)
-          FILE="daily/${TODAY}.html"
-          for ATTEMPT in 1 2 3; do
-            if [ ! -f "$FILE" ]; then
-              echo "⚠️ Attempt $ATTEMPT: No quiz file — generating..."
-              python scripts/gen_site.py || true
-              continue
-            fi
-            MISSING=""
-            for G in G1 G2 G3 G4 G5 G6 G7 G8 G9 G10 G11 G12; do
-              if ! grep -q "data-grade=\"$G\"" "$FILE"; then
-                MISSING="$MISSING $G"
-              fi
-            done
-            if [ -z "$MISSING" ]; then
-              echo "✅ All 12 grades present in today's quiz."
-              break
-            fi
-            echo "⚠️ Attempt $ATTEMPT: Missing grades:$MISSING — deleting and regenerating..."
-            rm -f "$FILE" "daily/${TODAY}.md"
-            python scripts/gen_site.py || true
-          done
+          mkdir -p data/conformance
+          python scripts/run_conformance.py --output data/conformance/python.json
+          node scripts/run-conformance.js --output data/conformance/javascript.json
+          cmp --silent data/conformance/python.json data/conformance/javascript.json
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
-      - name: Run unit tests (grade coverage, answer validation)
+      - name: Run frontend unit tests
         run: |
           npm install --no-audit --no-fund
-          npx jest scripts/validate_quiz.test.js --verbose || true
+          npm run test:unit
 
-      - name: Commit & push (even if nothing changed)
+      - name: Commit and push validated quiz
         run: |
           git config user.name "github-actions"
           git config user.email "actions@users.noreply.github.com"
-          git add -A
-          git commit -m "daily: generate & rebuild (5am ADT, bilingual, hints/steps, encouragement, story)" || git commit --allow-empty -m "daily: refresh"
-          git push
+          git add daily index.html sitemap.xml data/latest.json data/validation/today.json
+          if ! git diff --cached --quiet; then
+            git commit -m "daily: publish validated quiz"
+            git push
+          else
+            echo "No validated quiz changes to commit."
+          fi

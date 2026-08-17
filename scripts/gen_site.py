@@ -1,4 +1,11 @@
-import os, pathlib, datetime, sys, re
+import os, pathlib, datetime, sys, re, json
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
+SCRIPT_DIR = pathlib.Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+from validate_quiz import validate_run
 
 try:
     import markdown2
@@ -18,10 +25,39 @@ except Exception:
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DAILY_DIR = ROOT / "daily"
 DAILY_DIR.mkdir(parents=True, exist_ok=True)
+LATEST_MARKER = ROOT / "data" / "latest.json"
 
 TITLE       = os.getenv("SITE_TITLE", "Daily Math for Kids")
 PUBLIC_API  = os.getenv("PUBLIC_API_BASE", "https://dailymathforkids-api.vercel.app").rstrip("/")
 GRADE_CODES = ["G1","G2","G3","G4","G5","G6","G7","G8","G9","G10","G11","G12"]
+try:
+    QUIZ_TIMEZONE = ZoneInfo("America/Moncton")
+except ZoneInfoNotFoundError:
+    QUIZ_TIMEZONE = None
+
+
+def quiz_date_today():
+    now = datetime.datetime.now(datetime.timezone.utc)
+    if QUIZ_TIMEZONE is not None:
+        return now.astimezone(QUIZ_TIMEZONE).date().isoformat()
+    year = now.year
+    march = datetime.date(year, 3, 1)
+    march_second_sunday = march + datetime.timedelta(days=(6 - march.weekday()) % 7 + 7)
+    november = datetime.date(year, 11, 1)
+    november_first_sunday = november + datetime.timedelta(days=(6 - november.weekday()) % 7)
+    daylight_start = datetime.datetime.combine(
+        march_second_sunday, datetime.time(7, 0), tzinfo=datetime.timezone.utc
+    )
+    daylight_end = datetime.datetime.combine(
+        november_first_sunday, datetime.time(6, 0), tzinfo=datetime.timezone.utc
+    )
+    offset = datetime.timedelta(hours=-3 if daylight_start <= now < daylight_end else -4)
+    return (now + offset).date().isoformat()
+
+
+def write_latest_marker(date_str):
+    LATEST_MARKER.parent.mkdir(parents=True, exist_ok=True)
+    LATEST_MARKER.write_text(json.dumps({"date": date_str}, indent=2) + "\n", encoding="utf-8")
 
 HELPERS_JS = r"""
 <script>
@@ -166,170 +202,6 @@ HELPERS_JS = r"""
 </script>
 """
 
-def auto_fix_answers(text):
-    """Auto-fix common LLM answer mistakes: stripped fractions, currency, time, decimals, units, partial expressions."""
-    lines = text.split('\n')
-    fixed_count = 0
-
-    for i, line in enumerate(lines):
-        ans_match = re.match(r'^(\s*-\s*Answer:\s*)(.+?)\s*$', line)
-        if not ans_match:
-            continue
-        prefix = ans_match.group(1)
-        answer = ans_match.group(2).strip()
-
-        # Look backwards for the Choices line
-        choices_line = None
-        for j in range(i - 1, max(i - 10, -1), -1):
-            if re.match(r'^\s*-\s*Choices:', lines[j]):
-                choices_line = lines[j]
-                break
-
-        if not choices_line:
-            continue
-
-        # Parse choice values
-        choices_part = re.sub(r'^\s*-\s*Choices:\s*', '', choices_line)
-        choice_values = []
-        for part in re.split(r'\s{2,}(?=[A-D]\))', choices_part.strip()):
-            m = re.match(r'[A-D]\)\s*(.+)', part.strip())
-            if m:
-                choice_values.append(m.group(1).strip())
-
-        # If answer already matches a choice, no fix needed
-        if answer in choice_values:
-            continue
-
-        # Smart matching: strip trailing punctuation, match with units, partial expressions
-        cleaned = answer.rstrip('.,;:')
-        fixed = None
-
-        # Direct match after stripping punctuation
-        if cleaned in choice_values:
-            fixed = cleaned
-        else:
-            for cv in choice_values:
-                if cleaned.lower() == cv.lower():
-                    fixed = cv
-                    break
-
-        # Numeric prefix with units: "17" -> "17 cents"
-        if not fixed:
-            for cv in choice_values:
-                if re.match(r'^' + re.escape(cleaned) + r'\s', cv):
-                    fixed = cv
-                    break
-
-        # Partial expression: "x" -> "x = 4" (only if unique match)
-        if not fixed:
-            candidates = [cv for cv in choice_values if cv.startswith(cleaned)]
-            if len(candidates) == 1:
-                fixed = candidates[0]
-
-        # Strip special chars from choice: "14" -> "1/4"
-        if not fixed:
-            for cv in choice_values:
-                stripped = re.sub(r'[$/:.,¢°%]', '', cv)
-                if stripped == cleaned or stripped == answer:
-                    fixed = cv
-                    break
-
-        # Numeric match with unit suffix stripped from choice
-        if not fixed:
-            for cv in choice_values:
-                cv_no_units = re.sub(r'\s*(cm²|cm³|cm|m²|m³|m|km/h|km|mm|kg|g|ml|L|cents?|hours?|minutes?|seconds?|pts?|°)\s*$', '', cv, flags=re.IGNORECASE).strip()
-                if cv_no_units == cleaned or cv_no_units.lower() == cleaned.lower():
-                    fixed = cv
-                    break
-
-        if fixed:
-            lines[i] = f"{prefix}{fixed}"
-            fixed_count += 1
-            print(f"  AUTO-FIX: Answer '{answer}' -> '{fixed}'")
-
-    if fixed_count:
-        print(f"INFO: Auto-fixed {fixed_count} answer(s)")
-    return '\n'.join(lines)
-
-
-def replace_grade_section(text, code, new_content):
-    """Replace the content of a single '## {code}' section in the full markdown text."""
-    pattern = rf'(## {re.escape(code)}\n).*?(?=\n## |\Z)'
-    cleaned = new_content.strip() + '\n'
-    new_text, n = re.subn(pattern, lambda m: m.group(1) + cleaned, text, count=1, flags=re.DOTALL)
-    return new_text if n else text
-
-
-def review_and_fix_quiz(text, max_rounds=1):
-    """Second AI review pass: re-validate the generated quiz and ask the LLM to
-    fix ONLY the grades/questions flagged as errors, before publishing.
-    This catches mistakes (wrong answers, ambiguous choices, truncated
-    questions, etc.) that auto_fix_answers can't repair automatically.
-    """
-    try:
-        from validate_quiz import parse_questions_from_md, validate_questions
-    except Exception as e:
-        print(f"INFO: Review pass skipped (validate_quiz unavailable: {e})")
-        return text
-
-    for round_num in range(1, max_rounds + 1):
-        questions = parse_questions_from_md(text)
-        issues = validate_questions(questions)
-        errors = [i for i in issues if i.level == 'error']
-        if not errors:
-            print("INFO: Review pass — no errors found, quiz looks good.")
-            return text
-
-        affected_grades = sorted(set(i.grade for i in errors), key=lambda g: GRADE_CODES.index(g) if g in GRADE_CODES else 99)
-        print(f"INFO: Review pass round {round_num} — found {len(errors)} error(s) in grades {affected_grades}. Requesting fixes...")
-
-        grade_sections = parse_grade_sections(text)
-        issue_lines = "\n".join(f"- {i.grade} Q{i.qnum}: {i.msg}" for i in errors[:30])
-        sections_text = "\n\n".join(f"## {g}\n{grade_sections.get(g, '')}" for g in affected_grades)
-
-        fix_prompt = f"""You previously generated math problems for a kids' quiz site. A validator found
-mistakes in the following grade section(s). Fix ONLY the specific problems mentioned in the
-issues below. Keep everything else (format, other problems in the same grade) unchanged.
-Output the corrected grade section(s) in EXACTLY the same markdown format as given, with the
-same '## {{GRADE}}' headers, same number of problems per grade, and each problem must keep its
-[Easy]/[Medium]/[Hard] tag, EN/FR lines, Choices, Hint, Steps, and exactly ONE Answer line.
-
-ISSUES FOUND:
-{issue_lines}
-
-CURRENT SECTION(S) TO FIX:
-{sections_text}
-
-Output ONLY the corrected '## {{GRADE}}' section(s), nothing else — no explanations."""
-
-        fixed_text = call_llm(fix_prompt)
-        if not fixed_text:
-            print("WARN: Review pass — LLM returned no fix; keeping original.")
-            return text
-
-        fixed_text = auto_fix_answers(fixed_text)
-        fixed_sections = parse_grade_sections(fixed_text)
-        if not fixed_sections:
-            print("WARN: Review pass — could not parse fixed sections; keeping original.")
-            return text
-
-        for g, content in fixed_sections.items():
-            if content.strip():
-                text = replace_grade_section(text, g, content)
-
-    # Final check after last round
-    questions = parse_questions_from_md(text)
-    issues = validate_questions(questions)
-    remaining = [i for i in issues if i.level == 'error']
-    if remaining:
-        print(f"WARN: Review pass — {len(remaining)} error(s) remain after {max_rounds} round(s):")
-        for i in remaining[:10]:
-            print(f"  - [{i.grade} Q{i.qnum}] {i.msg}")
-    else:
-        print("INFO: Review pass — all errors fixed.")
-    return text
-
-
 def parse_grade_sections(text):
     sections = {}
     for code in GRADE_CODES:
@@ -423,6 +295,21 @@ def call_llm(prompt):
         return None
 
 
+def build_missing_grade_prompt(prompt, missing):
+    """Constrain a retry to grades absent from the candidate output."""
+    requested = ", ".join(missing)
+    replacement = f"You MUST generate ONLY these grades: {requested} — exactly 10 problems each."
+    updated, count = re.subn(
+        r"You MUST generate ALL 12 grades \(G1 through G12\)[^\n]*",
+        replacement,
+        prompt,
+        count=1,
+    )
+    if count:
+        return updated
+    return prompt + f"\n\nOVERRIDE: Generate ONLY these missing grades: {requested}. Do not generate any other grade.\n"
+
+
 def safe_generate_today():
     anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
     openai_key = os.environ.get("OPENAI_API_KEY", "").strip()
@@ -430,12 +317,17 @@ def safe_generate_today():
         print("INFO: Skipping generation (no API key found for Anthropic or OpenAI).")
         return
 
-    today = datetime.date.today().isoformat()
+    today = quiz_date_today()
     slug = today
     md_path = DAILY_DIR / f"{slug}.md"
     html_path = DAILY_DIR / f"{slug}.html"
 
     if html_path.exists() and html_path.stat().st_size > 1000:
+        if md_path.exists():
+            validation = validate_run(md_path, today)
+            if not validation["publication_allowed"]:
+                print("ERROR: Existing quiz is not publishable; preserving it and skipping upsert.", file=sys.stderr)
+                return
         print(f"INFO: {html_path.name} already exists ({html_path.stat().st_size} bytes) — skipping OpenAI generation.")
         if md_path.exists():
             text = md_path.read_text(encoding="utf-8")
@@ -445,6 +337,7 @@ def safe_generate_today():
                 if content:
                     qs, ans = extract_qa_pairs(content)
                     upsert_quiz_to_supabase(f"{today}-{code}", qs, ans)
+            write_latest_marker(today)
         rebuild_index_and_sitemap()
         return
 
@@ -606,21 +499,14 @@ FINAL CHECK before outputting: Verify you have 12 grade sections (G1-G12), each 
             print("WARN: LLM returned empty text; skipping page write.")
             return
 
-        # Auto-fix common LLM answer issues before saving
-        text = auto_fix_answers(text)
-
         # Check for missing grades and retry if needed
         grade_sections = parse_grade_sections(text)
         missing = [g for g in GRADE_CODES if not grade_sections.get(g, "").strip()]
         if missing:
             print(f"WARN: LLM output missing {len(missing)} grades: {missing}. Retrying for missing grades...")
-            missing_prompt = prompt.replace(
-                "For ALL grades: generate exactly 10 problems each",
-                f"For ONLY these grades: {', '.join(missing)} — generate exactly 10 problems each"
-            )
+            missing_prompt = build_missing_grade_prompt(prompt, missing)
             extra_text = call_llm(missing_prompt)
             if extra_text:
-                extra_text = auto_fix_answers(extra_text)
                 text = text.rstrip() + "\n\n" + extra_text.strip()
                 grade_sections = parse_grade_sections(text)
                 still_missing = [g for g in GRADE_CODES if not grade_sections.get(g, "").strip()]
@@ -629,13 +515,22 @@ FINAL CHECK before outputting: Verify you have 12 grade sections (G1-G12), each 
                 else:
                     print(f"INFO: All 12 grades now present after retry.")
 
-        # Second AI review pass: fix any validation errors before publishing
-        text = review_and_fix_quiz(text)
-
+        old_md = md_path.read_bytes() if md_path.exists() else None
+        old_html = html_path.read_bytes() if html_path.exists() else None
         md_path.write_text(text + "\n", encoding="utf-8")
-
         page_html = generate_html_from_text(text, today)
         html_path.write_text(page_html, encoding="utf-8")
+        validation = validate_run(md_path, today)
+        if not validation["publication_allowed"]:
+            if old_md is None:
+                md_path.unlink(missing_ok=True)
+            else:
+                md_path.write_bytes(old_md)
+            if old_html is None:
+                html_path.unlink(missing_ok=True)
+            else:
+                html_path.write_bytes(old_html)
+            raise RuntimeError("Generated quiz failed validation; previous known-good content was preserved")
         print(f"INFO: Wrote {html_path}")
 
         grade_sections = parse_grade_sections(text)
@@ -644,6 +539,7 @@ FINAL CHECK before outputting: Verify you have 12 grade sections (G1-G12), each 
             if content:
                 qs, ans = extract_qa_pairs(content)
                 upsert_quiz_to_supabase(f"{today}-{code}", qs, ans)
+        write_latest_marker(today)
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -852,9 +748,25 @@ def rebuild_index_and_sitemap():
         key=lambda p: p.name, reverse=True
     )
     latest = pages[0].stem if pages else None
+    if LATEST_MARKER.exists():
+        try:
+            marker_date = json.loads(LATEST_MARKER.read_text(encoding="utf-8")).get("date")
+            if marker_date and (DAILY_DIR / f"{marker_date}.html").exists():
+                latest = marker_date
+        except (OSError, ValueError, TypeError):
+            pass
     today_link = f"daily/{latest}.html" if latest else None
+    today = quiz_date_today()
+    is_current = bool(latest and latest == today)
+    stale_notice = (
+        f"<p class='latest-available' role='status'>Latest available quiz — {latest}<br>"
+        "Today's new quiz is still being prepared. You can practise with the latest available quiz below.</p>"
+        if latest and not is_current else ""
+    )
     latest_link_html = (
-        f"<a href='{today_link}'>Open today's problems</a>"
+        f"<a href='{today_link}'>"
+        f"{'Open today&#39;s problems' if is_current else f'Open quiz for {latest}'}"
+        "</a>"
         if today_link else "First problems arrive after the first daily run."
     )
     recent_items = (
@@ -880,7 +792,8 @@ def rebuild_index_and_sitemap():
     <section class="hero">
       <h1>Practice a little every day</h1>
       <p>Five math problems posted daily across <strong>Grades 1–12</strong> — aligned to the Canadian curriculum. Simple, positive, and <strong>free</strong>.</p>
-      <p id="latest-link"><strong>Latest:</strong> {latest_link_html}</p>
+      <p id="latest-link"><strong>{'Latest:' if is_current else f'Latest: {latest}'}</strong> {latest_link_html}</p>
+      {stale_notice}
       <p id="join-cta" style="margin-top:10px">
         <button onclick="showRegModal()" style="font-size:1rem;padding:12px 22px">Join Free &amp; Track Your Progress</button>
       </p>

@@ -1,473 +1,318 @@
-"""
-Post-generation quiz validator.
-Runs after gen_site.py to catch common LLM errors before publishing.
+"""Fail-closed daily quiz validator.
 
-Checks:
-1. Answer must exactly match one of the choice values
-2. Fractions must contain '/' (catches 14 instead of 1/4)
-3. Division problems must have integer answers
-4. Answer must be a reasonable number (not absurdly large)
-5. No duplicate questions within a grade
-6. All required fields present (EN, FR, Choices, Answer)
-
-Usage:
-  python scripts/validate_quiz.py                  # validate today
-  python scripts/validate_quiz.py 2026-06-25       # validate specific date
-  python scripts/validate_quiz.py --fix            # auto-fix and write corrections to file
-  python scripts/validate_quiz.py --strict         # exit code 2 if any errors (blocks deploy)
-  python scripts/validate_quiz.py --fix --strict   # fix first, then block if unfixable remain
-
-Exit code 0 = all good, 1 = warnings only, 2 = errors found
+Validation is comparison-only: this command never rewrites quiz content.
+The mathematical implementation lives in question_quality.py and is shared
+with the conformance runner, not with the client-side answer display code.
 """
 
-import re, sys, pathlib, datetime
+from __future__ import annotations
+
+import argparse
+import datetime as dt
+import html
+import json
+import pathlib
+import re
+import sys
+from dataclasses import dataclass
+from typing import Any
+
+SCRIPT_DIR = pathlib.Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+from question_quality import equivalent_strings, normal_text, validate_question
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DAILY_DIR = ROOT / "daily"
+GRADE_CODES = [f"G{i}" for i in range(1, 13)]
+EXPECTED_DIFFICULTIES = {"Easy": 4, "Medium": 4, "Hard": 2}
 
 
-def parse_questions_from_md(md_text):
-    """Parse questions from the raw markdown text."""
-    questions = []
-    # Split by grade sections
-    grade_pattern = re.compile(r'## (G\d+)\n(.*?)(?=\n## |\Z)', re.DOTALL)
+@dataclass
+class Issue:
+    level: str
+    grade: str
+    qnum: int
+    msg: str
+    code: str = ""
+    fix: None = None
 
-    for match in grade_pattern.finditer(md_text):
-        grade = match.group(1)
-        content = match.group(2)
-
-        # Find each question block
-        q_pattern = re.compile(
-            r'\d+\.\s*\*\*\[(\w+)\]\s*(.*?)\*\*\s*\n'
-            r'(.*?)(?=\n\d+\.\s*\*\*|\Z)',
-            re.DOTALL
-        )
-
-        for qi, qm in enumerate(q_pattern.finditer(content), 1):
-            difficulty = qm.group(1)
-            title = qm.group(2)
-            body = qm.group(3)
-
-            en = _extract(body, r'-\s*EN:\s*(.+)')
-            fr = _extract(body, r'-\s*FR:\s*(.+)')
-            choices_raw = _extract(body, r'-\s*Choices:\s*(.+)')
-            # The real Answer line comes last; the LLM sometimes writes an
-            # extra '- Answer:' inside Steps, which must not be picked up.
-            answer_matches = re.findall(r'-\s*Answer:\s*(.+)', body)
-            answer = answer_matches[-1].strip() if answer_matches else None
-            hint = _extract(body, r'-\s*Hint:\s*(.+)')
-
-            choices = parse_choices(choices_raw) if choices_raw else []
-
-            questions.append({
-                'grade': grade,
-                'num': qi,
-                'difficulty': difficulty,
-                'title': title.strip(),
-                'en': en,
-                'fr': fr,
-                'choices_raw': choices_raw,
-                'choices': choices,
-                'answer': answer,
-                'answer_line_count': len(answer_matches),
-                'hint': hint,
-            })
-
-    return questions
+    def __str__(self) -> str:
+        return f"[{self.level.upper()}] [{self.grade} Q{self.qnum}] {self.msg}"
 
 
-def parse_questions_from_html(html_text):
-    """Parse questions from the generated HTML file."""
-    questions = []
-
-    # Find grade sections
-    grade_sections = re.finditer(
-        r'<div class="grade-section" data-grade="(G\d+)"[^>]*>(.*?)</div>\s*(?=<div class="grade-section"|<h2>Today)',
-        html_text, re.DOTALL
-    )
-
-    for gs in grade_sections:
-        grade = gs.group(1)
-        section_html = gs.group(2)
-
-        # Find each <li> problem
-        problems = re.finditer(r'<li><p><strong>(.*?)</strong></p>\s*<ul>(.*?)</ul></li>', section_html, re.DOTALL)
-
-        for qi, pm in enumerate(problems, 1):
-            title = pm.group(1)
-            body = pm.group(2)
-
-            # Strip HTML tags for text extraction
-            en = _extract_html(body, r'<li>EN:\s*(.*?)</li>')
-            fr = _extract_html(body, r'<li>FR:\s*(.*?)</li>')
-            choices_raw = _extract_html(body, r'<li>Choices:\s*(.*?)</li>')
-            answer = _extract_html(body, r'<li>Answer:\s*(.*?)</li>')
-
-            choices = parse_choices(choices_raw) if choices_raw else []
-
-            # Extract difficulty
-            diff_match = re.search(r'\[(Easy|Medium|Hard)\]', title, re.IGNORECASE)
-            difficulty = diff_match.group(1) if diff_match else 'unknown'
-
-            questions.append({
-                'grade': grade,
-                'num': qi,
-                'difficulty': difficulty,
-                'title': re.sub(r'\[(?:Easy|Medium|Hard)\]\s*', '', title).strip(),
-                'en': en,
-                'fr': fr,
-                'choices_raw': choices_raw,
-                'choices': choices,
-                'answer': answer,
-            })
-
-    return questions
+def _extract(text: str, pattern: str) -> str | None:
+    match = re.search(pattern, text, re.MULTILINE)
+    return match.group(1).strip() if match else None
 
 
-def parse_choices(choices_str):
-    """Parse 'A) val  B) val  C) val  D) val' into list of values."""
+def _extract_html(text: str, pattern: str) -> str | None:
+    match = re.search(pattern, text, re.DOTALL | re.IGNORECASE)
+    return html.unescape(re.sub(r"<[^>]+>", "", match.group(1))).strip() if match else None
+
+
+def parse_choices(choices_str: str | None) -> list[str]:
     if not choices_str:
         return []
-    parts = re.split(r'\s{2,}(?=[A-D]\))', choices_str.strip())
-    values = []
-    for p in parts:
-        m = re.match(r'[A-D]\)\s*(.+)', p.strip())
-        if m:
-            values.append(m.group(1).strip())
+    parts = re.split(r"\s{2,}(?=[A-D]\))", choices_str.strip(), flags=re.I)
+    values: list[str] = []
+    for part in parts:
+        match = re.match(r"[A-D]\)\s*(.+)", part.strip(), re.I)
+        if match:
+            values.append(match.group(1).strip())
     return values
 
 
-def _extract(text, pattern):
-    m = re.search(pattern, text, re.MULTILINE)
-    return m.group(1).strip() if m else None
+def parse_questions_from_md(md_text: str) -> list[dict[str, Any]]:
+    questions: list[dict[str, Any]] = []
+    grade_pattern = re.compile(r"^##\s+(G\d+)\s*$([\s\S]*?)(?=^##\s+|\Z)", re.MULTILINE)
+    q_pattern = re.compile(
+        r"^\s*(\d+)\.\s*\*\*\[([^\]]+)\]\s*(.*?)\*\*\s*$"
+        r"([\s\S]*?)(?=^\s*\d+\.\s*\*\*|\Z)",
+        re.MULTILINE,
+    )
+    for grade_match in grade_pattern.finditer(md_text):
+        grade, content = grade_match.group(1), grade_match.group(2)
+        for q_match in q_pattern.finditer(content):
+            qnum, difficulty, title, body = q_match.groups()
+            answer_matches = re.findall(r"^\s*-\s*Answer:\s*(.+)$", body, re.MULTILINE)
+            choices_raw = _extract(body, r"^\s*-\s*Choices:\s*(.+)$")
+            en = _extract(body, r"^\s*-\s*EN:\s*(.+)$")
+            fr = _extract(body, r"^\s*-\s*FR:\s*(.+)$")
+            hint = _extract(body, r"^\s*-\s*Hint:\s*(.+)$")
+            questions.append({
+                "grade": grade, "num": int(qnum), "difficulty": difficulty.title(),
+                "title": title.strip(), "question": en or "", "en": en, "fr": fr,
+                "choices_raw": choices_raw, "choices": parse_choices(choices_raw),
+                "answer": answer_matches[-1].strip() if answer_matches else None,
+                "answer_line_count": len(answer_matches), "hint": hint,
+            })
+    return questions
 
 
-def _extract_html(text, pattern):
-    m = re.search(pattern, text, re.DOTALL)
-    return m.group(1).strip() if m else None
+def parse_questions_from_html(html_text: str) -> list[dict[str, Any]]:
+    questions: list[dict[str, Any]] = []
+    grade_pattern = re.compile(
+        r'<div class="grade-section" data-grade="(G\d+)"[^>]*>([\s\S]*?)(?=<div class="grade-section"|<h2>Today|</main>)',
+        re.I,
+    )
+    problem_pattern = re.compile(r"<li><p><strong>(.*?)</strong></p>\s*<ul>([\s\S]*?)</ul></li>", re.I)
+    for grade_match in grade_pattern.finditer(html_text):
+        grade, section = grade_match.groups()
+        for qnum, problem in enumerate(problem_pattern.finditer(section), 1):
+            title_html, body = problem.groups()
+            title = html.unescape(re.sub(r"<[^>]+>", "", title_html)).strip()
+            diff_match = re.search(r"\[(Easy|Medium|Hard)\]", title, re.I)
+            difficulty = diff_match.group(1).title() if diff_match else "Unknown"
+            choices_raw = _extract_html(body, r"<li>Choices:\s*(.*?)</li>")
+            questions.append({
+                "grade": grade, "num": qnum, "difficulty": difficulty,
+                "title": re.sub(r"\[(?:Easy|Medium|Hard)\]\s*", "", title, flags=re.I),
+                "question": _extract_html(body, r"<li>EN:\s*(.*?)</li>") or "",
+                "en": _extract_html(body, r"<li>EN:\s*(.*?)</li>"),
+                "fr": _extract_html(body, r"<li>FR:\s*(.*?)</li>"),
+                "choices_raw": choices_raw, "choices": parse_choices(choices_raw),
+                "answer": _extract_html(body, r"<li>Answer:\s*(.*?)</li>"),
+                "hint": _extract_html(body, r"<li>Hint:\s*(.*?)</li>"),
+            })
+    return questions
 
 
-class Issue:
-    def __init__(self, level, grade, qnum, msg, fix=None):
-        self.level = level  # 'error' or 'warning'
-        self.grade = grade
-        self.qnum = qnum
-        self.msg = msg
-        self.fix = fix  # suggested fix
-
-    def __str__(self):
-        icon = '[ERROR]' if self.level == 'error' else '[WARN]'
-        return f"  {icon} [{self.grade} Q{self.qnum}] {self.msg}"
+def validate_questions(questions: list[dict[str, Any]], require_french: bool = False) -> list[Issue]:
+    issues: list[Issue] = []
+    for question in questions:
+        result = validate_question(question, require_french=require_french)
+        for code in result["codes"]:
+            level = "warning" if code == "UNVERIFIED" else "error"
+            issues.append(Issue(level, str(question.get("grade", "")), int(question.get("num", 0)),
+                                code, code=code))
+    return issues
 
 
-def _find_best_choice_match(answer, choices):
-    """
-    Try to fuzzy-match an answer to one of the choices.
-    Handles common LLM errors:
-      - Trailing punctuation: "93." -> "93"
-      - Missing units: "17" -> "17 cents"
-      - Partial expression: "x" -> "x = 4", "(x" -> "(x + 1)(x + 6)"
-      - Stripped special chars: "14" -> "1/4"
-    Returns the matching choice or None.
-    """
-    # Step 1: Strip trailing punctuation (periods, commas) from answer
-    cleaned = answer.rstrip('.,;:')
-
-    # Direct match after stripping
-    if cleaned in choices:
-        return cleaned
-    for c in choices:
-        if cleaned.lower() == c.lower():
-            return c
-
-    # Step 2: Answer is numeric prefix — find choice that starts with it + units
-    # e.g., "17" matches "17 cents", "5" matches "5 cm"
-    for c in choices:
-        # Choice starts with the cleaned answer followed by space + unit
-        if re.match(r'^' + re.escape(cleaned) + r'\s', c):
-            return c
-        # Choice starts with the cleaned answer and has non-digit suffix
-        if c.startswith(cleaned) and len(c) > len(cleaned) and not c[len(cleaned)].isdigit():
-            return c
-
-    # Step 3: Partial expression match — answer is start of a choice
-    # e.g., "x" -> "x = 4", "(x" -> "(x + 1)(x + 6)", "5x" -> "5x − 1"
-    candidates = [c for c in choices if c.startswith(cleaned)]
-    if len(candidates) == 1:
-        return candidates[0]
-
-    # Step 4: Check if answer is a stripped version of a choice (remove $/:.,¢ and units)
-    for c in choices:
-        stripped = re.sub(r'[$/:.,¢°%]', '', c)
-        if stripped == cleaned or stripped == answer:
-            return c
-
-    # Step 5: Numeric match ignoring units — extract leading number from each choice
-    for c in choices:
-        num_match = re.match(r'^(-?[\d.]+(?:/\d+)?)', c)
-        if num_match and num_match.group(1) == cleaned:
-            return c
-
-    # Step 6: answer matches if we strip units from choice and compare
-    for c in choices:
-        c_no_units = re.sub(r'\s*(cm²|cm³|cm|m²|m³|m|km/h|km|mm|kg|g|ml|L|cents?|hours?|minutes?|seconds?|pts?|°)\s*$', '', c, flags=re.IGNORECASE).strip()
-        if c_no_units == cleaned or c_no_units.lower() == cleaned.lower():
-            return c
-
-    return None
+def validate_file(filepath: pathlib.Path, source: str | None = None) -> tuple[list[dict[str, Any]], list[Issue]]:
+    text = filepath.read_text(encoding="utf-8")
+    source = source or filepath.suffix.lstrip(".")
+    questions = parse_questions_from_md(text) if source == "md" else parse_questions_from_html(text)
+    return questions, validate_questions(questions, require_french=source == "md")
 
 
-def validate_questions(questions):
-    """Run all validation checks. Returns list of Issue objects."""
-    issues = []
+def check_min_questions(questions: list[dict[str, Any]], min_per_grade: int = 10) -> list[str]:
+    counts: dict[str, int] = {}
+    for question in questions:
+        grade = str(question.get("grade", ""))
+        counts[grade] = counts.get(grade, 0) + 1
+    return [f"[{grade}] Only {counts.get(grade, 0)} questions (expected {min_per_grade})"
+            for grade in GRADE_CODES if counts.get(grade, 0) < min_per_grade]
 
-    for q in questions:
-        grade = q['grade']
-        num = q['num']
 
-        # Check 0: Extra '- Answer:' lines (usually inside Steps) confuse parsers
-        if q.get('answer_line_count', 1) > 1:
-            issues.append(Issue('warning', grade, num,
-                f"{q['answer_line_count']} '- Answer:' lines found (extra one likely inside Steps) — "
-                f"LLM formatting glitch, only the last is used"))
+def _structural_issues(questions: list[dict[str, Any]]) -> list[Issue]:
+    issues: list[Issue] = []
+    by_grade: dict[str, list[dict[str, Any]]] = {grade: [] for grade in GRADE_CODES}
+    for question in questions:
+        by_grade.setdefault(str(question.get("grade")), []).append(question)
+    for grade in GRADE_CODES:
+        group = by_grade.get(grade, [])
+        if len(group) != 10:
+            issues.append(Issue("error", grade, 0, f"Expected exactly 10 questions, found {len(group)}", "QUESTION_COUNT"))
+        difficulty = {name: 0 for name in EXPECTED_DIFFICULTIES}
+        for question in group:
+            key = str(question.get("difficulty", "")).title()
+            if key in difficulty:
+                difficulty[key] += 1
+        if difficulty != EXPECTED_DIFFICULTIES:
+            issues.append(Issue("error", grade, 0, f"Difficulty distribution is {difficulty}; expected {EXPECTED_DIFFICULTIES}",
+                                "DIFFICULTY_DISTRIBUTION"))
+    present = {str(question.get("grade")) for question in questions}
+    missing = [grade for grade in GRADE_CODES if grade not in present]
+    if missing:
+        issues.append(Issue("error", "RUN", 0, f"Missing grades: {', '.join(missing)}", "GRADE_COUNT"))
+    return issues
 
-        # Check 1: Required fields
-        if not q['en']:
-            issues.append(Issue('error', grade, num, 'Missing English question text'))
-        if not q['fr']:
-            issues.append(Issue('warning', grade, num, 'Missing French translation'))
-        if not q['choices']:
-            issues.append(Issue('error', grade, num, 'Missing or unparseable choices'))
-        if not q['answer']:
-            issues.append(Issue('error', grade, num, 'Missing answer'))
+
+def _position_report(questions: list[dict[str, Any]]) -> dict[str, Any]:
+    counts = [0, 0, 0, 0]
+    for question in questions:
+        answer, choices = question.get("answer"), question.get("choices") or []
+        matches = [i for i, choice in enumerate(choices) if equivalent_strings(answer, choice)[0]]
+        if len(matches) == 1 and matches[0] < 4:
+            counts[matches[0]] += 1
+    total = sum(counts)
+    proportions = [count / total if total else 0 for count in counts]
+    return {
+        "counts": {chr(65 + i): counts[i] for i in range(4)},
+        "total": total,
+        "proportions": {chr(65 + i): proportions[i] for i in range(4)},
+        "biased_positions": [chr(65 + i) for i, proportion in enumerate(proportions) if proportion > 0.4],
+    }
+
+
+def _fingerprint(question: dict[str, Any]) -> tuple[str, str]:
+    return str(question.get("grade", "")), normal_text(question.get("question") or question.get("en") or "").casefold()
+
+
+def _duplicate_recent_questions(date_str: str, questions: list[dict[str, Any]]) -> list[Issue]:
+    try:
+        current = dt.date.fromisoformat(date_str)
+    except ValueError:
+        return []
+    prior: set[tuple[str, str]] = set()
+    for path in DAILY_DIR.glob("*.md"):
+        try:
+            date = dt.date.fromisoformat(path.stem)
+        except ValueError:
             continue
-
-        answer = q['answer']
-        choices = q['choices']
-
-        # Check 2: Answer must match one of the choices exactly
-        if choices and answer not in choices:
-            # Case-insensitive check
-            lower_choices = [c.lower() for c in choices]
-            if answer.lower() not in lower_choices:
-                possible_fix = _find_best_choice_match(answer, choices)
-
-                if possible_fix:
-                    issues.append(Issue('error', grade, num,
-                        f'Answer "{answer}" does not match any choice: {choices}',
-                        fix=possible_fix))
-                else:
-                    issues.append(Issue('error', grade, num,
-                        f'Answer "{answer}" does not match any choice: {choices}'))
-
-        # Check 3: Division questions should have integer answers
-        en = q.get('en', '') or ''
-        if re.search(r'divid|÷|split.*equal|share.*equal', en, re.IGNORECASE):
-            try:
-                # Extract numbers from question for basic check
-                nums = re.findall(r'\d+', en)
-                if len(nums) >= 2:
-                    # Try common division patterns
-                    a, b = int(nums[-2]), int(nums[-1])
-                    if b > 0 and a > b and a % b != 0:
-                        total_product = None
-                        # Check if there's a multiplication first
-                        mult_match = re.search(r'(\d+)\s*(?:shelves|boxes|rows|groups).*?(\d+)', en)
-                        if mult_match:
-                            total_product = int(mult_match.group(1)) * int(mult_match.group(2))
-                        if total_product and total_product % b != 0:
-                            issues.append(Issue('warning', grade, num,
-                                f'Division may not produce integer: {total_product} ÷ {b} = {total_product/b:.2f}'))
-            except (ValueError, IndexError):
-                pass
-
-        # Check 4: Fraction questions should have fraction answers
-        if re.search(r'fraction|what part|what portion', en, re.IGNORECASE):
-            if answer and re.match(r'^\d{2,}$', answer) and not re.search(r'/', answer):
-                # Looks like a number but should be a fraction
-                issues.append(Issue('warning', grade, num,
-                    f'Fraction question but answer "{answer}" has no "/" — possible stripped fraction'))
-
-        # Check 5: Answer is a reasonable number
-        if answer:
-            try:
-                # Handle fractions
-                if '/' in answer:
-                    parts = answer.split('/')
-                    val = float(parts[0]) / float(parts[1])
-                else:
-                    val = float(answer)
-                if abs(val) > 100000:
-                    issues.append(Issue('warning', grade, num,
-                        f'Answer {answer} seems unreasonably large for grade {grade}'))
-            except (ValueError, ZeroDivisionError):
-                pass  # Non-numeric answers are OK (like choice text)
-
-        # Check 6: Comparison questions — verify logic
-        if re.search(r'which is (bigger|larger|greater|smaller|less)', en, re.IGNORECASE):
-            # For fraction comparison, basic check
-            fracs = re.findall(r'(\d+)/(\d+)', en)
-            if len(fracs) >= 2:
-                try:
-                    val1 = int(fracs[0][0]) / int(fracs[0][1])
-                    val2 = int(fracs[1][0]) / int(fracs[1][1])
-                    correct_frac = f"{fracs[0][0]}/{fracs[0][1]}" if val1 > val2 else f"{fracs[1][0]}/{fracs[1][1]}"
-                    if answer and answer != correct_frac and answer.replace('/', '') != correct_frac.replace('/', ''):
-                        # Check if the answer text matches
-                        if correct_frac not in (answer or ''):
-                            issues.append(Issue('warning', grade, num,
-                                f'Comparison question: mathematically {correct_frac} is bigger, '
-                                f'but answer is "{answer}"'))
-                except (ValueError, ZeroDivisionError):
-                    pass
-
+        if dt.timedelta(days=1) <= current - date <= dt.timedelta(days=30):
+            prior.update(_fingerprint(question) for question in parse_questions_from_md(path.read_text(encoding="utf-8")))
+    issues: list[Issue] = []
+    seen: set[tuple[str, str]] = set()
+    for question in questions:
+        fingerprint = _fingerprint(question)
+        if fingerprint in prior or fingerprint in seen:
+            issues.append(Issue("error", str(question.get("grade")), int(question.get("num", 0)),
+                                "DUPLICATE_RECENT_QUESTION", "DUPLICATE_RECENT_QUESTION"))
+        seen.add(fingerprint)
     return issues
 
 
-def validate_file(filepath, source='html'):
-    """Validate a quiz file. Returns (questions, issues)."""
-    text = filepath.read_text(encoding='utf-8')
-
-    if source == 'md':
-        questions = parse_questions_from_md(text)
-    else:
-        questions = parse_questions_from_html(text)
-
-    issues = validate_questions(questions)
-    return questions, issues
+def _manifest_entries(path: pathlib.Path) -> list[dict[str, Any]]:
+    if not path.exists():
+        return []
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return data if isinstance(data, list) else data.get("items", [])
 
 
-def auto_fix_file(filepath, issues, source='md'):
-    """Apply auto-fixes to the file for issues that have a suggested fix."""
-    fixable = [i for i in issues if i.fix and i.level == 'error']
-    if not fixable:
-        print("  No auto-fixable issues found.")
-        return 0
+def _manifest_allows(entry: dict[str, Any], quiz_date: str, question: dict[str, Any], issue_code: str) -> bool:
+    required = ("reviewer", "reviewer_date", "quiz_date", "grade", "question_index",
+                "code", "worked_verification", "reason")
+    if not all(str(entry.get(key, "")).strip() for key in required):
+        return False
+    if str(entry["quiz_date"]) != quiz_date or str(entry["code"]) != issue_code:
+        return False
+    grade = str(question.get("grade"))
+    index = int(question.get("num", 0))
+    try:
+        entry_index = int(entry["question_index"])
+    except (TypeError, ValueError):
+        return False
+    return str(entry["grade"]) == grade and entry_index == index
 
-    content = filepath.read_text(encoding='utf-8')
-    fixed_count = 0
 
-    for issue in fixable:
-        old_answer = issue.msg.split('"')[1]  # extract wrong answer from error msg
-        if source == 'md':
-            old_pattern = f'Answer: {old_answer}'
-            new_pattern = f'Answer: {issue.fix}'
+def validate_run(filepath: pathlib.Path, date_str: str, allow_nonvalid: int = 0,
+                 manifest_path: pathlib.Path | None = None) -> dict[str, Any]:
+    source = filepath.suffix.lstrip(".")
+    questions, issues = validate_file(filepath, source)
+    issues.extend(_structural_issues(questions))
+    issues.extend(_duplicate_recent_questions(date_str, questions))
+    position_report = _position_report(questions)
+    manifest = _manifest_entries(manifest_path or ROOT / "data" / "review" / "verified-items.json")
+    allowed, blocked = [], []
+    for issue in issues:
+        question = next((q for q in questions if str(q.get("grade")) == issue.grade and int(q.get("num", 0)) == issue.qnum), None)
+        if question and any(_manifest_allows(item, date_str, question, issue.code) for item in manifest):
+            allowed.append(issue)
         else:
-            # HTML: Answer is in <li>Answer: VALUE</li>
-            old_pattern = f'Answer: {old_answer}</li>'
-            new_pattern = f'Answer: {issue.fix}</li>'
-
-        if old_pattern in content:
-            content = content.replace(old_pattern, new_pattern, 1)
-            fixed_count += 1
-            print(f"  Fixed [{issue.grade} Q{issue.qnum}]: \"{old_answer}\" -> \"{issue.fix}\"")
-
-    if fixed_count:
-        filepath.write_text(content, encoding='utf-8')
-        print(f"\n  Auto-fixed {fixed_count} answer(s) in {filepath.name}")
-
-    return fixed_count
-
-
-def check_min_questions(questions, min_per_grade=10):
-    """Check that each grade has at least min_per_grade questions."""
-    from collections import Counter
-    grade_counts = Counter(q['grade'] for q in questions)
-    issues = []
-    for grade, count in sorted(grade_counts.items()):
-        if count < min_per_grade:
-            issues.append(f"[{grade}] Only {count} questions (expected {min_per_grade})")
-    return issues
+            blocked.append(issue)
+    nonvalid = len({(issue.grade, issue.qnum) for issue in blocked if issue.grade != "RUN"})
+    blocking_errors = any(issue.level == "error" for issue in blocked)
+    publication_allowed = not blocking_errors and nonvalid <= allow_nonvalid
+    return {
+        "date": date_str, "file": str(filepath), "publication_allowed": publication_allowed,
+        "non_valid_items": nonvalid,
+        "questions": [
+            {"grade": q.get("grade"), "question_index": q.get("num"),
+             **validate_question(q, require_french=source == "md")}
+            for q in questions
+        ],
+        "issues": [{"level": issue.level, "grade": issue.grade, "question_index": issue.qnum,
+                    "code": issue.code, "message": issue.msg} for issue in issues],
+        "allowed_issues": [{"code": issue.code, "grade": issue.grade, "question_index": issue.qnum} for issue in allowed],
+        "blocking_errors": blocking_errors,
+        "position_balance": position_report,
+    }
 
 
-def main():
-    args = sys.argv[1:]
-    do_fix = '--fix' in args
-    strict = '--strict' in args
-    args = [a for a in args if not a.startswith('--')]
+def _print_report(result: dict[str, Any]) -> None:
+    print(f"Found {len(result['questions'])} questions")
+    errors = [issue for issue in result["issues"] if issue["level"] == "error"]
+    warnings = [issue for issue in result["issues"] if issue["level"] == "warning"]
+    if errors:
+        print(f"\nERRORS ({len(errors)}):")
+        for issue in errors:
+            print(f"  [ERROR] [{issue['grade']} Q{issue['question_index']}] [{issue['code']}] {issue['message']}")
+    if warnings:
+        print(f"\nWARNINGS ({len(warnings)}):")
+        for issue in warnings:
+            print(f"  [WARN] [{issue['grade']} Q{issue['question_index']}] [{issue['code']}] {issue['message']}")
+    print(f"\nAnswer positions: {result['position_balance']['counts']}")
+    print(f"Summary: {len(errors)} errors, {len(warnings)} warnings in {len(result['questions'])} questions")
+    print("Publication: " + ("ALLOWED" if result["publication_allowed"] else "BLOCKED"))
 
-    if args:
-        date_str = args[0]
-    else:
-        date_str = datetime.date.today().isoformat()
 
-    md_path = DAILY_DIR / f"{date_str}.md"
-    html_path = DAILY_DIR / f"{date_str}.html"
-
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Validate a daily quiz without modifying it.")
+    parser.add_argument("date", nargs="?", default=dt.date.today().isoformat())
+    parser.add_argument("--strict", action="store_true", help="retained for CLI compatibility; validation is always fail-closed")
+    parser.add_argument("--allow-nonvalid", type=int, default=0)
+    parser.add_argument("--result-file")
+    args = parser.parse_args(argv)
+    md_path = DAILY_DIR / f"{args.date}.md"
+    html_path = DAILY_DIR / f"{args.date}.html"
     if md_path.exists():
         filepath = md_path
-        source = 'md'
-        print(f"Validating: {md_path.name} (markdown source)")
     elif html_path.exists():
         filepath = html_path
-        source = 'html'
-        print(f"Validating: {html_path.name} (HTML)")
     else:
-        print(f"ERROR: No quiz file found for {date_str}")
-        sys.exit(2)
-
-    questions, issues = validate_file(filepath, source=source)
-    grade_count = len(set(q['grade'] for q in questions))
-    print(f"Found {len(questions)} questions across {grade_count} grades\n")
-
-    # Check minimum question count per grade
-    min_issues = check_min_questions(questions, min_per_grade=10)
-    if min_issues:
-        print(f"QUESTION COUNT ISSUES ({len(min_issues)}):")
-        for msg in min_issues:
-            print(f"  [WARN] {msg}")
-        print()
-
-    if not issues and not min_issues:
-        print("All checks passed! No issues found.")
-        sys.exit(0)
-
-    errors = [i for i in issues if i.level == 'error']
-    warnings = [i for i in issues if i.level == 'warning']
-
-    if errors:
-        print(f"ERRORS ({len(errors)}):")
-        for i in errors:
-            print(i)
-            if i.fix:
-                print(f"       Suggested fix: change answer to \"{i.fix}\"")
-        print()
-
-    if warnings:
-        print(f"WARNINGS ({len(warnings)}):")
-        for i in warnings:
-            print(i)
-        print()
-
-    print(f"\nSummary: {len(errors)} errors, {len(warnings)} warnings in {len(questions)} questions")
-
-    # Auto-fix mode: apply fixes and write back to file
-    if do_fix and errors:
-        print(f"\nAttempting auto-fix...")
-        fixed = auto_fix_file(filepath, issues, source=source)
-        if fixed:
-            # Re-validate after fix
-            questions2, issues2 = validate_file(filepath, source=source)
-            remaining_errors = [i for i in issues2 if i.level == 'error']
-            if remaining_errors:
-                print(f"\n  {len(remaining_errors)} error(s) remain after auto-fix (need manual review)")
-            else:
-                print(f"\n  All errors resolved after auto-fix!")
-                sys.exit(0)
-
-    # In strict mode, exit with error code if any errors remain
-    if strict and errors:
-        unfixable = [i for i in errors if not i.fix]
-        if unfixable:
-            print(f"\nSTRICT MODE: {len(unfixable)} unfixable error(s) -- blocking deploy.")
-            sys.exit(2)
-        # If all errors were fixable but --fix wasn't used
-        print(f"\nSTRICT MODE: {len(errors)} error(s) found -- run with --fix first.")
-        sys.exit(2)
-
-    # Exit code: 2 for errors, 1 for warnings only, 0 for clean
-    sys.exit(2 if errors else (1 if warnings or min_issues else 0))
+        print(f"ERROR: No quiz file found for {args.date}", file=sys.stderr)
+        return 2
+    result = validate_run(filepath, args.date, allow_nonvalid=max(0, args.allow_nonvalid))
+    if args.result_file:
+        path = pathlib.Path(args.result_file)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(result, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8")
+    _print_report(result)
+    return 0 if result["publication_allowed"] else 2
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
