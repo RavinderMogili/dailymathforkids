@@ -38,9 +38,11 @@ class Issue:
     msg: str
     code: str = ""
     fix: None = None
+    authored_num: int | None = None
 
     def __str__(self) -> str:
-        return f"[{self.level.upper()}] [{self.grade} Q{self.qnum}] {self.msg}"
+        authored = f" (authored {self.authored_num})" if self.authored_num is not None else ""
+        return f"[{self.level.upper()}] [{self.grade} Q{self.qnum}{authored}] {self.msg}"
 
 
 def _extract(text: str, pattern: str) -> str | None:
@@ -75,15 +77,33 @@ def parse_questions_from_md(md_text: str) -> list[dict[str, Any]]:
     )
     for grade_match in grade_pattern.finditer(md_text):
         grade, content = grade_match.group(1), grade_match.group(2)
-        for q_match in q_pattern.finditer(content):
+        for question_index, q_match in enumerate(q_pattern.finditer(content), 1):
             qnum, difficulty, title, body = q_match.groups()
-            answer_matches = re.findall(r"^ {3}-\s*Answer:\s*(.+)$", body, re.MULTILINE)
+            field_indents = [
+                match.group(1)
+                for match in re.finditer(
+                    r"^([ \t]+)-\s*(?:EN|FR|Choices|Hint|Steps|Answer):",
+                    body,
+                    re.MULTILINE,
+                )
+            ]
+            field_indent = min(field_indents, key=lambda value: len(value.expandtabs(4))) if field_indents else None
+            answer_matches = (
+                re.findall(
+                    rf"^{re.escape(field_indent)}-\s*Answer:\s*(.+)$",
+                    body,
+                    re.MULTILINE,
+                )
+                if field_indent is not None
+                else []
+            )
             choices_raw = _extract(body, r"^\s*-\s*Choices:\s*(.+)$")
             en = _extract(body, r"^\s*-\s*EN:\s*(.+)$")
             fr = _extract(body, r"^\s*-\s*FR:\s*(.+)$")
             hint = _extract(body, r"^\s*-\s*Hint:\s*(.+)$")
             questions.append({
-                "grade": grade, "num": int(qnum), "difficulty": difficulty.title(),
+                "grade": grade, "num": int(qnum), "authored_number": int(qnum),
+                "question_index": question_index, "difficulty": difficulty.title(),
                 "title": title.strip(), "question": en or "", "en": en, "fr": fr,
                 "choices_raw": choices_raw, "choices": parse_choices(choices_raw),
                 "answer": answer_matches[-1].strip() if answer_matches else None,
@@ -108,7 +128,8 @@ def parse_questions_from_html(html_text: str) -> list[dict[str, Any]]:
             difficulty = diff_match.group(1).title() if diff_match else "Unknown"
             choices_raw = _extract_html(body, r"<li>Choices:\s*(.*?)</li>")
             questions.append({
-                "grade": grade, "num": qnum, "difficulty": difficulty,
+                "grade": grade, "num": qnum, "authored_number": None,
+                "question_index": qnum, "difficulty": difficulty,
                 "title": re.sub(r"\[(?:Easy|Medium|Hard)\]\s*", "", title, flags=re.I),
                 "question": _extract_html(body, r"<li>EN:\s*(.*?)</li>") or "",
                 "en": _extract_html(body, r"<li>EN:\s*(.*?)</li>"),
@@ -126,8 +147,14 @@ def validate_questions(questions: list[dict[str, Any]], require_french: bool = F
         result = validate_question(question, require_french=require_french)
         for code in result["codes"]:
             level = "warning" if code == "UNVERIFIED" or code in REPORT_ONLY_CODES else "error"
-            issues.append(Issue(level, str(question.get("grade", "")), int(question.get("num", 0)),
-                                code, code=code))
+            issues.append(Issue(
+                level,
+                str(question.get("grade", "")),
+                int(question.get("question_index", 0)),
+                code,
+                code=code,
+                authored_num=question.get("authored_number"),
+            ))
     return issues
 
 
@@ -154,6 +181,22 @@ def _structural_issues(questions: list[dict[str, Any]]) -> list[Issue]:
         by_grade.setdefault(str(question.get("grade")), []).append(question)
     for grade in GRADE_CODES:
         group = by_grade.get(grade, [])
+        authored_numbers: dict[int, list[dict[str, Any]]] = {}
+        for question in group:
+            authored_number = question.get("authored_number")
+            if authored_number is not None:
+                authored_numbers.setdefault(int(authored_number), []).append(question)
+        for authored_number, duplicates in authored_numbers.items():
+            if len(duplicates) > 1:
+                for question in duplicates:
+                    issues.append(Issue(
+                        "error",
+                        grade,
+                        int(question.get("question_index", 0)),
+                        f"Authored question number {authored_number} appears {len(duplicates)} times",
+                        "DUPLICATE_QUESTION_NUMBER",
+                        authored_num=authored_number,
+                    ))
         if len(group) != 10:
             issues.append(Issue("error", grade, 0, f"Expected exactly 10 questions, found {len(group)}", "QUESTION_COUNT"))
         difficulty = {name: 0 for name in EXPECTED_DIFFICULTIES}
@@ -210,8 +253,14 @@ def _duplicate_recent_questions(date_str: str, questions: list[dict[str, Any]]) 
     for question in questions:
         fingerprint = _fingerprint(question)
         if fingerprint in prior or fingerprint in seen:
-            issues.append(Issue("error", str(question.get("grade")), int(question.get("num", 0)),
-                                "DUPLICATE_RECENT_QUESTION", "DUPLICATE_RECENT_QUESTION"))
+            issues.append(Issue(
+                "error",
+                str(question.get("grade")),
+                int(question.get("question_index", 0)),
+                "DUPLICATE_RECENT_QUESTION",
+                "DUPLICATE_RECENT_QUESTION",
+                authored_num=question.get("authored_number"),
+            ))
         seen.add(fingerprint)
     return issues
 
@@ -231,7 +280,7 @@ def _manifest_allows(entry: dict[str, Any], quiz_date: str, question: dict[str, 
     if str(entry["quiz_date"]) != quiz_date or str(entry["code"]) != issue_code:
         return False
     grade = str(question.get("grade"))
-    index = int(question.get("num", 0))
+    index = int(question.get("question_index", 0))
     try:
         entry_index = int(entry["question_index"])
     except (TypeError, ValueError):
@@ -239,18 +288,19 @@ def _manifest_allows(entry: dict[str, Any], quiz_date: str, question: dict[str, 
     return str(entry["grade"]) == grade and entry_index == index
 
 
-def validate_run(filepath: pathlib.Path, date_str: str, allow_nonvalid: int = 0,
+def validate_run(filepath: pathlib.Path, quiz_date: str, allow_nonvalid: int = 0,
                  manifest_path: pathlib.Path | None = None) -> dict[str, Any]:
     source = filepath.suffix.lstrip(".")
     questions, issues = validate_file(filepath, source)
     issues.extend(_structural_issues(questions))
-    issues.extend(_duplicate_recent_questions(date_str, questions))
+    issues.extend(_duplicate_recent_questions(quiz_date, questions))
     position_report = _position_report(questions)
     manifest = _manifest_entries(manifest_path or ROOT / "data" / "review" / "verified-items.json")
     allowed, blocked = [], []
     for issue in issues:
-        question = next((q for q in questions if str(q.get("grade")) == issue.grade and int(q.get("num", 0)) == issue.qnum), None)
-        if question and any(_manifest_allows(item, date_str, question, issue.code) for item in manifest):
+        question = next((q for q in questions if str(q.get("grade")) == issue.grade and
+                         int(q.get("question_index", 0)) == issue.qnum), None)
+        if question and any(_manifest_allows(item, quiz_date, question, issue.code) for item in manifest):
             allowed.append(issue)
         else:
             blocked.append(issue)
@@ -262,16 +312,19 @@ def validate_run(filepath: pathlib.Path, date_str: str, allow_nonvalid: int = 0,
     blocking_errors = any(issue.level == "error" for issue in blocked)
     publication_allowed = not blocking_errors and nonvalid <= allow_nonvalid
     return {
-        "date": date_str, "file": str(filepath), "publication_allowed": publication_allowed,
+        "date": quiz_date, "file": str(filepath), "publication_allowed": publication_allowed,
         "non_valid_items": nonvalid,
         "questions": [
-            {"grade": q.get("grade"), "question_index": q.get("num"),
+            {"grade": q.get("grade"), "question_index": q.get("question_index"),
+             "authored_number": q.get("authored_number"),
              **validate_question(q, require_french=source == "md")}
             for q in questions
         ],
         "issues": [{"level": issue.level, "grade": issue.grade, "question_index": issue.qnum,
+                    "authored_number": issue.authored_num,
                     "code": issue.code, "message": issue.msg} for issue in issues],
-        "allowed_issues": [{"code": issue.code, "grade": issue.grade, "question_index": issue.qnum} for issue in allowed],
+        "allowed_issues": [{"code": issue.code, "grade": issue.grade, "question_index": issue.qnum,
+                            "authored_number": issue.authored_num} for issue in allowed],
         "blocking_errors": blocking_errors,
         "position_balance": position_report,
     }
@@ -284,11 +337,21 @@ def _print_report(result: dict[str, Any]) -> None:
     if errors:
         print(f"\nERRORS ({len(errors)}):")
         for issue in errors:
-            print(f"  [ERROR] [{issue['grade']} Q{issue['question_index']}] [{issue['code']}] {issue['message']}")
+            authored = (
+                f" (authored {issue['authored_number']})"
+                if issue.get("authored_number") is not None else ""
+            )
+            print(f"  [ERROR] [{issue['grade']} Q{issue['question_index']}{authored}] "
+                  f"[{issue['code']}] {issue['message']}")
     if warnings:
         print(f"\nWARNINGS ({len(warnings)}):")
         for issue in warnings:
-            print(f"  [WARN] [{issue['grade']} Q{issue['question_index']}] [{issue['code']}] {issue['message']}")
+            authored = (
+                f" (authored {issue['authored_number']})"
+                if issue.get("authored_number") is not None else ""
+            )
+            print(f"  [WARN] [{issue['grade']} Q{issue['question_index']}{authored}] "
+                  f"[{issue['code']}] {issue['message']}")
     print(f"\nAnswer positions: {result['position_balance']['counts']}")
     print(f"Summary: {len(errors)} errors, {len(warnings)} warnings in {len(result['questions'])} questions")
     print("Publication: " + ("ALLOWED" if result["publication_allowed"] else "BLOCKED"))

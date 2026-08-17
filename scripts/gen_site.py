@@ -6,6 +6,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from validate_quiz import validate_run
+from quarantine_historical import date_has_quarantine, filter_archive_dates, load_manifest
 
 try:
     import markdown2
@@ -747,11 +748,18 @@ def rebuild_index_and_sitemap():
         [p for p in DAILY_DIR.glob("*.html") if re.match(r'\d{4}-\d{2}-\d{2}\.html$', p.name)],
         key=lambda p: p.name, reverse=True
     )
-    latest = pages[0].stem if pages else None
+    archive_manifest = load_manifest(ROOT / "data" / "quarantine" / "historical.json")
+    archive_dates = filter_archive_dates((p.stem for p in pages), archive_manifest)
+    archive_pages = [p for p in pages if p.stem in archive_dates]
+    latest = archive_pages[0].stem if archive_pages else None
     if LATEST_MARKER.exists():
         try:
             marker_date = json.loads(LATEST_MARKER.read_text(encoding="utf-8")).get("date")
-            if marker_date and (DAILY_DIR / f"{marker_date}.html").exists():
+            if (
+                marker_date
+                and (DAILY_DIR / f"{marker_date}.html").exists()
+                and not date_has_quarantine(marker_date, archive_manifest)
+            ):
                 latest = marker_date
         except (OSError, ValueError, TypeError):
             pass
@@ -770,8 +778,8 @@ def rebuild_index_and_sitemap():
         if today_link else "First problems arrive after the first daily run."
     )
     recent_items = (
-        "".join(f'<li><a href="daily/{p.name}">Daily Math - {p.stem}</a></li>' for p in pages[:30])
-        if pages else "<li>No daily pages yet.</li>"
+        "".join(f'<li><a href="daily/{p.name}">Daily Math - {p.stem}</a></li>' for p in archive_pages[:30])
+        if archive_pages else "<li>No non-quarantined daily pages yet.</li>"
     )
 
     index_html = f"""<!doctype html>
@@ -846,7 +854,7 @@ def rebuild_index_and_sitemap():
     base_url = f"https://{user}.github.io/{repo_name}/"
     urls = (
         [base_url, base_url + "leaderboard.html"]
-        + [base_url + f"daily/{p.name}" for p in sorted(DAILY_DIR.glob("*.html"))]
+        + [base_url + f"daily/{p.name}" for p in archive_pages]
     )
     sitemap = ['<?xml version="1.0" encoding="UTF-8"?>',
                '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
