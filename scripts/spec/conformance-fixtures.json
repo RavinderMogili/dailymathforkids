@@ -1,0 +1,307 @@
+{
+  "version": 1,
+  "spec": "scripts/spec/QUESTION_QUALITY_SPEC.md",
+  "note": "Executable form of the canonical specification. Both the Python and the JavaScript implementation must reproduce every expectation here exactly. CI fails if the two disagree on any case.",
+
+  "parse": [
+    { "input": "7",            "expect": { "kind": "number", "num": 7, "den": 1 } },
+    { "input": "-8",           "expect": { "kind": "number", "num": -8, "den": 1 } },
+    { "input": "1,500",        "expect": { "kind": "number", "num": 1500, "den": 1 } },
+    { "input": "12.50",        "expect": { "kind": "number", "num": 25, "den": 2, "written_decimals": 2 } },
+    { "input": "12.5",         "expect": { "kind": "number", "num": 25, "den": 2, "written_decimals": 1 } },
+    { "input": "2.0",          "expect": { "kind": "number", "num": 2, "den": 1, "written_decimals": 1 } },
+    { "input": "3/4",          "expect": { "kind": "number", "num": 3, "den": 4, "written_num": 3, "written_den": 4 } },
+    { "input": "3/9",          "expect": { "kind": "number", "num": 1, "den": 3, "written_num": 3, "written_den": 9 } },
+    { "input": "1/1",          "expect": { "kind": "number", "num": 1, "den": 1, "written_num": 1, "written_den": 1 } },
+    { "input": "7/7",          "expect": { "kind": "number", "num": 1, "den": 1, "written_num": 7, "written_den": 7 } },
+    { "input": "3/2",          "expect": { "kind": "number", "num": 3, "den": 2, "written_num": 3, "written_den": 2 } },
+    { "input": "1 1/2",        "expect": { "kind": "number", "num": 3, "den": 2, "written_num": 3, "written_den": 2 } },
+    { "input": "5/0",          "expect": "PARSE_FAILED", "code": "ZERO_DENOMINATOR" },
+    { "input": "50%",          "expect": { "kind": "percent", "num": 50, "den": 1 } },
+    { "input": "50 %",         "expect": { "kind": "percent", "num": 50, "den": 1 } },
+    { "input": "-40%",         "expect": { "kind": "percent", "num": -40, "den": 1 } },
+    { "input": "12.5%",        "expect": { "kind": "percent", "num": 25, "den": 2, "written_decimals": 1 } },
+    { "input": "$5",           "expect": { "kind": "currency", "num": 5, "den": 1, "symbol": "$" } },
+    { "input": "5 dollars",    "expect": { "kind": "currency", "num": 5, "den": 1, "symbol": "$" } },
+    { "input": "$1.50",        "expect": { "kind": "currency", "num": 3, "den": 2, "symbol": "$", "written_decimals": 2 } },
+    { "input": "85\u00a2",     "expect": { "kind": "currency", "num": 85, "den": 1, "symbol": "\u00a2" } },
+    { "input": "85 cents",     "expect": { "kind": "currency", "num": 85, "den": 1, "symbol": "\u00a2" } },
+    { "input": "5 cm",         "expect": { "kind": "measurement", "num": 5, "den": 1, "unit": "cm" } },
+    { "input": "70 m\u00b2",   "expect": { "kind": "measurement", "num": 70, "den": 1, "unit": "m2" } },
+    { "input": "24 cm3",       "expect": { "kind": "measurement", "num": 24, "den": 1, "unit": "cm3" } },
+    { "input": "90\u00b0",     "expect": { "kind": "measurement", "num": 90, "den": 1, "unit": "deg" } },
+    { "input": "2:30",         "expect": { "kind": "time", "minutes": 150, "meridiem": null } },
+    { "input": "2:03",         "expect": { "kind": "time", "minutes": 123, "meridiem": null } },
+    { "input": "5:00 PM",      "expect": { "kind": "time", "minutes": 300, "meridiem": "PM" } },
+    { "input": "12:00 AM",     "expect": { "kind": "time", "minutes": 0, "meridiem": "AM" } },
+    { "input": "2:3",          "expect": { "kind": "ratio", "terms": [2, 3] } },
+    { "input": "4:6",          "expect": { "kind": "ratio", "terms": [2, 3] } },
+    { "input": "4 R2",         "expect": { "kind": "quotrem", "q": 4, "r": 2 } },
+    { "input": "7 remainder 1","expect": { "kind": "quotrem", "q": 7, "r": 1 } },
+    { "input": "hexagon",      "expect": { "kind": "text", "value": "hexagon" } },
+    { "input": "  Hexagon  ",  "expect": { "kind": "text", "value": "hexagon" } },
+    { "input": "Both A and B", "expect": { "kind": "text", "value": "both a and b" } },
+    { "input": ">",            "expect": { "kind": "text", "value": ">" } },
+    { "input": "NaN",          "expect": "PARSE_FAILED", "code": "PLACEHOLDER_TEXT" },
+    { "input": "undefined",    "expect": "PARSE_FAILED", "code": "PLACEHOLDER_TEXT" },
+    { "input": "",             "expect": "PARSE_FAILED", "code": "MISSING_FIELD" }
+  ],
+
+  "equivalence": [
+    { "a": "2",     "b": "2.0",   "equal": true },
+    { "a": "12.5",  "b": "12.50", "equal": true },
+    { "a": "1500",  "b": "1,500", "equal": true },
+    { "a": "3/4",   "b": "6/8",   "equal": true },
+    { "a": "$5",    "b": "5 dollars", "equal": true },
+    { "a": "50%",   "b": "50 %",  "equal": true },
+    { "a": "2:3",   "b": "4:6",   "equal": true },
+    { "a": "hexagon", "b": "Hexagon", "equal": true },
+    { "a": "3",     "b": "3/4",   "equal": false, "code": "VALUE_CHANGED" },
+    { "a": "5",     "b": "5/8",   "equal": false, "code": "VALUE_CHANGED" },
+    { "a": "830",   "b": "8:30",  "equal": false, "code": "VALUE_CHANGED" },
+    { "a": "2",     "b": "2:3",   "equal": false, "code": "VALUE_CHANGED" },
+    { "a": "B",     "b": "Both A and B", "equal": false, "code": "VALUE_CHANGED" },
+    { "a": "5",     "b": "5 cm",  "equal": false, "code": "UNIT_ASSERTION" },
+    { "a": "50",    "b": "50 cm", "equal": false, "code": "UNIT_ASSERTION" },
+    { "a": "70",    "b": "70 cents", "equal": false, "code": "UNIT_ASSERTION" },
+    { "a": "5 cm",  "b": "5 m",   "equal": false, "code": "UNIT_MISMATCH" },
+    { "a": "100 cm","b": "1 m",   "equal": false, "code": "UNIT_MISMATCH",
+      "why": "no implicit unit conversion; a converted answer must state its own unit" },
+    { "a": "5:00",  "b": "5:00 PM", "equal": false, "code": "VALUE_CHANGED" },
+    { "a": "4",     "b": "4 R2",  "equal": false, "code": "VALUE_CHANGED" },
+    { "a": "50%",   "b": "0.5",   "equal": false, "code": "VALUE_CHANGED" }
+  ],
+
+  "forbidden_fixes": [
+    { "file": "2026-04-07.md", "stored": "5", "substituted": "5:00", "code": "VALUE_CHANGED" },
+    { "file": "2026-04-07.md", "stored": "8", "substituted": "8:30", "code": "VALUE_CHANGED" },
+    { "file": "2026-04-10.md", "stored": "5", "substituted": "5:00 PM", "code": "VALUE_CHANGED" },
+    { "file": "2026-04-12.md", "stored": "4", "substituted": "4 candies, 4 left", "code": "VALUE_CHANGED" },
+    { "file": "2026-04-17.md", "stored": "4", "substituted": "4:00 PM", "code": "VALUE_CHANGED" },
+    { "file": "2026-04-17.md", "stored": "4", "substituted": "4:30", "code": "VALUE_CHANGED" },
+    { "file": "2026-04-24.md", "stored": "3", "substituted": "3/4", "code": "VALUE_CHANGED" },
+    { "file": "2026-04-24.md", "stored": "B", "substituted": "Both A and B", "code": "VALUE_CHANGED" },
+    { "file": "2026-04-25.md", "stored": "4", "substituted": "4 R2", "code": "VALUE_CHANGED" },
+    { "file": "2026-05-04.md", "stored": "Park has 70 m\u00b2 more area", "substituted": "Park has 70 m\u00b2 more area D) Park has 4 m\u00b2 less area", "code": "VALUE_CHANGED" },
+    { "file": "2026-05-07.md", "stored": "5", "substituted": "5:00", "code": "VALUE_CHANGED" },
+    { "file": "2026-06-02.md", "stored": "5", "substituted": "5 candies, remainder 4", "code": "VALUE_CHANGED" },
+    { "file": "2026-06-04.md", "stored": "5", "substituted": "5/8", "code": "VALUE_CHANGED" },
+    { "file": "2026-06-06.md", "stored": "5", "substituted": "5 and 5", "code": "VALUE_CHANGED" },
+    { "file": "2026-06-10.md", "stored": "4", "substituted": "4, 1", "code": "VALUE_CHANGED" },
+    { "file": "2026-06-13.md", "stored": "330", "substituted": "3:30", "code": "VALUE_CHANGED" },
+    { "file": "2026-06-16.md", "stored": "830", "substituted": "8:30", "code": "VALUE_CHANGED" },
+    { "file": "2026-06-16.md", "stored": "7", "substituted": "7 remainder 1", "code": "VALUE_CHANGED" },
+    { "file": "2026-06-16.md", "stored": "3", "substituted": "3/4", "code": "VALUE_CHANGED" },
+    { "file": "2026-06-16.md", "stored": "4", "substituted": "4/10", "code": "VALUE_CHANGED" },
+    { "file": "2026-06-16.md", "stored": "2", "substituted": "2:3", "code": "VALUE_CHANGED" },
+    { "file": "2026-06-16.md", "stored": "2", "substituted": "2/3", "code": "VALUE_CHANGED" },
+    { "file": "2026-06-16.md", "stored": "2", "substituted": "2/5", "code": "VALUE_CHANGED" },
+    { "file": "2026-06-16.md", "stored": "7", "substituted": "7 and 8", "code": "VALUE_CHANGED" },
+    { "file": "2026-06-17.md", "stored": "4", "substituted": "4/10", "code": "VALUE_CHANGED" },
+    { "file": "2026-06-22.md", "stored": "3", "substituted": "3/9", "code": "VALUE_CHANGED" }
+  ],
+
+  "questions": [
+    {
+      "id": "valid-arithmetic",
+      "grade": 3, "question": "24 + 18 = ?",
+      "choices": ["42", "41", "43", "32"], "answer": "42",
+      "expect": { "verdict": "VALID", "codes": [] }
+    },
+    {
+      "id": "fraction-distractor-not-reduced",
+      "grade": 4, "question": "1/4 + 1/4 = ?",
+      "choices": ["1/2", "2/8", "1/4", "3/4"], "answer": "1/2",
+      "expect": { "verdict": "ERROR", "codes": ["FRACTION_NOT_LOWEST_TERMS"] },
+      "why": "distractor 2/8 is the answer in a non-reduced form, so two choices are mathematically correct"
+    },
+    {
+      "id": "no-correct-option-shape",
+      "grade": 1, "question": "Which shape has 6 sides?",
+      "choices": ["square", "triangle", "pentagon", "rectangle"], "answer": "hexagon",
+      "seed": 1168085,
+      "expect": { "verdict": "ERROR", "codes": ["NO_CORRECT_OPTION"] }
+    },
+    {
+      "id": "duplicate-choices-comparison",
+      "grade": 2, "question": "Compare: 125 ___ 938",
+      "choices": [">", "<", "=", ">"], "answer": "<",
+      "seed": 1296570,
+      "expect": { "verdict": "ERROR", "codes": ["DUPLICATE_CHOICES"] }
+    },
+    {
+      "id": "equal-operands-comparison",
+      "grade": 2, "question": "Compare: 14 ___ 14",
+      "choices": [">", "<", "=", "<"], "answer": ">",
+      "expect": { "verdict": "ERROR", "codes": ["DUPLICATE_CHOICES", "EQUAL_OPERANDS_COMPARISON"] }
+    },
+    {
+      "id": "tied-operands-longer",
+      "grade": 2, "question": "A ruler is 21 cm. A eraser is 21 cm. Which is longer?",
+      "choices": ["ruler", "eraser", "Same", "neither"], "answer": "eraser",
+      "seed": 1191905,
+      "expect": { "verdict": "ERROR", "codes": ["TIED_OPERANDS"] }
+    },
+    {
+      "id": "distractor-beats-answer",
+      "grade": 2, "question": "Which is the largest? 35, 63, 54",
+      "choices": ["35", "63", "54", "83"], "answer": "63",
+      "seed": 1344084,
+      "expect": { "verdict": "ERROR", "codes": ["DISTRACTOR_BEATS_ANSWER"] }
+    },
+    {
+      "id": "tied-extreme-in-list",
+      "grade": 2, "question": "Which is the smallest? 48, 25, 25",
+      "choices": ["48", "25", "25", "60"], "answer": "25",
+      "seed": 1344140,
+      "expect": { "verdict": "ERROR", "codes": ["DUPLICATE_CHOICES", "TIED_EXTREME_IN_LIST"] }
+    },
+    {
+      "id": "answer-twice-among-choices",
+      "grade": 2, "question": "Which is the largest? 35, 91, 24",
+      "choices": ["35", "91", "24", "91"], "answer": "91",
+      "seed": 1344127,
+      "expect": { "verdict": "ERROR", "codes": ["DUPLICATE_CHOICES", "MULTIPLE_CORRECT_OPTIONS"] }
+    },
+    {
+      "id": "fraction-denominator-one",
+      "grade": 3, "question": "1/2 + 1/2 = ?",
+      "choices": ["1/1", "1", "2/2", "1/4"], "answer": "1/1",
+      "seed": 3280757,
+      "expect": { "verdict": "ERROR", "codes": ["FRACTION_DENOMINATOR_ONE", "MULTIPLE_CORRECT_OPTIONS"] }
+    },
+    {
+      "id": "improper-fraction-grade3",
+      "grade": 3, "question": "3/6 + 6/6 = ?",
+      "choices": ["3/2", "9/6", "1/2", "2/3"], "answer": "3/2",
+      "seed": 3280738,
+      "expect": { "verdict": "ERROR", "codes": ["IMPROPER_FRACTION_FOR_GRADE", "MULTIPLE_CORRECT_OPTIONS"] }
+    },
+    {
+      "id": "improper-distractors-simplify",
+      "grade": 3, "question": "Simplify 3/6",
+      "choices": ["1/2", "4/7", "4/3", "5/2"], "answer": "1/2",
+      "seed": 3071280,
+      "expect": { "verdict": "ERROR", "codes": ["IMPROPER_FRACTION_FOR_GRADE"] },
+      "why": "improper distractors in a proper-fraction task for Grade 3"
+    },
+    {
+      "id": "unreduced-distractor-equal-to-one",
+      "grade": 3, "question": "Simplify 5/8",
+      "choices": ["5/8", "7/7", "2/4", "3/9"], "answer": "5/8",
+      "seed": 3071282,
+      "expect": { "verdict": "ERROR", "codes": ["FRACTION_NOT_LOWEST_TERMS", "FRACTION_DENOMINATOR_ONE"] }
+    },
+    {
+      "id": "sale-price-above-original",
+      "grade": 6, "question": "Original price: $50. Sale price: $70. What percent off?",
+      "choices": ["-40%", "40%", "20%", "30%"], "answer": "-40%",
+      "seed": 6352020,
+      "expect": { "verdict": "ERROR", "codes": ["SALE_PRICE_GE_ORIGINAL", "NEGATIVE_PERCENT_OFF"] }
+    },
+    {
+      "id": "remainder-ge-divisor",
+      "grade": 4, "question": "51 \u00f7 4 = ? (with remainder)",
+      "choices": ["12 R3", "12 R5", "13 R1", "11 R7"], "answer": "12 R3",
+      "expect": { "verdict": "ERROR", "codes": ["REMAINDER_GE_DIVISOR"] },
+      "why": "distractors 12 R5 and 11 R7 have remainder >= divisor"
+    },
+    {
+      "id": "unrounded-without-instruction",
+      "grade": 7, "question": "14.64 \u00d7 9.73 = ?",
+      "choices": ["142.45", "142.44", "142.4472", "143.45"], "answer": "142.45",
+      "seed": 5087125,
+      "expect": { "verdict": "ERROR", "codes": ["UNROUNDED_WITHOUT_INSTRUCTION"] }
+    },
+    {
+      "id": "rounded-with-instruction",
+      "grade": 7, "question": "14.64 \u00d7 9.73 = ? Round to 2 decimal places.",
+      "choices": ["142.45", "142.44", "143.45", "141.45"], "answer": "142.45",
+      "expect": { "verdict": "VALID", "codes": [] }
+    },
+    {
+      "id": "malformed-sign",
+      "grade": 8, "question": "If y = -1x + -8, what is y when x = -3?",
+      "choices": ["-5", "-11", "5", "11"], "answer": "-5",
+      "expect": { "verdict": "ERROR", "codes": ["MALFORMED_SIGN"] }
+    },
+    {
+      "id": "choice-is-prefix-of-choice",
+      "grade": 3, "question": "What time is shown?",
+      "choices": ["5", "5:00", "5:30", "6:00"], "answer": "5:00",
+      "expect": { "verdict": "ERROR", "codes": ["CHOICE_IS_PREFIX_OF_CHOICE"] },
+      "why": "the choice shape that the deleted prefix fixer used to exploit"
+    },
+    {
+      "id": "missing-answer",
+      "grade": 6, "question": "What is 15% of 80?",
+      "choices": ["12", "10", "14", "16"], "answer": "",
+      "expect": { "verdict": "ERROR", "codes": ["MISSING_FIELD"] }
+    },
+    {
+      "id": "three-choices-only",
+      "grade": 1, "question": "3 + 4 = ?",
+      "choices": ["7", "6", "8"], "answer": "7",
+      "expect": { "verdict": "ERROR", "codes": ["CHOICE_COUNT"] }
+    },
+    {
+      "id": "placeholder-content",
+      "grade": 5, "question": "Calculate the area: TODO",
+      "choices": ["12", "undefined", "14", "16"], "answer": "12",
+      "expect": { "verdict": "ERROR", "codes": ["PLACEHOLDER_TEXT"] }
+    },
+    {
+      "id": "unit-assertion-mismatch",
+      "grade": 4, "question": "A rope is 50 cm long. How long is it in centimetres?",
+      "choices": ["50 cm", "5 cm", "500 cm", "0.5 cm"], "answer": "50",
+      "expect": { "verdict": "ERROR", "codes": ["UNIT_ASSERTION"] },
+      "why": "must never be repaired by appending 'cm' to the stored answer"
+    },
+    {
+      "id": "word-problem-unverified",
+      "grade": 3, "question": "Maya shares 12 stickers equally among her 4 friends and keeps the rest. How many does each friend get?",
+      "choices": ["3", "4", "2", "6"], "answer": "3",
+      "expect": { "verdict": "UNVERIFIED", "codes": ["UNVERIFIED"] },
+      "why": "structurally valid natural language; must not publish on the strength of answer-to-choice matching alone"
+    },
+    {
+      "id": "algebraic-form-unverified",
+      "grade": 11, "question": "Factor: x^2 + 5x + 6",
+      "choices": ["(x+2)(x+3)", "(x+1)(x+6)", "(x-2)(x-3)", "(x+2)(x-3)"], "answer": "(x+2)(x+3)",
+      "expect": { "verdict": "UNVERIFIED", "codes": ["UNVERIFIED"] },
+      "why": "algebraic equivalence is out of Phase 0 scope; string equality must not accept it"
+    },
+    {
+      "id": "hint-leaks-answer",
+      "grade": 2, "question": "17 + 25 = ?",
+      "choices": ["42", "41", "43", "32"], "answer": "42",
+      "hint": "The answer is 42.",
+      "expect": { "verdict": "ERROR", "codes": ["HINT_LEAKS_ANSWER"] }
+    }
+  ],
+
+  "bounded_termination": [
+    {
+      "id": "insufficient-distractor-space",
+      "why": "the deleted makeChoices() fallback froze the browser: genPercentages easy draws distractors from only three possible values, one of which is the answer",
+      "correct": "2",
+      "distractor_values": ["2", "5", "10"],
+      "required_choices": 4,
+      "expect": { "code": "INSUFFICIENT_DISTRACTOR_SPACE", "must_terminate": true },
+      "reproducing_cells": [
+        { "grade": 5, "topic": "Percentages", "difficulty": "easy", "observed_freeze_rate": "129/2000" },
+        { "grade": 9, "topic": "Data Analysis", "difficulty": "medium", "observed_freeze_rate": "6/2000" },
+        { "grade": 6, "topic": "Statistics", "difficulty": "medium", "observed_freeze_rate": "3/2000" },
+        { "grade": 6, "topic": "Statistics", "difficulty": "hard", "observed_freeze_rate": "3/2000" }
+      ]
+    },
+    {
+      "id": "string-concat-filler",
+      "why": "String(correct + size) silently concatenates when correct is a string, producing values like '5%3'",
+      "correct": "5%",
+      "distractor_values": ["5%", "10%"],
+      "required_choices": 4,
+      "expect": { "code": "INSUFFICIENT_DISTRACTOR_SPACE", "must_terminate": true, "must_not_produce": ["5%2", "5%3"] }
+    }
+  ]
+}
