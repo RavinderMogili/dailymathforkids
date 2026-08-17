@@ -9,6 +9,12 @@ on:
 jobs:
   unit-tests:
     runs-on: ubuntu-latest
+    env:
+      JEST_OFFLINE: "1"
+      ANTHROPIC_API_KEY: ""
+      OPENAI_API_KEY: ""
+      SUPABASE_URL: ""
+      SUPABASE_SERVICE_ROLE: ""
     steps:
       - uses: actions/checkout@v4
 

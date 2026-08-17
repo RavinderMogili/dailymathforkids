@@ -54,6 +54,12 @@ jobs:
           node-version: "20"
 
       - name: Run frontend unit tests
+        env:
+          JEST_OFFLINE: "1"
+          ANTHROPIC_API_KEY: ""
+          OPENAI_API_KEY: ""
+          SUPABASE_URL: ""
+          SUPABASE_SERVICE_ROLE: ""
         run: |
           npm install --no-audit --no-fund
           npm run test:unit
