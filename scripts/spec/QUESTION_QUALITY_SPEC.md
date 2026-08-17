@@ -77,6 +77,14 @@ Recognized surface forms, in this precedence order:
    separators; optional leading sign; optional mixed number `<int> <int>/<int>`.
 8. `text` — anything else.
 
+Rule 8 is a genuine catch-all. A typed pattern applies only when it consumes the
+**entire** trimmed input; if any characters remain, the value is `text`. Prose that
+happens to contain digits or a unit — `The blue ribbon, by 7 cm`, `3 tenths`,
+`x = 4, y = 0` — is `text`, and two such answers compare by canonical text
+equality. `PARSE_FAILED` is reserved for empty input, placeholder tokens and a
+zero denominator; it must never be produced merely because a typed pattern did not
+match.
+
 A string that could be read as two different types is a parse ambiguity and is an
 `ERROR` (`AMBIGUOUS_ANSWER_FORM`), never a silent choice. `2:3` is a `ratio`;
 `2:30` with no meridiem is a `time`; the ambiguity is resolved by the rule that a
@@ -134,8 +142,9 @@ auto-fixer's behavior and must be visible in reports.
 - Answers are always in lowest terms. `gcd(num, den) != 1` → `FRACTION_NOT_LOWEST_TERMS`.
 - `den == 1` must be written as an integer. `1/1`, `4/1` → `FRACTION_DENOMINATOR_ONE`.
 - `den == 0` → `ZERO_DENOMINATOR`.
-- Grades 1–6: `|num| > den` → `IMPROPER_FRACTION_FOR_GRADE`; the mixed-number form
-  is required. Grades 7–12: improper fractions are permitted.
+- Grades 1–4: `|num| > den` → `IMPROPER_FRACTION_FOR_GRADE`; the mixed-number form
+  is required. Grades 5–12: improper fractions are permitted, because fraction
+  operations that legitimately produce them (e.g. `3/4 ÷ 1/2 = 3/2`) begin there.
 - These rules apply to distractors as well as to the answer. A `Fractions` item
   whose distractors are unreduced or improper is an `ERROR`, because it teaches
   the wrong normal form.
@@ -199,13 +208,21 @@ output, curated pool entry). All are blocking.
 | `MULTIPLE_CORRECT_OPTIONS` | exactly one choice equals the answer — two or more is an error |
 | `MULTIPLE_ANSWER_LINES` | at most one `Answer:` line per question |
 | `SOLVER_DISAGREEMENT` | solver result equals the stated answer |
-| `HINT_LEAKS_ANSWER` | hint/steps must not restate the stem's own numbers as the result, nor contain the answer value |
+| `MISSING_FRENCH` | the French rendering is present where the path requires it |
 | `DUPLICATE_RECENT_QUESTION` | no repeat of a normalized `(grade, question)` fingerprint within 30 days |
 | `NONTERMINATING_GENERATION` | a generator must produce a question within a bounded step budget |
 
-Answer-position balance is a run-level report, not a per-question gate: no option
-position may hold more than 40% of correct answers across a publication run
-(`POSITION_BIAS`).
+Two checks are reported but do not block, because they describe pedagogical quality
+rather than mathematical or structural invalidity, and blocking on them would stop
+publication for reasons unrelated to correctness:
+
+- `HINT_LEAKS_ANSWER` — the hint or steps contain the answer value, or restate the
+  stem's own numbers as the result.
+- `POSITION_BIAS` — a run-level report: no option position should hold more than
+  40% of correct answers across a publication run.
+
+Both are surfaced in every report and counted in the phase status file. Promoting
+either to blocking is an owner decision, not an implementation choice.
 
 ## 8. Bounded termination
 

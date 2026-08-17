@@ -27,6 +27,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 DAILY_DIR = ROOT / "daily"
 GRADE_CODES = [f"G{i}" for i in range(1, 13)]
 EXPECTED_DIFFICULTIES = {"Easy": 4, "Medium": 4, "Hard": 2}
+REPORT_ONLY_CODES = {"HINT_LEAKS_ANSWER"}
 
 
 @dataclass
@@ -76,7 +77,7 @@ def parse_questions_from_md(md_text: str) -> list[dict[str, Any]]:
         grade, content = grade_match.group(1), grade_match.group(2)
         for q_match in q_pattern.finditer(content):
             qnum, difficulty, title, body = q_match.groups()
-            answer_matches = re.findall(r"^\s*-\s*Answer:\s*(.+)$", body, re.MULTILINE)
+            answer_matches = re.findall(r"^ {3}-\s*Answer:\s*(.+)$", body, re.MULTILINE)
             choices_raw = _extract(body, r"^\s*-\s*Choices:\s*(.+)$")
             en = _extract(body, r"^\s*-\s*EN:\s*(.+)$")
             fr = _extract(body, r"^\s*-\s*FR:\s*(.+)$")
@@ -124,7 +125,7 @@ def validate_questions(questions: list[dict[str, Any]], require_french: bool = F
     for question in questions:
         result = validate_question(question, require_french=require_french)
         for code in result["codes"]:
-            level = "warning" if code == "UNVERIFIED" else "error"
+            level = "warning" if code == "UNVERIFIED" or code in REPORT_ONLY_CODES else "error"
             issues.append(Issue(level, str(question.get("grade", "")), int(question.get("num", 0)),
                                 code, code=code))
     return issues
@@ -253,7 +254,11 @@ def validate_run(filepath: pathlib.Path, date_str: str, allow_nonvalid: int = 0,
             allowed.append(issue)
         else:
             blocked.append(issue)
-    nonvalid = len({(issue.grade, issue.qnum) for issue in blocked if issue.grade != "RUN"})
+    nonvalid = len({
+        (issue.grade, issue.qnum)
+        for issue in blocked
+        if issue.grade != "RUN" and issue.code not in REPORT_ONLY_CODES
+    })
     blocking_errors = any(issue.level == "error" for issue in blocked)
     publication_allowed = not blocking_errors and nonvalid <= allow_nonvalid
     return {

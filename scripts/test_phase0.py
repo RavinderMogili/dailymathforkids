@@ -54,7 +54,7 @@ class Phase0Tests(unittest.TestCase):
             "equal-comparison": "EQUAL_OPERANDS_COMPARISON",
             "denominator-one": "FRACTION_DENOMINATOR_ONE",
             "sale-greater-than-original": "SALE_PRICE_GE_ORIGINAL",
-            "missing-french": "MISSING_FIELD",
+            "missing-french": "MISSING_FRENCH",
             "placeholder": "PLACEHOLDER_TEXT",
         }
         for path in sorted(INVALID_FIXTURES.glob("*.md")):

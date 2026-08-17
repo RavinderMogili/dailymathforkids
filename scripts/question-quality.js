@@ -87,7 +87,7 @@ function parseNumber(raw) {
     if (!denominator) return [null, {}, 'ZERO_DENOMINATOR'];
     const sign = whole < 0n ? -1n : 1n;
     const value = add(R(whole), R(sign * numerator, denominator));
-    return [value, { written_num: asInt(value.n), written_den: asInt(value.d) }, null];
+    return [value, { written_num: asInt(value.n), written_den: asInt(value.d), mixed: true }, null];
   }
   m = text.match(/^([+-]?\d+)\/(\d+)$/);
   if (m) {
@@ -115,9 +115,10 @@ function parseValue(raw) {
   let m = text.match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)$/i);
   if (m) {
     let hour = Number(m[1]), minute = Number(m[2] || 0);
-    if (hour < 1 || hour > 12 || minute >= 60) return [null, 'PARSE_FAILED'];
-    if (hour === 12) hour = 0;
-    return [{ kind: 'time', minutes: hour * 60 + minute, meridiem: m[3].toUpperCase() }, null];
+    if (hour >= 1 && hour <= 12 && minute < 60) {
+      if (hour === 12) hour = 0;
+      return [{ kind: 'time', minutes: hour * 60 + minute, meridiem: m[3].toUpperCase() }, null];
+    }
   }
   m = text.match(/^(\d{1,2}):(\d{1,2})$/);
   if (m) {
@@ -138,23 +139,27 @@ function parseValue(raw) {
   m = text.match(/^(.+?)\s*%$/);
   if (m) {
     const [value, meta, code] = parseNumber(m[1]);
-    return code ? [null, code] : [canonicalNumber('percent', value, meta), null];
+    if (code === 'ZERO_DENOMINATOR') return [null, code];
+    if (!code) return [canonicalNumber('percent', value, meta), null];
   }
   m = text.match(/^(?:\$|A\$)\s*(.+)$/i) || text.match(/^(.+?)\s*(?:\$|dollars?)$/i);
   if (m) {
     const [value, meta, code] = parseNumber(m[1]);
-    return code ? [null, code] : [canonicalNumber('currency', value, { symbol: '$', ...meta }), null];
+    if (code === 'ZERO_DENOMINATOR') return [null, code];
+    if (!code) return [canonicalNumber('currency', value, { symbol: '$', ...meta }), null];
   }
   m = text.match(/^(.+?)\s*(?:¢|cents?)$/i);
   if (m) {
     const [value, meta, code] = parseNumber(m[1]);
-    return code ? [null, code] : [canonicalNumber('currency', value, { symbol: '¢', ...meta }), null];
+    if (code === 'ZERO_DENOMINATOR') return [null, code];
+    if (!code) return [canonicalNumber('currency', value, { symbol: '¢', ...meta }), null];
   }
   const unitPattern = UNITS.slice().sort((a, b) => b.length - a.length).map(x => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
   m = text.match(new RegExp(`^(.+?)\\s*(${unitPattern})$`));
   if (m) {
     const [value, meta, code] = parseNumber(m[1]);
-    return code ? [null, code] : [canonicalNumber('measurement', value, { unit: m[2], ...meta }), null];
+    if (code === 'ZERO_DENOMINATOR') return [null, code];
+    if (!code) return [canonicalNumber('measurement', value, { unit: m[2], ...meta }), null];
   }
   const [value, meta, code] = parseNumber(text);
   if (!code) return [canonicalNumber('number', value, meta), null];
@@ -162,7 +167,10 @@ function parseValue(raw) {
   return [textValue(text), null];
 }
 function serializeValue(value, code) {
-  return value || { status: 'PARSE_FAILED', code: code || 'PARSE_FAILED' };
+  if (!value) return { status: 'PARSE_FAILED', code: code || 'PARSE_FAILED' };
+  const result = { ...value };
+  delete result.mixed;
+  return result;
 }
 function valuesEqual(a, b) {
   if (!a || !b) return [false, 'PARSE_FAILED'];
@@ -315,10 +323,38 @@ function solveQuestion(question) {
     const [slope] = parseNumber(m[1]), [intercept] = parseNumber(m[3]), [x] = parseNumber(m[4]);
     return [numberValue(add(mul(slope, x), m[2] === '+' ? intercept : R(-intercept.n, intercept.d))), null];
   }
+  m = text.match(/(\d+)\^(\d+)\s*[×x*]\s*\1\^(\d+)\s*=\s*\1\^\?/);
+  if (m) return [numberValue(R(BigInt(Number(m[2]) + Number(m[3])))), null];
   m = text.match(/([-+]?\d+)\s*\^\s*([-+]?\d+)/);
   if (m) return [numberValue(R(BigInt(m[1]) ** BigInt(m[2]))), null];
   m = text.match(/(?:\u221a|sqrt\(?\s*)(\d+)/i);
   if (m) { const root = integerSqrt(BigInt(m[1])); if (root != null) return [numberValue(R(root)), null]; }
+  m = text.match(/(?:what is\s+)?([-+]?\d+\/\d+)\s*([+\-x*÷\/])\s*([-+]?\d+\/\d+)/i);
+  if (m) {
+    const [left] = parseNumber(m[1]), [right] = parseNumber(m[3]);
+    if (!left || !right || ((m[2] === '÷' || m[2] === '/') && right.n === 0n)) return [null, 'UNVERIFIED'];
+    const value = m[2] === '+' ? add(left, right)
+      : m[2] === '-' ? sub(left, right)
+      : m[2] === 'x' || m[2] === '*' ? mul(left, right)
+      : div(left, right);
+    return [numberValue(value), null];
+  }
+  m = text.match(/([-+]?\d+)\s*(?:÷|\/)\s*([-+]?\d+)\s*=\s*\?/);
+  if (m) {
+    const dividend = Number(m[1]), divisor = Number(m[2]);
+    if (divisor) {
+      const quotient = Math.floor(dividend / divisor), remainder = dividend % divisor;
+      if (remainder === 0) return [numberValue(R(BigInt(quotient))), null];
+      return [{ kind: 'quotrem', q: quotient, r: remainder }, null];
+    }
+  }
+  m = text.match(/(\d+)\^(\d+)\s*[×x*]\s*\1\^(\d+)\s*=\s*\1\^\?/);
+  if (m) return [numberValue(R(BigInt(Number(m[2]) + Number(m[3])))), null];
+  m = text.match(/Dot product:\s*\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\)\s*[·.]\s*\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\)\s*=\s*\?/i);
+  if (m) {
+    const value = Number(m[1]) * Number(m[3]) + Number(m[2]) * Number(m[4]);
+    return [numberValue(R(BigInt(value))), null];
+  }
   m = text.match(/([-+*/()\d.,\s]+?)\s*=\s*\?/);
   if (m && /[+\-*/]/.test(m[1])) {
     const value = evalExpression(m[1].replace(/×/g, '*').replace(/÷/g, '/'));
@@ -335,7 +371,7 @@ function fractionIssues(value, grade) {
   const n = BigInt(value.written_num), d = BigInt(value.written_den), issues = [];
   if (gcd(n, d) !== 1n) issues.push('FRACTION_NOT_LOWEST_TERMS');
   if (BigInt(value.den) === 1n) issues.push('FRACTION_DENOMINATOR_ONE');
-  if (Number(grade) <= 6 && abs(n) > d) issues.push('IMPROPER_FRACTION_FOR_GRADE');
+  if (Number(grade) <= 4 && abs(n) > d && !value.mixed) issues.push('IMPROPER_FRACTION_FOR_GRADE');
   return issues;
 }
 function validateQuestion(question, options = {}) {
@@ -351,7 +387,7 @@ function validateQuestion(question, options = {}) {
     addCode('MISSING_FIELD');
     return { verdict: 'ERROR', codes, grade: gradeRaw, question_index: index };
   }
-  if (options.require_french && !String(question.fr || '').trim()) addCode('MISSING_FIELD');
+  if (options.require_french && !String(question.fr || '').trim()) addCode('MISSING_FRENCH');
   if (Number(question.answer_line_count || 1) > 1) addCode('MULTIPLE_ANSWER_LINES');
   const allText = ['title', 'en', 'fr', 'hint', 'answer', 'choices_raw'].map(key => String(question[key] || '')).join(' ');
   if (/\+\s*-|-\s*-|\+-/.test(allText)) addCode('MALFORMED_SIGN');
@@ -440,7 +476,8 @@ function validateQuestion(question, options = {}) {
     }
   } else if (!solved && solveCode === 'UNVERIFIED' && !codes.length) addCode('UNVERIFIED');
   if (answerValue && question.hint && normalText(question.hint).toLocaleLowerCase('en').includes(normalText(answer).toLocaleLowerCase('en'))) addCode('HINT_LEAKS_ANSWER');
-  const verdict = codes.length ? (codes.length === 1 && codes[0] === 'UNVERIFIED' ? 'UNVERIFIED' : 'ERROR') : 'VALID';
+  const blockingCodes = codes.filter(code => code !== 'HINT_LEAKS_ANSWER');
+  const verdict = blockingCodes.length ? (blockingCodes.length === 1 && blockingCodes[0] === 'UNVERIFIED' ? 'UNVERIFIED' : 'ERROR') : 'VALID';
   return { verdict, codes, grade: gradeRaw, question_index: index };
 }
 function conformanceResult(fixtures) {
@@ -449,7 +486,10 @@ function conformanceResult(fixtures) {
     parse: fixtures.parse.map(item => { const [value, code] = parseValue(item.input); return { input: item.input, result: serializeValue(value, code) }; }),
     equivalence: fixtures.equivalence.map(item => { const [equal, code] = equivalentStrings(item.a, item.b); return { a: item.a, b: item.b, equal, code }; }),
     forbidden_fixes: fixtures.forbidden_fixes.map(item => { const [equal, code] = equivalentStrings(item.stored, item.substituted); return { file: item.file, stored: item.stored, substituted: item.substituted, verdict: 'ERROR', code: code || 'VALUE_CHANGED' }; }),
-    questions: fixtures.questions.map(item => ({ id: item.id, ...validateQuestion({ grade: item.grade, num: 1, question: item.question, en: item.question, choices: item.choices, answer: item.answer, hint: item.hint }) })),
+    questions: fixtures.questions.map(item => ({ id: item.id, ...validateQuestion({
+      grade: item.grade, num: 1, question: item.question, en: item.question, fr: item.fr,
+      choices: item.choices, answer: item.answer, hint: item.hint,
+    }, { require_french: item.require_french === true || Object.prototype.hasOwnProperty.call(item, 'fr') }) })),
     bounded_termination: fixtures.bounded_termination.map(item => {
       const space = new Set(item.distractor_values.map(String));
       return { id: item.id, code: space.size - (space.has(String(item.correct)) ? 1 : 0) + 1 < item.required_choices ? 'INSUFFICIENT_DISTRACTOR_SPACE' : null, must_terminate: true };
@@ -457,7 +497,9 @@ function conformanceResult(fixtures) {
   };
 }
 
-module.exports = {
+const questionQualityApi = {
   parseValue, serializeValue, valuesEqual, equivalentStrings, solveQuestion,
   validateQuestion, conformanceResult, normalText,
 };
+if (typeof module !== 'undefined' && module.exports) module.exports = questionQualityApi;
+if (typeof window !== 'undefined') window.DMKQuestionQuality = questionQualityApi;

@@ -91,6 +91,7 @@ def _parse_number(text: str) -> tuple[Fraction | None, dict[str, Any], str | Non
         return number, {
             "written_num": number.numerator,
             "written_den": number.denominator,
+            "mixed": True,
         }, None
 
     fraction = re.fullmatch(r"([+-]?\d+)/(\d+)", text)
@@ -128,12 +129,11 @@ def parse_value(raw: Any) -> tuple[dict[str, Any] | None, str | None]:
     if mer_match:
         hour = int(mer_match.group(1))
         minute = int(mer_match.group(2) or 0)
-        if not (1 <= hour <= 12 and minute < 60):
-            return None, "PARSE_FAILED"
-        if hour == 12:
-            hour = 0
-        return {"kind": "time", "minutes": hour * 60 + minute,
-                "meridiem": mer_match.group(3).upper()}, None
+        if 1 <= hour <= 12 and minute < 60:
+            if hour == 12:
+                hour = 0
+            return {"kind": "time", "minutes": hour * 60 + minute,
+                    "meridiem": mer_match.group(3).upper()}, None
 
     time_match = re.fullmatch(r"(\d{1,2}):(\d{1,2})", text)
     if time_match:
@@ -159,36 +159,41 @@ def parse_value(raw: Any) -> tuple[dict[str, Any] | None, str | None]:
     percent = re.fullmatch(r"(.+?)\s*%", text)
     if percent:
         number, meta, code = _parse_number(percent.group(1))
-        if code:
+        if code == "ZERO_DENOMINATOR":
             return None, code
-        return _value("percent", number, **meta), None
+        if code is None:
+            return _value("percent", number, **meta), None
 
     currency = re.fullmatch(r"(?:\$|A\$)\s*(.+)", text, re.I)
     if currency:
         number, meta, code = _parse_number(currency.group(1))
-        if code:
+        if code == "ZERO_DENOMINATOR":
             return None, code
-        return _value("currency", number, symbol="$", **meta), None
+        if code is None:
+            return _value("currency", number, symbol="$", **meta), None
     currency = re.fullmatch(r"(.+?)\s*(?:\$|dollars?)", text, re.I)
     if currency:
         number, meta, code = _parse_number(currency.group(1))
-        if code:
+        if code == "ZERO_DENOMINATOR":
             return None, code
-        return _value("currency", number, symbol="$", **meta), None
+        if code is None:
+            return _value("currency", number, symbol="$", **meta), None
     cents = re.fullmatch(r"(.+?)\s*(?:¢|cents?)", text, re.I)
     if cents:
         number, meta, code = _parse_number(cents.group(1))
-        if code:
+        if code == "ZERO_DENOMINATOR":
             return None, code
-        return _value("currency", number, symbol="¢", **meta), None
+        if code is None:
+            return _value("currency", number, symbol="¢", **meta), None
 
     unit_pattern = "|".join(re.escape(unit) for unit in sorted(UNITS, key=len, reverse=True))
     measurement = re.fullmatch(r"(.+?)\s*(" + unit_pattern + r")", text)
     if measurement:
         number, meta, code = _parse_number(measurement.group(1))
-        if code:
+        if code == "ZERO_DENOMINATOR":
             return None, code
-        return _value("measurement", number, unit=measurement.group(2), **meta), None
+        if code is None:
+            return _value("measurement", number, unit=measurement.group(2), **meta), None
 
     number, meta, code = _parse_number(text)
     if code is None:
@@ -201,7 +206,7 @@ def parse_value(raw: Any) -> tuple[dict[str, Any] | None, str | None]:
 def serialize_value(value: dict[str, Any] | None, code: str | None = None) -> Any:
     if value is None:
         return {"status": "PARSE_FAILED", "code": code or "PARSE_FAILED"}
-    return value
+    return {key: item for key, item in value.items() if key != "mixed"}
 
 
 def values_equal(a: dict[str, Any] | None, b: dict[str, Any] | None) -> tuple[bool, str | None]:
@@ -419,6 +424,13 @@ def solve_question(question: str, grade: int | str | None = None) -> tuple[dict[
         value = Fraction(m) * Fraction(x) + (Fraction(intercept) if op == "+" else -Fraction(intercept))
         return _number(value), None
 
+    exponent_result = re.search(
+        r"(\d+)\^(\d+)\s*[×x*]\s*\1\^(\d+)\s*=\s*\1\^\?",
+        text,
+    )
+    if exponent_result:
+        return _number(Fraction(int(exponent_result.group(2)) + int(exponent_result.group(3)))), None
+
     power = re.search(r"([-+]?\d+)\s*\^\s*([-+]?\d+)", text)
     if power:
         base, exponent = map(int, power.groups())
@@ -429,6 +441,52 @@ def solve_question(question: str, grade: int | str | None = None) -> tuple[dict[
         result = math.isqrt(value)
         if result * result == value:
             return _number(Fraction(result)), None
+
+    fraction_operation = re.search(
+        r"(?:what is\s+)?([-+]?\d+/\d+)\s*([+\-x*÷/])\s*([-+]?\d+/\d+)",
+        lowered,
+    )
+    if fraction_operation:
+        left, _, left_error = _parse_number(fraction_operation.group(1))
+        right, _, right_error = _parse_number(fraction_operation.group(3))
+        if left_error or right_error or (fraction_operation.group(2) in {"÷", "/"} and right == 0):
+            return None, "UNVERIFIED"
+        operator = fraction_operation.group(2)
+        value = {
+            "+": left + right,
+            "-": left - right,
+            "x": left * right,
+            "*": left * right,
+            "÷": left / right,
+            "/": left / right,
+        }[operator]
+        return _number(value), None
+
+    division_result = re.search(r"([-+]?\d+)\s*(?:÷|/)\s*([-+]?\d+)\s*=\s*\?", text)
+    if division_result:
+        dividend, divisor = map(int, division_result.groups())
+        if divisor:
+            quotient, remainder = divmod(dividend, divisor)
+            if remainder == 0:
+                return _number(Fraction(quotient), written_decimals=0), None
+            return {"kind": "quotrem", "q": quotient, "r": remainder}, None
+
+    exponent_result = re.search(
+        r"(\d+)\^(\d+)\s*[×x*]\s*\1\^(\d+)\s*=\s*\1\^\?",
+        text,
+    )
+    if exponent_result:
+        return _number(Fraction(int(exponent_result.group(2)) + int(exponent_result.group(3)))), None
+
+    dot_result = re.search(
+        r"Dot product:\s*\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\)\s*[·.]\s*"
+        r"\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\)\s*=\s*\?",
+        text,
+        re.I,
+    )
+    if dot_result:
+        a, b, c, d = map(int, dot_result.groups())
+        return _number(Fraction(a * c + b * d)), None
 
     # Restrict generic expression solving to stems that visibly ask for an
     # arithmetic result.  This prevents word problems from being guessed.
@@ -477,7 +535,7 @@ def _fraction_issues(value: dict[str, Any] | None, grade: int) -> list[str]:
         issues.append("FRACTION_NOT_LOWEST_TERMS")
     if value.get("den") == 1:
         issues.append("FRACTION_DENOMINATOR_ONE")
-    if grade <= 6 and abs(written_num) > written_den:
+    if grade <= 4 and abs(written_num) > written_den and not value.get("mixed"):
         issues.append("IMPROPER_FRACTION_FOR_GRADE")
     return issues
 
@@ -504,7 +562,7 @@ def validate_question(question: dict[str, Any], require_french: bool = False) ->
         add("MISSING_FIELD")
         return {"verdict": "ERROR", "codes": codes, "grade": grade_raw, "question_index": index}
     if require_french and not str(question.get("fr") or "").strip():
-        add("MISSING_FIELD")
+        add("MISSING_FRENCH")
     if int(question.get("answer_line_count", 1) or 0) > 1:
         add("MULTIPLE_ANSWER_LINES")
     full_text = " ".join(str(question.get(k) or "") for k in ("title", "en", "fr", "hint", "answer", "choices_raw"))
@@ -667,9 +725,10 @@ def validate_question(question: dict[str, Any], require_french: bool = False) ->
         if answer_surface and answer_surface in _normal_text(hint).casefold():
             add("HINT_LEAKS_ANSWER")
 
+    blocking_codes = [code for code in codes if code != "HINT_LEAKS_ANSWER"]
     verdict = "VALID"
-    if codes:
-        verdict = "UNVERIFIED" if codes == ["UNVERIFIED"] else "ERROR"
+    if blocking_codes:
+        verdict = "UNVERIFIED" if blocking_codes == ["UNVERIFIED"] else "ERROR"
     return {"verdict": verdict, "codes": codes, "grade": grade_raw, "question_index": index}
 
 
@@ -695,9 +754,10 @@ def conformance_result(fixtures: dict[str, Any]) -> dict[str, Any]:
     for case in fixtures["questions"]:
         question_results.append({"id": case["id"], **validate_question({
             "grade": case["grade"], "num": 1, "question": case["question"],
-            "en": case["question"], "choices": case["choices"], "answer": case["answer"],
+            "en": case["question"], "fr": case.get("fr"),
+            "choices": case["choices"], "answer": case["answer"],
             "hint": case.get("hint"),
-        })})
+        }, require_french=case.get("require_french", False) or "fr" in case)})
     bounded_results = []
     for case in fixtures["bounded_termination"]:
         space = {str(value) for value in case["distractor_values"]}

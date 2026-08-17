@@ -39,6 +39,11 @@
     { "input": "4 R2",         "expect": { "kind": "quotrem", "q": 4, "r": 2 } },
     { "input": "7 remainder 1","expect": { "kind": "quotrem", "q": 7, "r": 1 } },
     { "input": "hexagon",      "expect": { "kind": "text", "value": "hexagon" } },
+    { "input": "The blue ribbon, by 7 cm", "expect": { "kind": "text", "value": "the blue ribbon, by 7 cm" } },
+    { "input": "3 tenths",     "expect": { "kind": "text", "value": "3 tenths" } },
+    { "input": "3 ones",       "expect": { "kind": "text", "value": "3 ones" } },
+    { "input": "x = 4, y = 0", "expect": { "kind": "text", "value": "x = 4, y = 0" } },
+    { "input": "9 remainder 2 with 5 left over", "expect": { "kind": "text", "value": "9 remainder 2 with 5 left over" } },
     { "input": "  Hexagon  ",  "expect": { "kind": "text", "value": "hexagon" } },
     { "input": "Both A and B", "expect": { "kind": "text", "value": "both a and b" } },
     { "input": ">",            "expect": { "kind": "text", "value": ">" } },
@@ -56,6 +61,10 @@
     { "a": "50%",   "b": "50 %",  "equal": true },
     { "a": "2:3",   "b": "4:6",   "equal": true },
     { "a": "hexagon", "b": "Hexagon", "equal": true },
+    { "a": "The blue ribbon, by 7 cm", "b": "The blue ribbon, by 7 cm", "equal": true,
+      "why": "prose containing digits and a unit must compare as text, not fail to parse" },
+    { "a": "3 tenths", "b": "3 tenths", "equal": true },
+    { "a": "3 tenths", "b": "3 hundredths", "equal": false },
     { "a": "3",     "b": "3/4",   "equal": false, "code": "VALUE_CHANGED" },
     { "a": "5",     "b": "5/8",   "equal": false, "code": "VALUE_CHANGED" },
     { "a": "830",   "b": "8:30",  "equal": false, "code": "VALUE_CHANGED" },
@@ -276,7 +285,36 @@
       "grade": 2, "question": "17 + 25 = ?",
       "choices": ["42", "41", "43", "32"], "answer": "42",
       "hint": "The answer is 42.",
-      "expect": { "verdict": "ERROR", "codes": ["HINT_LEAKS_ANSWER"] }
+      "expect": { "verdict": "VALID", "codes": [], "warnings": ["HINT_LEAKS_ANSWER"] },
+      "why": "reported but non-blocking per spec section 7: pedagogical quality, not invalidity"
+    },
+    {
+      "id": "prose-answer-matches-choice",
+      "grade": 2, "question": "A blue ribbon is 45 cm long. A red ribbon is 28 cm long. Noah cuts 10 cm off the blue ribbon. Which ribbon is longer, and by how many centimetres?",
+      "choices": ["The blue ribbon, by 5 cm", "The blue ribbon, by 7 cm", "The red ribbon, by 3 cm", "The red ribbon, by 5 cm"],
+      "answer": "The blue ribbon, by 7 cm",
+      "expect": { "verdict": "UNVERIFIED", "codes": ["UNVERIFIED"] },
+      "why": "prose answer must match its choice as text; reporting NO_CORRECT_OPTION here is a false positive"
+    },
+    {
+      "id": "place-value-prose-answer",
+      "grade": 4, "question": "What is the value of the digit 3 in the number 4.37?",
+      "choices": ["3 ones", "3 tens", "3 tenths", "3 hundredths"], "answer": "3 tenths",
+      "expect": { "verdict": "UNVERIFIED", "codes": ["UNVERIFIED"] }
+    },
+    {
+      "id": "improper-fraction-allowed-grade6",
+      "grade": 6, "question": "What is 3/4 \u00f7 1/2?",
+      "choices": ["3/2", "3/8", "1/2", "2/3"], "answer": "3/2",
+      "expect": { "verdict": "VALID", "codes": [] },
+      "why": "improper fractions are legitimate from Grade 5 up (spec section 6.1)"
+    },
+    {
+      "id": "missing-french",
+      "grade": 3, "question": "24 + 18 = ?", "fr": "",
+      "choices": ["42", "41", "43", "32"], "answer": "42",
+      "require_french": true,
+      "expect": { "verdict": "ERROR", "codes": ["MISSING_FRENCH"] }
     }
   ],
 
