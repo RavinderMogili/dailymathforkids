@@ -79,7 +79,7 @@
       <table class="stars-table" aria-label="This week's Math Stars">
         <thead>
           <tr>
-            <th scope="col">Rank</th>
+            <th scope="col">Serial Number</th>
             <th scope="col">Nickname</th>
             <th scope="col">This Week's Points</th>
           </tr>
@@ -146,12 +146,11 @@
         }
 
         const u = getUser();
-        tbody.innerHTML = rows.map(r => {
+        tbody.innerHTML = rows.map((r, i) => {
           const isMe = u && r.nickname === u.nickname;
-          const rankClass = r.rank <= 3 ? ` stars-rank-${r.rank}` : '';
-          const rankDisplay = r.rank === 1 ? '&#11088;' : r.rank === 2 ? '&#11088;' : r.rank === 3 ? '&#11088;' : r.rank;
+          const serial = i + 1;
           return `<tr class="${isMe ? 'my-row' : ''}">
-            <td class="stars-rank${rankClass}">${rankDisplay}</td>
+            <td class="stars-rank">${serial}</td>
             <td>${escHtml(r.nickname)}</td>
             <td><span class="stars-pts">${r.weeklyPoints} pts</span></td>
           </tr>`;
