@@ -181,6 +181,7 @@ class Phase0Tests(unittest.TestCase):
             self.assertEqual(first["items"][0]["date"], "2026-01-01")
             self.assertEqual(first["items"][0]["grade"], "G3")
             self.assertEqual(first["items"][0]["question_index"], 1)
+            self.assertEqual(first["items"][0]["disposition"], "hidden")
             self.assertEqual(first["items"][0]["restoration_status"], "quarantined")
 
     def test_quarantine_hiding_requires_exactly_named_item(self):
@@ -189,6 +190,7 @@ class Phase0Tests(unittest.TestCase):
                 "date": "2026-01-01",
                 "grade": "G3",
                 "question_index": 2,
+                "disposition": "hidden",
                 "restoration_status": "quarantined",
             }]
         }
@@ -200,7 +202,7 @@ class Phase0Tests(unittest.TestCase):
                 ["2026-01-02", "2026-01-01"],
                 manifest,
             ),
-            ["2026-01-02"],
+            ["2026-01-02", "2026-01-01"],
         )
 
     def test_restoration_requires_independent_verification(self):
@@ -213,6 +215,7 @@ class Phase0Tests(unittest.TestCase):
                 "codes": ["NO_CORRECT_OPTION"],
                 "reason": "bad",
                 "verification_result": "ERROR",
+                "disposition": "hidden",
                 "restoration_status": "restored",
                 "restoration_verification": "",
             }],
@@ -223,7 +226,7 @@ class Phase0Tests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 quarantine_historical.load_manifest(path)
 
-    def test_archive_index_hides_quarantined_date_but_keeps_other_dates(self):
+    def test_archive_index_keeps_dates_when_items_are_quarantined(self):
         with tempfile.TemporaryDirectory() as directory:
             root = pathlib.Path(directory)
             daily = root / "daily"
@@ -241,6 +244,7 @@ class Phase0Tests(unittest.TestCase):
                     "codes": ["NO_CORRECT_OPTION"],
                     "reason": "bad",
                     "verification_result": "ERROR",
+                    "disposition": "hidden",
                     "restoration_status": "quarantined",
                     "restoration_verification": None,
                 }],
@@ -251,7 +255,7 @@ class Phase0Tests(unittest.TestCase):
                     patch.object(gen_site, "quiz_date_today", return_value="2026-01-03"):
                 gen_site.rebuild_index_and_sitemap()
             index = (root / "index.html").read_text(encoding="utf-8")
-            self.assertNotIn("2026-01-01", index)
+            self.assertIn("2026-01-01", index)
             self.assertIn("2026-01-02", index)
 
     def test_unit_workflows_are_offline_and_content_gates_are_blocking(self):

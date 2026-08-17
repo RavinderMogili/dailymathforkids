@@ -6,7 +6,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from validate_quiz import validate_run
-from quarantine_historical import date_has_quarantine, filter_archive_dates, load_manifest
+from quarantine_historical import filter_archive_dates, is_quarantined, load_manifest
 
 try:
     import markdown2
@@ -64,6 +64,7 @@ HELPERS_JS = r"""
 <script>
 (function enhanceProblems() {
   document.querySelectorAll('.problems-list > li').forEach(li => {
+    if (li.dataset.quarantined === 'true') return;
     const text = li.innerText;
     const en      = (text.match(/EN:\s*([\s\S]*?)(?=\n\s*FR:)/i)       || [])[1]?.trim() || '';
     const fr      = (text.match(/FR:\s*([\s\S]*?)(?=\n\s*Choices:)/i)  || [])[1]?.trim() || '';
@@ -551,8 +552,37 @@ FINAL CHECK before outputting: Verify you have 12 grade sections (G1-G12), each 
         print(f"ERROR: generation failed: {e}", file=sys.stderr)
         sys.exit(1)
 
-def generate_html_from_text(text, today):
+def _hide_quarantined_questions(
+    content: str,
+    grade: str,
+    date: str,
+    manifest: dict,
+) -> str:
+    question_pattern = re.compile(
+        r"^\s*(\d+)\.\s*\*\*\[([^\]]+)\]\s*(.*?)\*\*\s*$"
+        r"([\s\S]*?)(?=^\s*\d+\.\s*\*\*|\Z)",
+        re.MULTILINE,
+    )
+    ordinal = 0
+
+    def replace(match: re.Match[str]) -> str:
+        nonlocal ordinal
+        ordinal += 1
+        if not is_quarantined(date, grade, ordinal, manifest):
+            return match.group(0)
+        return (
+            f'<li class="quarantined-question" data-quarantined="true" '
+            f'data-question-index="{ordinal}" aria-hidden="true" style="display:none"></li>\n'
+        )
+
+    return question_pattern.sub(replace, content)
+
+
+def generate_html_from_text(text, today, quarantine_manifest=None):
     grade_sections = parse_grade_sections(text)
+    quarantine_manifest = quarantine_manifest or load_manifest(
+        ROOT / "data" / "quarantine" / "historical.json"
+    )
     enc_m    = re.search(r"## Today's Encouragement\n(.*?)(?=\n## |\Z)", text, re.DOTALL)
     enc_text = enc_m.group(1).strip() if enc_m else "Every problem you solve makes your brain stronger."
     story_m  = re.search(r"## Mini Story of Kindness\n(.*?)(?=\n## |\Z)", text, re.DOTALL)
@@ -563,6 +593,7 @@ def generate_html_from_text(text, today):
         content = grade_sections.get(code, "")
         if not content:
             continue
+        content = _hide_quarantined_questions(content, code, today, quarantine_manifest)
         sec_html = markdown2.markdown(content, extras=["tables", "fenced-code-blocks"])
         sec_html = sec_html.replace('<ol>\n<li>', '<ol class="problems-list">\n<li>', 1)
         grade_num = code[1:]
@@ -758,7 +789,6 @@ def rebuild_index_and_sitemap():
             if (
                 marker_date
                 and (DAILY_DIR / f"{marker_date}.html").exists()
-                and not date_has_quarantine(marker_date, archive_manifest)
             ):
                 latest = marker_date
         except (OSError, ValueError, TypeError):
@@ -779,7 +809,7 @@ def rebuild_index_and_sitemap():
     )
     recent_items = (
         "".join(f'<li><a href="daily/{p.name}">Daily Math - {p.stem}</a></li>' for p in archive_pages[:30])
-        if archive_pages else "<li>No non-quarantined daily pages yet.</li>"
+        if archive_pages else "<li>No daily pages yet.</li>"
     )
 
     index_html = f"""<!doctype html>
