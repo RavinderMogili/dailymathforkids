@@ -94,8 +94,10 @@
       <h2 id="profile-name">—</h2>
       <div class="profile-meta" id="profile-meta"></div>
       <div id="streak-badge-wrap"></div>
-      <div class="grade-change-row">
-        <label for="grade-select">Change grade:</label>
+      <div id="grade-correction-box" style="padding:12px;background:#fffbeb;border:2px solid #f59e0b;border-radius:12px;margin-top:10px">
+        <p id="grade-policy-copy" style="margin:0 0 10px;font-size:.9rem">You can correct your Official Grade once. Your existing points will NOT be lost. After this correction, your Official Grade will be locked.</p>
+        <div class="grade-change-row">
+        <label for="grade-select">Correct Official Grade:</label>
         <select id="grade-select">
           <option value="1">Grade 1</option>
           <option value="2">Grade 2</option>
@@ -110,8 +112,14 @@
           <option value="11">Grade 11</option>
           <option value="12">Grade 12</option>
         </select>
-        <button onclick="saveGrade()">Save</button>
+        <input id="grade-confirm-pin" type="password" inputmode="numeric" maxlength="4" placeholder="PIN" aria-label="4-digit PIN" style="max-width:90px;min-height:36px;padding:4px 8px;border:1px solid var(--border);border-radius:8px"/>
+        <button onclick="saveGrade()">Confirm once</button>
         <span id="grade-save-msg"></span>
+        </div>
+      </div>
+      <div id="grade-locked-box" style="display:none;padding:12px;background:var(--surface-2);border-radius:12px;margin-top:10px;font-size:.9rem;font-weight:600">
+        <span id="grade-locked-label">Official Grade — Locked</span><br>
+        Need another correction? <button class="link-btn" onclick="document.getElementById('dmk-feedback-btn')?.click()">Contact us through Feedback</button>.
       </div>
       <div id="parent-email-row" class="grade-change-row" style="margin-top:10px">
         <label for="parent-email-input">Parent email:</label>
@@ -273,6 +281,7 @@
   window.DMK_ROOT = './';
 </script>
 <script src="scripts/app.js?v=2"></script>
+<script src="scripts/grade-practice.js"></script>
 <script src="scripts/badges.js"></script>
 <script>
 async function loadProfile() {
@@ -293,11 +302,17 @@ async function loadProfile() {
   const data = await res.json();
 
   document.getElementById('profile-name').textContent = data.nickname || u.nickname;
-  const currentGrade = data.grade || u.grade || '3';
+  const currentGrade = data.officialGrade || data.grade || u.grade || 'Grade 3';
+  const formattedGrade = DMKGradePractice.formatGrade(currentGrade);
   document.getElementById('profile-meta').textContent =
-    [currentGrade ? 'Grade ' + currentGrade : '', data.school].filter(Boolean).join(' · ');
+    [formattedGrade ? 'Official Grade: ' + formattedGrade : '', data.school].filter(Boolean).join(' · ');
   const gradeSelect = document.getElementById('grade-select');
   if (gradeSelect) gradeSelect.value = String(currentGrade).replace(/\D/g, '') || '3';
+  const correctionUsed = !!data.gradeCorrectionUsed;
+  document.getElementById('grade-correction-box').style.display = correctionUsed ? 'none' : 'block';
+  document.getElementById('grade-locked-box').style.display = correctionUsed ? 'block' : 'none';
+  document.getElementById('grade-locked-label').textContent = `${formattedGrade} — Locked`;
+  saveUser({ ...u, grade: formattedGrade, gradeCorrectionUsed: correctionUsed });
 
   const emailInput = document.getElementById('parent-email-input');
   if (emailInput) emailInput.value = u.parent_email || '';
@@ -580,25 +595,30 @@ async function saveGrade() {
   const u = getUser();
   if (!u) return;
   const newGrade = document.getElementById('grade-select').value;
+  const pin = document.getElementById('grade-confirm-pin').value.trim();
   const msgEl = document.getElementById('grade-save-msg');
+  if (!/^\d{4}$/.test(pin)) { msgEl.textContent = 'Enter your 4-digit PIN.'; return; }
+  if (!confirm('Use your one lifetime Official Grade correction? Your existing points will NOT be lost. This cannot be undone without owner approval.')) return;
   msgEl.textContent = 'Saving…';
   try {
     const api = window.DMK_API || '';
-    const res = await fetch(`${api}/api/register`, {
+    const res = await fetch(`${api}/api/grade-correction`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nickname: u.nickname, grade: newGrade, school: u.school || '', city: u.city || '' })
+      body: JSON.stringify({ userId: u.userId, newGrade, pin, confirmed: true })
     });
-    if (!res.ok) throw new Error('Server error');
-    saveUser({ ...u, grade: newGrade });
-    msgEl.textContent = '✓ Grade updated!';
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Could not update Official Grade');
+    const officialGrade = DMKGradePractice.formatGrade(data.officialGrade);
+    saveUser({ ...u, grade: officialGrade, gradeCorrectionUsed: true });
+    msgEl.textContent = '✓ Official Grade corrected. All points preserved.';
     document.getElementById('profile-meta').textContent =
-      ['Grade ' + newGrade, u.school].filter(Boolean).join(' · ');
-    setTimeout(() => { msgEl.textContent = ''; }, 3000);
-  } catch {
-    saveUser({ ...u, grade: newGrade });
-    msgEl.textContent = '✓ Saved locally';
-    setTimeout(() => { msgEl.textContent = ''; }, 3000);
+      ['Official Grade: ' + officialGrade, u.school].filter(Boolean).join(' · ');
+    document.getElementById('grade-correction-box').style.display = 'none';
+    document.getElementById('grade-locked-box').style.display = 'block';
+    document.getElementById('grade-locked-label').textContent = `${officialGrade} — Locked`;
+  } catch (error) {
+    msgEl.textContent = error.message || 'Could not update Official Grade. No changes were saved.';
   }
 }
 

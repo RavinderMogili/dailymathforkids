@@ -128,6 +128,7 @@ function injectModals() {
           <select id="reg-grade" class="form-input" required>
             <option value="">Choose your grade…</option>${opts}
           </select>
+          <small class="opt-label" style="margin-top:4px">Choose your Official Grade carefully. You may correct it once later. After that, it will be locked.</small>
         </label>
         <label class="form-label">School name <small class="opt-label">(optional)</small>
           <input id="reg-school" class="form-input" placeholder="e.g. Hillcrest Elementary" maxlength="60"/>
@@ -346,7 +347,7 @@ async function submitReg(e) {
       msg.className = 'form-msg error';
       return;
     }
-    saveUser({ userId: data.userId, nickname: data.nickname, grade: data.grade, school: data.school, city: data.city, parent_email: data.parent_email });
+    saveUser({ userId: data.userId, nickname: data.nickname, grade: data.grade, school: data.school, city: data.city, parent_email: data.parent_email, gradeCorrectionUsed: !!data.gradeCorrectionUsed });
     store.set('dmk_review', []); store.set('doneDays', {});
     hideRegModal(); renderBadge();
     if (typeof showGradeProblems === 'function') showGradeProblems();
@@ -396,7 +397,7 @@ async function submitLogin(e) {
       msg.className = 'form-msg error';
       return;
     }
-    saveUser({ userId: data.userId, nickname: data.nickname, grade: data.grade, school: data.school, city: data.city });
+    saveUser({ userId: data.userId, nickname: data.nickname, grade: data.grade, school: data.school, city: data.city, gradeCorrectionUsed: !!data.gradeCorrectionUsed });
     store.set('dmk_review', []); store.set('doneDays', {});
     hideLoginModal(); renderBadge();
     // Old account without PIN — remind them to set one (don't block login)

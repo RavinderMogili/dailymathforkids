@@ -86,6 +86,24 @@
     <!-- Setup -->
     <div class="practice-setup" id="practice-setup">
       <div class="setup-card">
+        <div class="setup-label">Official Grade: <strong id="official-grade">—</strong></div>
+        <label class="setup-label" for="practice-grade">Practice Grade</label>
+        <select class="setup-select" id="practice-grade" onchange="changePracticeGrade(this.value)">
+          <option>Grade 1</option><option>Grade 2</option><option>Grade 3</option><option>Grade 4</option>
+          <option>Grade 5</option><option>Grade 6</option><option>Grade 7</option><option>Grade 8</option>
+          <option>Grade 9</option><option>Grade 10</option><option>Grade 11</option><option>Grade 12</option>
+        </select>
+        <p id="practice-eligibility" style="font-weight:700;margin:0 0 12px"></p>
+        <div style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border:2px solid #f59e0b;border-radius:12px;padding:14px;font-size:.9rem;line-height:1.55">
+          <strong>🌟 How Practice Points Work</strong><br>
+          Earn 0.5 point for every correct answer in your Official Grade.<br>
+          10 correct = 5 points · 20 correct = 10 points<br>
+          Maximum: 10 Practice Points per day.<br>
+          Another grade is Extra Practice for learning and earns no Math Stars points.
+        </div>
+        <p id="pts-remaining" style="text-align:center;font-size:.9rem;color:var(--muted);margin:12px 0 0">Loading today's Practice Points…</p>
+      </div>
+      <div class="setup-card">
         <span class="setup-label">Pick your topics</span>
         <p style="font-size:.85rem;color:var(--muted);margin-bottom:10px">Select one or more. If none selected, all topics will be used.</p>
         <div class="topic-chips" id="topic-chips"></div>
@@ -109,7 +127,6 @@
         </div>
       </div>
 
-      <p id="pts-remaining" style="text-align:center;font-size:.9rem;color:var(--muted);margin-bottom:12px"></p>
       <button class="start-practice" id="start-practice-btn" onclick="startPractice()">Start Practice</button>
       <button class="start-practice" id="review-btn" onclick="startReview()" style="background:linear-gradient(135deg,#fef3c7,#fde68a);color:#92400e;border:2px solid #f59e0b;margin-top:8px">Review Mistakes (<span id="review-count">0</span>)</button>
       <details id="mistake-history" style="margin-top:14px;text-align:left">
@@ -192,6 +209,7 @@
   window.DMK_ROOT = './';
 </script>
 <script src="scripts/app.js?v=2"></script>
+<script src="scripts/grade-practice.js"></script>
 <script src="scripts/practice-engine.js"></script>
 <script src="scripts/badges.js"></script>
 <script src="scripts/goals.js"></script>
@@ -199,6 +217,8 @@
   // ── State ──────────────────────────────────────────────────────────────
   let practiceState = {
     grade: 3,
+    officialGrade: '',
+    submissionId: '',
     topics: [],
     difficulty: 'easy',
     count: 5,
@@ -237,10 +257,15 @@
   document.addEventListener('DOMContentLoaded', () => {
     const u = getUser();
     if (u && u.grade) {
-      practiceState.grade = parseInt(String(u.grade).replace(/\D/g, '')) || 3;
+      practiceState.officialGrade = DMKGradePractice.formatGrade(u.grade);
+      practiceState.grade = DMKGradePractice.gradeNumber(u.grade) || 3;
     }
+    document.getElementById('official-grade').textContent = practiceState.officialGrade || 'Sign in required';
+    document.getElementById('practice-grade').value = DMKGradePractice.formatGrade(practiceState.grade);
+    updateEligibility();
     renderTopicChips();
     updateReviewButton();
+    loadPracticeStatus();
     if (typeof renderWeeklyGoalWidget === 'function') renderWeeklyGoalWidget('weekly-goal-practice');
   });
 
@@ -250,17 +275,38 @@
     container.innerHTML = topics.map(t =>
       `<button class="topic-chip" data-topic="${t}" onclick="toggleTopic(this)">${t}</button>`
     ).join('');
-    updatePtsRemaining();
   }
 
-  function updatePtsRemaining() {
-    const today = new Date().toISOString().slice(0, 10);
-    const used = parseFloat(localStorage.getItem('dmk_practice_pts_' + today) || '0');
-    const remaining = Math.max(0, 10 - used);
+  function updateEligibility() {
+    const practiceGrade = DMKGradePractice.formatGrade(practiceState.grade);
+    const eligible = DMKGradePractice.gradesMatch(practiceState.officialGrade, practiceGrade);
+    const el = document.getElementById('practice-eligibility');
+    el.textContent = DMKGradePractice.eligibilityMessage(practiceState.officialGrade, practiceGrade);
+    el.style.color = eligible ? 'var(--success)' : '#92400e';
+  }
+
+  function changePracticeGrade(value) {
+    practiceState.grade = DMKGradePractice.gradeNumber(value) || 3;
+    document.querySelectorAll('.topic-chip.selected').forEach(el => el.classList.remove('selected'));
+    renderTopicChips();
+    updateEligibility();
+  }
+
+  async function loadPracticeStatus() {
+    const u = getUser();
     const el = document.getElementById('pts-remaining');
-    if (el) el.textContent = remaining > 0
-      ? `You can earn up to ${remaining} practice points today`
-      : `You've earned all 10 practice points today — keep practising for fun!`;
+    if (!u || !u.userId) { el.textContent = 'Sign in to earn and view Practice Points.'; return; }
+    try {
+      const res = await fetch(`${window.DMK_API || ''}/api/practice-status?userId=${encodeURIComponent(u.userId)}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      practiceState.officialGrade = DMKGradePractice.formatGrade(data.officialGrade);
+      document.getElementById('official-grade').textContent = practiceState.officialGrade;
+      updateEligibility();
+      el.textContent = `Practice Points Today: ${data.pointsToday} / 10 · ${DMKGradePractice.statusMessage(data.pointsToday)}`;
+    } catch {
+      el.textContent = 'Practice Point status is temporarily unavailable.';
+    }
   }
 
   function toggleTopic(el) {
@@ -288,6 +334,7 @@
     practiceState.correct = 0;
     practiceState.answered = false;
     practiceState.startTime = Date.now();
+    practiceState.submissionId = (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`).replace(/[^A-Za-z0-9_-]/g, '');
     practiceState.timerInterval = setInterval(updateTimer, 1000);
 
     document.getElementById('practice-setup').style.display = 'none';
@@ -433,27 +480,8 @@
       : pct >= 60 ? 'Great effort! Your brain grew stronger today!'
       : pct >= 40 ? 'Good work showing up! Every problem you try makes you smarter!'
       : 'You\'re braver than you think! Coming back to practice is what real learners do!';
-    // Half points: 0.5 per correct, capped at 10 pts/day (20 correct answers)
-    const today = new Date().toISOString().slice(0, 10);
-    const capKey = 'dmk_practice_pts_' + today;
-    const usedToday = parseFloat(localStorage.getItem(capKey) || '0');
-    const maxDaily = 10;
-    const rawPts = practiceState.correct * 0.5;
-    const remaining = Math.max(0, maxDaily - usedToday);
-    const pointsEarned = Math.min(rawPts, remaining);
-    localStorage.setItem(capKey, String(usedToday + pointsEarned));
-
-    const ptsText = pointsEarned > 0 ? '+' + pointsEarned + ' pts' : '0 pts';
-    document.getElementById('results-points').textContent = ptsText;
-    if (remaining <= 0) {
-      document.getElementById('results-points').textContent = '0 pts';
-      document.getElementById('results-msg').textContent = msg + ' (Daily practice points reached — keep practising for fun!)';
-    } else if (pointsEarned < rawPts) {
-      document.getElementById('results-points').textContent = '+' + pointsEarned + ' pts';
-      document.getElementById('results-msg').textContent = msg + ' (You hit today\'s 10-point practice cap!)';
-    } else {
-      document.getElementById('results-msg').textContent = msg;
-    }
+    document.getElementById('results-points').textContent = 'Checking…';
+    document.getElementById('results-msg').textContent = msg;
 
     // Check badges
     const beforeBadges = getEarnedBadges().map(b => b.id);
@@ -493,13 +521,17 @@
     // Update weekly goals
     if (typeof addSolvedQuestions === 'function') addSolvedQuestions(practiceState.count);
 
-    // Submit practice score to API (capped points)
-    submitPracticeScore(practiceState.correct, practiceState.count, elapsed, pointsEarned);
+    // The API is the only authority for eligibility, award, and the daily cap.
+    submitPracticeScore(practiceState.correct, practiceState.count, elapsed, msg);
   }
 
-  async function submitPracticeScore(correct, total, timeSeconds, pointsEarned) {
+  async function submitPracticeScore(correct, total, timeSeconds, praise) {
     const u = typeof getUser === 'function' ? getUser() : null;
-    if (!u) return;
+    if (!u) {
+      document.getElementById('results-points').textContent = '0 pts';
+      document.getElementById('results-msg').textContent = `${praise} Sign in to earn Practice Points.`;
+      return;
+    }
     const api = window.DMK_API || '';
 
     // Collect wrong answers to send to server
@@ -516,21 +548,35 @@
       }));
 
     try {
-      await fetch(`${api}/api/practice-submit`, {
+      const res = await fetch(`${api}/api/practice-submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: u.userId,
+          submissionId: practiceState.submissionId,
           correct,
           total,
+          practiceGrade: DMKGradePractice.formatGrade(practiceState.grade),
           difficulty: practiceState.difficulty,
           topics: practiceState.topics,
           timeSeconds,
-          pointsEarned,
           wrongAnswers,
         }),
       });
-    } catch { /* silent fail for practice */ }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not save Practice results');
+      document.getElementById('results-points').textContent = data.pointsEarned > 0 ? `+${data.pointsEarned} pts` : '0 pts';
+      const reason = !data.eligible
+        ? 'Extra Practice — this session does not earn Math Stars points.'
+        : data.pointsToday >= 10
+          ? "You've reached today's Practice point limit — keep practising for fun!"
+          : `${data.pointsRemaining} points still available today`;
+      document.getElementById('results-msg').textContent = `${praise} ${reason}`;
+      document.getElementById('pts-remaining').textContent = `Practice Points Today: ${data.pointsToday} / 10 · ${DMKGradePractice.statusMessage(data.pointsToday)}`;
+    } catch {
+      document.getElementById('results-points').textContent = 'Not saved';
+      document.getElementById('results-msg').textContent = `${praise} We could not verify Practice Points. Please try again.`;
+    }
     if (typeof bumpSessionCount === 'function') bumpSessionCount();
   }
 
