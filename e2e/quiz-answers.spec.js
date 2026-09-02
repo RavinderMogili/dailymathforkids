@@ -11,7 +11,7 @@
  */
 
 import { test, expect } from '@playwright/test';
-const { findLatestQuizPage } = require('./helpers');
+const { findLatestQuizPage, uniqueId } = require('./helpers');
 
 const SITE = 'https://dailymathforkids.com';
 const API  = 'https://dailymathforkids-api.vercel.app';
@@ -194,7 +194,7 @@ test.describe('Answer Selection Logic', () => {
 test.describe('Quiz Submission & Scoring', () => {
   test('submitting all correct answers returns perfect score from API', async ({ page, request }) => {
     // Register a fresh user for this test
-    const nick = 'E2E_Score_' + Date.now();
+    const nick = 'E2E_Score_' + uniqueId();
     const regRes = await request.post(`${API}/api/register`, {
       data: { nickname: nick, grade: 'G3', pin: '1234', security_question: "What is your pet's name?", security_answer: 'Max' },
     });
@@ -266,7 +266,7 @@ test.describe('Quiz Submission & Scoring', () => {
   });
 
   test('submitting all wrong answers returns 0 score', async ({ page, request }) => {
-    const nick = 'E2E_Wrong_' + Date.now();
+    const nick = 'E2E_Wrong_' + uniqueId();
     const regRes = await request.post(`${API}/api/register`, {
       data: { nickname: nick, grade: 'G3', pin: '1234', security_question: "What is your pet's name?", security_answer: 'Max' },
     });
@@ -320,7 +320,7 @@ test.describe('Quiz Submission & Scoring', () => {
   });
 
   test('cannot submit the same quiz twice (duplicate submission)', async ({ page, request }) => {
-    const nick = 'E2E_Dup_' + Date.now();
+    const nick = 'E2E_Dup_' + uniqueId();
     const regRes = await request.post(`${API}/api/register`, {
       data: { nickname: nick, grade: 'G3', pin: '1234', security_question: "What is your pet's name?", security_answer: 'Max' },
     });
@@ -350,7 +350,7 @@ test.describe('Quiz Submission & Scoring', () => {
 // ──────────────────────────────────────────────────────
 test.describe('Points System', () => {
   test('submit API returns correct score and points_earned', async ({ request }) => {
-    const nick = 'E2E_Points_' + Date.now();
+    const nick = 'E2E_Points_' + uniqueId();
     const regRes = await request.post(`${API}/api/register`, {
       data: { nickname: nick, grade: 'G3', pin: '1234', security_question: "What is your pet's name?", security_answer: 'Max' },
     });
@@ -385,7 +385,7 @@ test.describe('Points System', () => {
   });
 
   test('profile API returns accumulated points for user', async ({ request }) => {
-    const nick = 'E2E_Profile_' + Date.now();
+    const nick = 'E2E_Profile_' + uniqueId();
     const regRes = await request.post(`${API}/api/register`, {
       data: { nickname: nick, grade: 'G3', pin: '1234', security_question: "What is your pet's name?", security_answer: 'Max' },
     });
@@ -549,7 +549,7 @@ test.describe('Grade-based Question Display', () => {
 test.describe('Streak Tracking', () => {
   test('completing quiz shows streak message', async ({ page, request }) => {
     // Register a real user so submission works
-    const nick = 'E2E_Streak_' + Date.now();
+    const nick = 'E2E_Streak_' + uniqueId();
     const regRes = await request.post(`${API}/api/register`, {
       data: { nickname: nick, grade: 'G3', pin: '1234', security_question: "What is your pet's name?", security_answer: 'Max' },
     });

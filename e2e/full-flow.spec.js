@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
-const { findLatestQuizPage } = require('./helpers');
+const { findLatestQuizPage, uniqueId } = require('./helpers');
 
 const SITE = 'https://dailymathforkids.com';
 const API  = 'https://dailymathforkids-api.vercel.app';
 
 // Use a unique test nickname to avoid collisions
-const TEST_NICK = 'E2E_Test_' + Date.now();
+const TEST_NICK = 'E2E_Test_' + uniqueId();
 const TEST_GRADE = 'G3';
 
 // ──────────────────────────────────────────
@@ -99,7 +99,7 @@ test.describe('Registration', () => {
 
   test('API registers a new user', async ({ request }) => {
     const res = await request.post(`${API}/api/register`, {
-      data: { nickname: TEST_NICK, grade: TEST_GRADE },
+      data: { nickname: TEST_NICK, grade: TEST_GRADE, pin: '1234', security_question: "What is your pet's name?", security_answer: 'Max' },
     });
     expect(res.status()).toBe(200);
     const body = await res.json();
@@ -116,10 +116,12 @@ test.describe('Login / Lookup', () => {
   test('API finds registered user by nickname', async ({ request }) => {
     // First register
     await request.post(`${API}/api/register`, {
-      data: { nickname: TEST_NICK, grade: TEST_GRADE },
+      data: { nickname: TEST_NICK, grade: TEST_GRADE, pin: '1234', security_question: "What is your pet's name?", security_answer: 'Max' },
     });
-    // Then lookup
-    const res = await request.get(`${API}/api/lookup?nickname=${encodeURIComponent(TEST_NICK)}`);
+    // Then lookup — must POST with the PIN since the account now has one set
+    const res = await request.post(`${API}/api/lookup`, {
+      data: { nickname: TEST_NICK, pin: '1234' },
+    });
     expect(res.status()).toBe(200);
     const body = await res.json();
     expect(body.nickname).toBe(TEST_NICK);
@@ -512,7 +514,7 @@ test.describe('Groups', () => {
   test('API returns null group for user not in any group', async ({ request }) => {
     // Register a fresh user
     const regRes = await request.post(`${API}/api/register`, {
-      data: { nickname: 'E2E_NoGroup_' + Date.now(), grade: 'G5' },
+      data: { nickname: 'E2E_NoGrp_' + uniqueId(), grade: 'G5', pin: '1234', security_question: "What is your pet's name?", security_answer: 'Max' },
     });
     const { userId } = await regRes.json();
 
@@ -525,7 +527,7 @@ test.describe('Groups', () => {
   test('API creates a group and returns invite code', async ({ request }) => {
     // Register
     const regRes = await request.post(`${API}/api/register`, {
-      data: { nickname: 'E2E_GroupCreator_' + Date.now(), grade: 'G4' },
+      data: { nickname: 'E2E_GrpCr_' + uniqueId(), grade: 'G4', pin: '1234', security_question: "What is your pet's name?", security_answer: 'Max' },
     });
     const { userId } = await regRes.json();
 

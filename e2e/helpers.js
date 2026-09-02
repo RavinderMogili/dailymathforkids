@@ -17,4 +17,14 @@ async function findLatestQuizPage(request) {
   return '/daily/' + new Date().toISOString().slice(0, 10) + '.html';
 }
 
-module.exports = { findLatestQuizPage };
+/**
+ * Short, unique, alphanumeric id for test nicknames.
+ * Nicknames are capped at 20 chars and reject 7+ consecutive digits (looks
+ * like a phone number), so a raw Date.now() timestamp doesn't work — base36
+ * encode and truncate it instead.
+ */
+function uniqueId() {
+  return Date.now().toString(36).slice(-6);
+}
+
+module.exports = { findLatestQuizPage, uniqueId };
