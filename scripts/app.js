@@ -135,7 +135,7 @@ function injectModals() {
     <div class="modal-card">
       <button class="modal-close" onclick="hideRegModal()" aria-label="Close">✕</button>
       <h2 class="modal-title" id="reg-title">Join Daily Math for Kids!</h2>
-      <p class="modal-sub">Free daily practice — track your personal best and grow every day!</p>
+      <p class="modal-sub">Free daily practice. Track your personal best and grow every day!</p>
       <form id="reg-form" onsubmit="submitReg(event)" novalidate>
         <label class="form-label">Nickname <span class="req">*</span>
           <input id="reg-nickname" class="form-input" placeholder="e.g. MathStar99" required maxlength="30" autocomplete="off"/>
@@ -185,7 +185,7 @@ function injectModals() {
     <div class="modal-card">
       <button class="modal-close" onclick="hideGroupModal()" aria-label="Close">✕</button>
       <h2 class="modal-title" id="group-title">Family / Class Goal</h2>
-      <p class="modal-sub">Practice together and celebrate as a team — no public ranking!</p>
+      <p class="modal-sub">Practice together and celebrate as a team. No public ranking!</p>
       <div style="display:flex;flex-direction:column;gap:14px">
         <div>
           <strong>Create a new group</strong>
