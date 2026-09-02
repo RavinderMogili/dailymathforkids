@@ -687,7 +687,7 @@ function renderMistakes() {
   const items = _mistakeFilter === 'all' ? _allMistakes : _allMistakes.filter(m => m.source === _mistakeFilter);
 
   if (items.length === 0) {
-    wrap.innerHTML = '<p style="color:var(--muted);font-size:.9rem;padding:4px 0">No mistakes found — keep it up!</p>';
+    wrap.innerHTML = '<p style="color:var(--muted);font-size:.9rem;padding:4px 0">No mistakes found. Keep it up!</p>';
     return;
   }
 
