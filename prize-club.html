@@ -86,7 +86,7 @@
         <thead>
           <tr>
             <th scope="col">Nickname</th>
-            <th scope="col">Date Reached</th>
+            <th scope="col">Total Points</th>
           </tr>
         </thead>
         <tbody id="club-body">
@@ -107,10 +107,6 @@
       </p>
     </div>
 
-    <p class="privacy-note" style="margin-top:16px">
-      Only nicknames and the date reached appear here. Grade, school, city, and other account information are never shown publicly.
-      Students choose to participate — they can join or leave the 300-Point Club anytime, separately from Math Stars.
-    </p>
 
     <p class="back"><a href="index.html">&larr; Back to Home</a> &nbsp;&middot;&nbsp; <a href="leaderboard.html">⭐ Math Stars</a></p>
   </main>
@@ -157,7 +153,7 @@
           const isMe = u && r.nickname === u.nickname;
           return `<tr class="${isMe ? 'my-row' : ''}">
             <td><span class="stars-pts">🏆 ${escHtml(r.nickname)}</span></td>
-            <td>${r.reachedAt || ''}</td>
+            <td><span class="stars-pts">${r.totalPoints || 300} pts</span></td>
           </tr>`;
         }).join('');
 
