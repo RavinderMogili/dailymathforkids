@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Our Math Stars – Daily Math for Kids</title>
-  <meta name="description" content="Celebrating Math Stars who earned the most points this week on Daily Math for Kids!"/>
-  <meta property="og:title" content="Our Math Stars – Daily Math for Kids"/>
-  <meta property="og:description" content="See this week's top Math Stars — celebrating practice and learning!"/>
+  <title>300-Point Club – Daily Math for Kids</title>
+  <meta name="description" content="Celebrating students who reached 300 points on Daily Math for Kids!"/>
+  <meta property="og:title" content="300-Point Club – Daily Math for Kids"/>
+  <meta property="og:description" content="See who has reached 300 points — celebrating practice and learning!"/>
   <meta property="og:image" content="https://dailymathforkids.com/assets/og-image.svg"/>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>+</text></svg>"/>
   <link rel="stylesheet" href="styles.css"/>
@@ -31,15 +31,11 @@
       vertical-align: middle; background: var(--surface);
     }
     .stars-table tr:last-child td { border-bottom: none; }
-    .stars-table tr.my-row td { background: var(--primary-light, #dbeafe); font-weight: 700; }
-    .stars-rank { font-weight: 700; color: var(--primary, #2563eb); min-width: 32px; }
-    .stars-rank-1 { font-size: 1.2rem; }
-    .stars-rank-2 { font-size: 1.1rem; }
-    .stars-rank-3 { font-size: 1.05rem; }
+    .stars-table tr.my-row td { background: #dcfce7; font-weight: 700; }
     .stars-pts {
       display: inline-block; padding: 2px 10px; border-radius: 20px;
       font-weight: 700; font-size: .9rem;
-      background: var(--primary-light, #dbeafe); color: var(--primary, #2563eb);
+      background: #dcfce7; color: #16a34a;
     }
     .stars-empty {
       text-align: center; padding: 40px 20px; color: var(--muted);
@@ -64,59 +60,50 @@
   </header>
   <main class="container">
     <div class="stars-header">
-      <h1>Our Math Stars</h1>
-      <p class="stars-subtitle">Celebrating Math Stars who earned the most points this week.</p>
-      <p class="stars-subtitle">Everyone learns at their own pace!</p>
+      <h1>🏆 300-Point Club</h1>
+      <p class="stars-subtitle">Celebrating students who reached 300 total points!</p>
+      <p class="stars-subtitle">This list never resets — once you're in, you're in!</p>
     </div>
 
     <div class="stars-encouragement">
       <strong>How it works:</strong> Earn points by completing daily quizzes and practice sessions.
-      1 point per correct answer + 3 bonus for a perfect score!
+      Reach 300 total points to join the club!
     </div>
 
-    <!-- Weekly leaderboard table -->
     <div class="board-wrap">
-      <table class="stars-table" aria-label="This week's Math Stars">
+      <table class="stars-table" aria-label="300-Point Club members">
         <thead>
           <tr>
-            <th scope="col">Serial Number</th>
             <th scope="col">Nickname</th>
-            <th scope="col">This Week's Points</th>
+            <th scope="col">Date Reached</th>
           </tr>
         </thead>
-        <tbody id="stars-body">
-          <tr><td colspan="3" class="stars-loading">Finding this week's Math Stars...</td></tr>
+        <tbody id="club-body">
+          <tr><td colspan="2" class="stars-loading">Finding 300-Point Club members...</td></tr>
         </tbody>
       </table>
     </div>
 
-    <div id="stars-join-cta" class="stars-join-cta" style="display:none">
-      <p>Want to appear on Math Stars?</p>
+    <div id="club-join-cta" class="stars-join-cta" style="display:none">
+      <p>Want to appear here once you reach 300 points?</p>
       <p style="margin-top:6px">
         <button class="btn-primary" onclick="window.location.href='profile.html'" style="padding:8px 20px">
           Go to My Progress to join
         </button>
       </p>
       <p style="margin-top:8px;font-size:.82rem;color:var(--muted)">
-        Only your nickname and weekly points are shown. You can leave anytime.
+        Only your nickname and the date you reached 300 points are shown. You can leave anytime.
       </p>
     </div>
 
     <p class="privacy-note" style="margin-top:16px">
-      Only nicknames and weekly points appear here. Grade, school, city, and other account information are never shown publicly.
-      Students choose to participate — they can join or leave Math Stars anytime.
+      Only nicknames and the date reached appear here. Grade, school, city, and other account information are never shown publicly.
+      Students choose to participate — they can join or leave the 300-Point Club anytime, separately from Math Stars.
     </p>
 
-    <p class="back"><a href="index.html">&larr; Back to Home</a> &nbsp;&middot;&nbsp; <a href="prize-club.html">🏆 300-Point Club</a></p>
+    <p class="back"><a href="index.html">&larr; Back to Home</a> &nbsp;&middot;&nbsp; <a href="leaderboard.html">⭐ Math Stars</a></p>
   </main>
   <footer>&copy; 2026 &bull; Free math practice for kids &bull; Moncton, NB</footer>
-
-  <!-- Hidden legacy elements preserved for future use -->
-  <div style="display:none" aria-hidden="true" inert>
-    <div id="legacy-speed-tab"></div>
-    <div id="legacy-grade-filter"></div>
-    <div id="legacy-city-filter"></div>
-  </div>
 
   <script>
     window.DMK_API  = 'https://dailymathforkids-api.vercel.app';
@@ -124,47 +111,45 @@
   </script>
   <script src="scripts/app.js?v=2"></script>
   <script>
-    (async function loadMathStars() {
-      const tbody = document.getElementById('stars-body');
+    (async function loadPrizeClub() {
+      const tbody = document.getElementById('club-body');
       const api = (window.DMK_API || '').replace(/\/$/, '');
 
       if (!api || api.includes('YOUR_BACKEND_URL')) {
-        tbody.innerHTML = '<tr><td colspan="3" class="stars-empty">Math Stars will appear once the backend is connected.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="2" class="stars-empty">The 300-Point Club will appear once the backend is connected.</td></tr>';
         return;
       }
 
       try {
-        const res = await fetch(`${api}/api/math-stars?limit=50`);
+        const res = await fetch(`${api}/api/prize-club`);
         if (!res.ok) throw new Error('API error');
         const data = await res.json();
-        const rows = data.students || [];
+        const rows = data.members || [];
 
         if (!rows.length) {
-          tbody.innerHTML = '<tr><td colspan="3" class="stars-empty">No Math Stars yet this week. Complete a quiz, earn points and choose to join Math Stars!</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="2" class="stars-empty">No one has joined the 300-Point Club yet. Keep practicing — you could be first!</td></tr>';
           showJoinCta();
           return;
         }
 
         const u = getUser();
-        tbody.innerHTML = rows.map((r, i) => {
+        tbody.innerHTML = rows.map((r) => {
           const isMe = u && r.nickname === u.nickname;
-          const serial = i + 1;
           return `<tr class="${isMe ? 'my-row' : ''}">
-            <td class="stars-rank">${serial}</td>
-            <td>${escHtml(r.nickname)}</td>
-            <td><span class="stars-pts">${r.weeklyPoints} pts</span></td>
+            <td><span class="stars-pts">🏆 ${escHtml(r.nickname)}</span></td>
+            <td>${r.reachedAt || ''}</td>
           </tr>`;
         }).join('');
 
         showJoinCta();
       } catch (err) {
-        tbody.innerHTML = '<tr><td colspan="3" class="stars-empty">We couldn\'t load Math Stars right now. Please try again soon.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="2" class="stars-empty">We couldn\'t load the 300-Point Club right now. Please try again soon.</td></tr>';
       }
     })();
 
     function showJoinCta() {
       const u = getUser();
-      const cta = document.getElementById('stars-join-cta');
+      const cta = document.getElementById('club-join-cta');
       if (u && cta) cta.style.display = 'block';
     }
   </script>

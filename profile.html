@@ -164,6 +164,26 @@
         </div>
       </div>
 
+      <!-- 300-Point Club opt-in section -->
+      <div id="prize-club-section" style="margin-top:16px;padding:14px 16px;background:linear-gradient(135deg,#dcfce7,#bbf7d0);border-radius:12px;border:1px solid #22c55e">
+        <div id="prize-club-prompt" style="display:none">
+          <strong style="font-size:1rem">Join the 300-Point Club?</strong>
+          <p style="margin:6px 0;font-size:.88rem;color:#166534">Once you reach 300 total points, your nickname can be shown on our public 300-Point Club page to celebrate the milestone. Your grade and other account information will not be shown. Please ask a parent or guardian before joining.</p>
+          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+            <button onclick="togglePrizeClub(true)" style="padding:8px 18px;border-radius:8px;background:#16a34a;color:#fff;border:none;font-weight:700;cursor:pointer;font-family:inherit">Join 300-Point Club</button>
+            <button onclick="dismissPrizeClubPrompt()" style="padding:8px 18px;border-radius:8px;background:transparent;color:#166534;border:1px solid #16a34a;font-weight:600;cursor:pointer;font-family:inherit">Not Now</button>
+          </div>
+        </div>
+        <div id="prize-club-toggle" style="display:none">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <label for="prize-club-switch" style="font-weight:600;font-size:.9rem;cursor:pointer">Show my nickname on the 300-Point Club page</label>
+            <input type="checkbox" id="prize-club-switch" onchange="togglePrizeClub(this.checked)" style="width:20px;height:20px;cursor:pointer"/>
+            <span id="prize-club-status" style="font-size:.82rem;font-weight:600"></span>
+          </div>
+          <p style="margin:6px 0 0;font-size:.8rem;color:#166534">This is separate from Math Stars &mdash; you can join or leave either one anytime.</p>
+        </div>
+      </div>
+
       <div class="stat-row">
         <div class="stat-box">
           <div class="stat-num" id="stat-total-pts">—</div>
@@ -819,7 +839,107 @@ async function toggleMathStars(optIn) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => { loadProfile(); loadMistakes(); initMathStarsSection(); });
+// ── 300-Point Club opt-in/out ─────────────────────────────────────────────
+async function initPrizeClubSection() {
+  const u = getUser();
+  if (!u) return;
+  const section = document.getElementById('prize-club-section');
+  const prompt = document.getElementById('prize-club-prompt');
+  const toggle = document.getElementById('prize-club-toggle');
+  const switchEl = document.getElementById('prize-club-switch');
+  const statusEl = document.getElementById('prize-club-status');
+  if (!section) return;
+
+  const api = (window.DMK_API || '').replace(/\/$/, '');
+  let isOptedIn = false;
+  try {
+    const res = await fetch(`${api}/api/history?userId=${encodeURIComponent(u.userId)}`);
+    if (res.ok) {
+      const data = await res.json();
+      isOptedIn = data.show_on_prize_club === true;
+    }
+  } catch (e) { /* use default false */ }
+
+  if (isOptedIn) {
+    prompt.style.display = 'none';
+    toggle.style.display = 'block';
+    switchEl.checked = true;
+    statusEl.textContent = 'You are visible on the 300-Point Club!';
+    statusEl.style.color = '#16a34a';
+  } else {
+    const dismissed = sessionStorage.getItem('dmk_prize_club_dismissed');
+    if (dismissed) {
+      prompt.style.display = 'none';
+      toggle.style.display = 'block';
+      switchEl.checked = false;
+      statusEl.textContent = 'You are hidden from the 300-Point Club.';
+      statusEl.style.color = 'var(--muted, #666)';
+    } else {
+      prompt.style.display = 'block';
+      toggle.style.display = 'none';
+    }
+  }
+}
+
+function dismissPrizeClubPrompt() {
+  sessionStorage.setItem('dmk_prize_club_dismissed', '1');
+  document.getElementById('prize-club-prompt').style.display = 'none';
+  document.getElementById('prize-club-toggle').style.display = 'block';
+  const statusEl = document.getElementById('prize-club-status');
+  statusEl.textContent = 'You are hidden from the 300-Point Club.';
+  statusEl.style.color = 'var(--muted, #666)';
+}
+
+async function togglePrizeClub(optIn) {
+  const u = getUser();
+  if (!u) { showLoginModal(); return; }
+  const api = (window.DMK_API || '').replace(/\/$/, '');
+  const statusEl = document.getElementById('prize-club-status');
+  const switchEl = document.getElementById('prize-club-switch');
+
+  statusEl.textContent = 'Saving...';
+  statusEl.style.color = 'var(--muted, #666)';
+
+  try {
+    const res = await fetch(`${api}/api/prize-club-opt`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: u.userId, optIn: !!optIn }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      if (data.needsNicknameChange) {
+        statusEl.textContent = data.error || 'Your nickname needs to be changed before joining.';
+        statusEl.style.color = '#dc2626';
+        switchEl.checked = false;
+      } else {
+        statusEl.textContent = data.error || 'Could not update. Try again.';
+        statusEl.style.color = '#dc2626';
+        switchEl.checked = !optIn;
+      }
+      return;
+    }
+
+    if (optIn) {
+      statusEl.textContent = 'You are visible on the 300-Point Club!';
+      statusEl.style.color = '#16a34a';
+      switchEl.checked = true;
+      document.getElementById('prize-club-prompt').style.display = 'none';
+      document.getElementById('prize-club-toggle').style.display = 'block';
+    } else {
+      statusEl.textContent = 'You are hidden from the 300-Point Club.';
+      statusEl.style.color = 'var(--muted, #666)';
+      switchEl.checked = false;
+    }
+  } catch (e) {
+    statusEl.textContent = 'Could not connect. Try again.';
+    statusEl.style.color = '#dc2626';
+    switchEl.checked = !optIn;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => { loadProfile(); loadMistakes(); initMathStarsSection(); initPrizeClubSection(); });
 </script>
 <script src="scripts/feedback-widget.js"></script>
 <script src="scripts/math-bg.js"></script>
