@@ -74,8 +74,20 @@
       1 point per correct answer + 3 bonus for a perfect score!
     </div>
 
+    <!-- Login gate: shown when nobody is logged in -->
+    <div id="stars-gate" class="stars-join-cta" style="display:none">
+      <p><strong>Log in or join to see this week's Math Stars!</strong></p>
+      <p style="margin-top:6px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button class="btn-primary" onclick="showRegModal()" style="padding:8px 20px">Join Free</button>
+        <button class="link-btn" onclick="showLoginModal()" style="padding:8px 20px">Log In</button>
+      </p>
+      <p style="margin-top:8px;font-size:.82rem;color:var(--muted)">
+        Only nicknames and weekly points are shown to logged-in students. You can join or leave anytime.
+      </p>
+    </div>
+
     <!-- Weekly leaderboard table -->
-    <div class="board-wrap">
+    <div class="board-wrap" id="stars-board-wrap" style="display:none">
       <table class="stars-table" aria-label="This week's Math Stars">
         <thead>
           <tr>
@@ -125,6 +137,15 @@
   <script src="scripts/app.js?v=2"></script>
   <script>
     (async function loadMathStars() {
+      const u = getUser();
+      if (!u) {
+        document.getElementById('stars-gate').style.display = 'block';
+        document.getElementById('stars-board-wrap').style.display = 'none';
+        return;
+      }
+      document.getElementById('stars-gate').style.display = 'none';
+      document.getElementById('stars-board-wrap').style.display = '';
+
       const tbody = document.getElementById('stars-body');
       const api = (window.DMK_API || '').replace(/\/$/, '');
 

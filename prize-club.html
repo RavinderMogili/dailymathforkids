@@ -70,7 +70,19 @@
       Reach 300 total points to join the club!
     </div>
 
-    <div class="board-wrap">
+    <!-- Login gate: shown when nobody is logged in -->
+    <div id="club-gate" class="stars-join-cta" style="display:none">
+      <p><strong>Log in or join to see the 300-Point Club!</strong></p>
+      <p style="margin-top:6px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button class="btn-primary" onclick="showRegModal()" style="padding:8px 20px">Join Free</button>
+        <button class="link-btn" onclick="showLoginModal()" style="padding:8px 20px">Log In</button>
+      </p>
+      <p style="margin-top:8px;font-size:.82rem;color:var(--muted)">
+        Only nicknames and the date reached are shown to logged-in students. You can join or leave anytime.
+      </p>
+    </div>
+
+    <div class="board-wrap" id="club-board-wrap" style="display:none">
       <table class="stars-table" aria-label="300-Point Club members">
         <thead>
           <tr>
@@ -112,6 +124,15 @@
   <script src="scripts/app.js?v=2"></script>
   <script>
     (async function loadPrizeClub() {
+      const u = getUser();
+      if (!u) {
+        document.getElementById('club-gate').style.display = 'block';
+        document.getElementById('club-board-wrap').style.display = 'none';
+        return;
+      }
+      document.getElementById('club-gate').style.display = 'none';
+      document.getElementById('club-board-wrap').style.display = '';
+
       const tbody = document.getElementById('club-body');
       const api = (window.DMK_API || '').replace(/\/$/, '');
 
