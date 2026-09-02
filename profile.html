@@ -216,7 +216,7 @@
       </div>
       <div style="margin-top:16px;padding:12px 16px;background:var(--surface-2,#f1f5f9);border-radius:12px;font-size:.9rem;color:var(--muted,#64748b)">
         <strong>What's a streak?</strong> Every day you do a quiz, your streak number goes up! Do it 3 days in a row? That's a 3-day streak! But if you skip a day, it goes back to zero.<br><br>
-        <strong>What's a shield?</strong> Get all 5 answers right and you win a magic shield! The shield lets you skip ONE day without losing your streak. After that, the shield disappears. You can earn one new shield every month — so use it wisely!
+        <strong>What's a shield?</strong> Get all 5 answers right and you win a magic shield! The shield lets you skip ONE day without losing your streak. After that, the shield disappears. You can earn one new shield every month, so use it wisely!
       </div>
     </div>
 
@@ -260,7 +260,7 @@
     <div class="profile-card" id="badges-card">
       <h2>My Badges</h2>
       <div id="badges-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:12px"></div>
-      <p id="badges-empty" style="color:var(--muted);text-align:center;display:none">No badges yet — <a href="practice.html">start practising</a> to earn them!</p>
+      <p id="badges-empty" style="color:var(--muted);text-align:center;display:none">No badges yet. <a href="practice.html">Start practising</a> to earn them!</p>
     </div>
 
     <div class="profile-card">
@@ -272,7 +272,7 @@
 
     <div class="profile-card">
       <h2>Mistake History</h2>
-      <p style="font-size:.85rem;color:var(--muted);margin-bottom:8px">Questions you got wrong — review them to learn from your mistakes!</p>
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:8px">Questions you got wrong. Review them to learn from your mistakes!</p>
       <div style="margin-bottom:10px;display:flex;gap:8px">
         <button onclick="filterMistakes('all')" class="filter-btn active" id="filter-all">All</button>
         <button onclick="filterMistakes('quiz')" class="filter-btn" id="filter-quiz">Quiz</button>
@@ -446,7 +446,7 @@ async function loadProfile() {
 
   if (subs.length === 0) {
     document.getElementById('history-wrap').innerHTML =
-      '<p class="empty-msg">No quizzes completed yet — go solve today\'s problems!</p>';
+      '<p class="empty-msg">No quizzes completed yet. Go solve today\'s problems!</p>';
     return;
   }
 
