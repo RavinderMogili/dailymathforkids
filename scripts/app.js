@@ -16,6 +16,20 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
 };
 
+// ── Timezone helpers ──────────────────────────────────────────────────────────
+
+function getTodayMoncton() {
+  const now = new Date();
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Moncton',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(now);
+  const year = parts.find(p => p.type === 'year').value;
+  const month = parts.find(p => p.type === 'month').value;
+  const day = parts.find(p => p.type === 'day').value;
+  return `${year}-${month}-${day}`;
+}
+
 // ── User ─────────────────────────────────────────────────────────────────────
 
 function getUser() { return store.get('dmk_user', null); }
@@ -845,7 +859,7 @@ function gradeToCode(grade) {
 
 function isQuizExpired() {
   if (typeof QUIZ_DATE === 'undefined') return false;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = getTodayMoncton();
   return QUIZ_DATE !== today;
 }
 
@@ -889,9 +903,11 @@ function showGradeProblems() {
   }
 
   if (expired) {
-    if (helloEl) helloEl.innerHTML = '\uD83D\uDD12 This quiz has expired. You can review the questions, but only today\'s quiz earns points. <a href="../index.html">Go to today\'s quiz!</a>';
+    if (helloEl) helloEl.innerHTML = '\uD83D\uDD12 <strong>Expired \u2014 View Only</strong><br><span style="font-size:.95rem;color:var(--muted)">You can review the questions and learning steps, but this quiz cannot be submitted for points. <a href="../index.html">Go to today\'s quiz \u2192</a></span>';
     const submitBtn = document.querySelector('#quiz button[type="submit"]');
     if (submitBtn) { submitBtn.disabled = true; submitBtn.style.opacity = '0.5'; submitBtn.textContent = 'Quiz Expired'; }
+    const startBtn = document.getElementById('start-test-btn');
+    if (startBtn) { startBtn.disabled = true; startBtn.style.opacity = '0.5'; startBtn.textContent = 'Quiz Expired'; }
     // Show steps on expired quizzes for review
     document.querySelectorAll('.steps-wrap').forEach(el => {
       el.style.display = '';
