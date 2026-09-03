@@ -423,12 +423,25 @@ def call_llm(prompt):
         return None
 
 
-def safe_generate_today():
+def _require_llm_available(context):
+    """Confirm at least one provider SDK imported successfully AND has a key.
+    Exits loudly (non-zero) instead of returning silently, so a broken
+    dependency or missing secret shows up as a failed CI run, not a quiet
+    no-op that looks identical to a normal day."""
     anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
     openai_key = os.environ.get("OPENAI_API_KEY", "").strip()
-    if not (anthropic and anthropic_key) and not (OpenAI and openai_key):
-        print("INFO: Skipping generation (no API key found for Anthropic or OpenAI).")
-        return
+    if (anthropic and anthropic_key) or (OpenAI and openai_key):
+        return anthropic_key, openai_key
+    if (anthropic_key and not anthropic) or (openai_key and not OpenAI):
+        print(f"ERROR: {context}: API key is set but the anthropic/openai SDK failed to import "
+              f"(likely a dependency version conflict, e.g. httpx/anyio).", file=sys.stderr)
+    else:
+        print(f"ERROR: {context}: no API key found for Anthropic or OpenAI.", file=sys.stderr)
+    sys.exit(1)
+
+
+def safe_generate_today():
+    _require_llm_available("safe_generate_today")
 
     today = datetime.date.today().isoformat()
     slug = today
@@ -949,11 +962,7 @@ def generate_practice_pool():
 
     import json
 
-    anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
-    openai_key = os.environ.get("OPENAI_API_KEY", "").strip()
-    if not (anthropic and anthropic_key) and not (OpenAI and openai_key):
-        print("INFO: Skipping practice pool generation (no API key found).")
-        return
+    _require_llm_available("generate_practice_pool")
 
     data_dir = ROOT / "data"
     data_dir.mkdir(parents=True, exist_ok=True)
