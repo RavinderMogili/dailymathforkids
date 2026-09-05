@@ -1312,26 +1312,65 @@ function awardShield() {
   store.set('dmk_shield_date', new Date().toISOString().slice(0, 10));
   return true;
 }
-function consumeShield() { store.set('dmk_shield', false); }
+// bridgedDate: the specific calendar day (YYYY-MM-DD) a shield was spent to
+// cover, remembered permanently so that day stays bridged on every future
+// recalculation — not just until the shield's "available" flag is used up.
+function consumeShield(bridgedDate) {
+  store.set('dmk_shield', false);
+  store.set('dmk_shield_bridge_date', bridgedDate || null);
+}
 
-function calcStreak(slug) {
-  const d  = store.get('doneDays', {});
-  let s = 0, shieldUsed = false;
-  const dt = new Date(slug);
-  for (;;) {
-    const key = dt.toISOString().slice(0, 10);
-    if (d[key]) {
-      s++;
-      dt.setDate(dt.getDate() - 1);
-    } else if (!shieldUsed && hasShield()) {
-      shieldUsed = true;
-      consumeShield();
-      dt.setDate(dt.getDate() - 1);
+// Streak calculation based on the server's submission history (the source
+// of truth — survives cleared browser storage, works across devices).
+// Aware of the streak shield: a shield can bridge exactly one fully-missed
+// calendar day. `dateStrings` is any list of 'YYYY-MM-DD' submission dates
+// (duplicates and order don't matter).
+function calcCurrentStreak(dateStrings) {
+  const dates = [...new Set((dateStrings || []).filter(Boolean))].sort().reverse();
+  if (!dates.length) return 0;
+
+  let streak = 0;
+  let expected = new Date();
+  expected.setHours(0, 0, 0, 0);
+  const shieldAvailable = hasShield();
+  const bridgedDate = store.get('dmk_shield_bridge_date', null);
+  let shieldUsedThisRun = false;
+
+  for (const d of dates) {
+    const day = new Date(d + 'T00:00:00');
+    const diff = Math.round((expected - day) / 86400000);
+    if (diff <= 1) {
+      streak++;
+      expected = day;
+    } else if (diff === 2) {
+      const gapDay = new Date(expected);
+      gapDay.setDate(gapDay.getDate() - 1);
+      const gapKey = gapDay.toISOString().slice(0, 10);
+      const alreadyBridged = bridgedDate === gapKey;
+      if (alreadyBridged || (shieldAvailable && !shieldUsedThisRun)) {
+        if (!alreadyBridged) { shieldUsedThisRun = true; consumeShield(gapKey); }
+        streak++;
+        expected = day;
+      } else {
+        break;
+      }
     } else {
       break;
     }
   }
-  return s;
+  return streak;
+}
+
+// Fetches this user's full submission-date history from the server, for
+// computing an accurate, shield-aware streak right after a quiz submission.
+async function fetchSubmissionDates(userId) {
+  if (!API || !userId) return [];
+  try {
+    const res = await fetch(`${API}/api/history?userId=${encodeURIComponent(userId)}`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.submissions || []).map(s => s.date).filter(Boolean);
+  } catch { return []; }
 }
 
 // ── Daily reminders ────────────────────────────────────────────────────────────

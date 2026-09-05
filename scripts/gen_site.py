@@ -812,7 +812,9 @@ def generate_html_from_text(text, today):
       store.set('dmk_active_quiz_url', null);
       if (submitBtn) {{ submitBtn.disabled = true; submitBtn.textContent = 'Submitted'; }}
       try {{
-        const streak = calcStreak(qid);
+        const u2 = getUser();
+        const dates = u2 ? await fetchSubmissionDates(u2.userId) : [];
+        const streak = calcCurrentStreak(dates);
         const streakEl = document.getElementById('streak-msg');
         if (streakEl) streakEl.textContent = streak > 1
           ? '' + streak + '-day streak! Keep it up!'

@@ -245,6 +245,69 @@ test.describe('Shield one-per-month limit', () => {
 });
 
 // ──────────────────────────────────────────
+//  6b. Shield actually bridges a missed day in calcCurrentStreak
+// ──────────────────────────────────────────
+test.describe('Shield bridges a missed day in calcCurrentStreak', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto(QUIZ_PAGE);
+    await page.evaluate(() => {
+      localStorage.removeItem('dmk_shield');
+      localStorage.removeItem('dmk_shield_date');
+      localStorage.removeItem('dmk_shield_bridge_date');
+    });
+  });
+
+  const daysAgoFn = (n) => {
+    const d = new Date();
+    d.setDate(d.getDate() - n);
+    return d.toISOString().slice(0, 10);
+  };
+
+  test('a 1-day gap breaks the streak with no shield', async ({ page }) => {
+    const dates = [daysAgoFn(0), daysAgoFn(2), daysAgoFn(3)]; // yesterday missing
+    const streak = await page.evaluate((ds) => calcCurrentStreak(ds), dates);
+    expect(streak).toBe(1);
+  });
+
+  test('an available shield bridges a 1-day gap and gets consumed', async ({ page }) => {
+    await page.evaluate(() => {
+      localStorage.setItem('dmk_shield', JSON.stringify(true));
+      localStorage.setItem('dmk_shield_date', JSON.stringify(new Date().toISOString().slice(0, 10)));
+    });
+    const dates = [daysAgoFn(0), daysAgoFn(2), daysAgoFn(3)]; // yesterday missing
+    const streak = await page.evaluate((ds) => calcCurrentStreak(ds), dates);
+    expect(streak).toBe(3);
+    const shieldLeft = await page.evaluate(() => hasShield());
+    expect(shieldLeft).toBe(false);
+  });
+
+  test('a bridged gap stays bridged on a later recalculation, even after the shield is spent', async ({ page }) => {
+    const dates = [daysAgoFn(0), daysAgoFn(2), daysAgoFn(3)];
+    await page.evaluate(() => {
+      localStorage.setItem('dmk_shield', JSON.stringify(true));
+      localStorage.setItem('dmk_shield_date', JSON.stringify(new Date().toISOString().slice(0, 10)));
+    });
+    const firstStreak = await page.evaluate((ds) => calcCurrentStreak(ds), dates);
+    expect(firstStreak).toBe(3);
+
+    // Simulate a later page load: shield is gone, but the same gap it
+    // already bridged must not silently break the streak again.
+    const secondStreak = await page.evaluate((ds) => calcCurrentStreak(ds), dates);
+    expect(secondStreak).toBe(3);
+  });
+
+  test('a shield cannot bridge a 2+ day gap', async ({ page }) => {
+    await page.evaluate(() => {
+      localStorage.setItem('dmk_shield', JSON.stringify(true));
+      localStorage.setItem('dmk_shield_date', JSON.stringify(new Date().toISOString().slice(0, 10)));
+    });
+    const dates = [daysAgoFn(0), daysAgoFn(3), daysAgoFn(4)]; // 2 days missing
+    const streak = await page.evaluate((ds) => calcCurrentStreak(ds), dates);
+    expect(streak).toBe(1);
+  });
+});
+
+// ──────────────────────────────────────────
 //  7. Profile page streak explanation
 // ──────────────────────────────────────────
 test.describe('Profile streak explanation', () => {
