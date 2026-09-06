@@ -129,6 +129,7 @@
       </div>
       <div class="pq-card" id="pq-card">
         <div class="pq-topic-tag" id="pq-topic"></div>
+        <div id="pq-attribution" style="display:none;font-size:.7rem;color:var(--muted);margin:-4px 0 8px">Adapted from GSM8K (OpenAI, MIT License)</div>
         <div class="pq-question" id="pq-question"></div>
         <div class="pq-choices" id="pq-choices"></div>
         <div class="pq-audio-btns">
@@ -319,6 +320,7 @@
     document.getElementById('pq-progress').textContent = `${practiceState.current + 1} / ${practiceState.count}`;
     document.getElementById('pq-score').textContent = `${practiceState.correct} correct`;
     document.getElementById('pq-topic').textContent = q.topic;
+    document.getElementById('pq-attribution').style.display = (q._source === 'gsm8k') ? 'block' : 'none';
     document.getElementById('pq-question').textContent = q.question;
     document.getElementById('pq-feedback').style.display = 'none';
     document.getElementById('pq-funfact').style.display = 'none';

@@ -6,3 +6,10 @@ __pycache__/
 
 __pycache__/
 repair_quizzes.sql
+
+# Large, fully-reproducible intermediate dumps from the word-problem dataset
+# pipeline (regenerate with tools/word-problems/assess.py and adapt.py) —
+# the reviewable outputs (assessment_report.json, pilot_shortlist.json,
+# pilot_excluded.json) are committed.
+tools/word-problems/output/assessed_records.jsonl
+tools/word-problems/output/candidates.jsonl

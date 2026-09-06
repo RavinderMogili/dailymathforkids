@@ -1003,9 +1003,76 @@ function loadPracticePool() {
     .catch(() => { _practicePool = []; });
 }
 
+// ── Extended (curated, external-dataset) word-problem pool ────────────────
+// Disabled by default — a controlled, reversible rollout. Flip to true (or
+// pass ?enableExtendedPool=1 for manual testing) once the pilot is approved.
+// See tools/word-problems/README.md for provenance, license, and how this
+// file (data/practice-pool-extended.json) was produced and reviewed.
+const EXTENDED_POOL_ENABLED = false;
+const EXTENDED_POOL_SEEN_KEY = 'dmk_extpool_seen_ids';
+const EXTENDED_POOL_SEEN_WINDOW = 60; // don't repeat the last N shown, per browser
+
+function isExtendedPoolEnabled() {
+  try {
+    if (typeof window !== 'undefined' && window.location) {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('enableExtendedPool') === '1') return true;
+      if (params.get('enableExtendedPool') === '0') return false;
+    }
+  } catch (e) { /* URLSearchParams unavailable — fall through to default */ }
+  return EXTENDED_POOL_ENABLED;
+}
+
+let _extendedPool = null;
+let _extPoolLoading = false;
+
+function loadExtendedPool() {
+  if (!isExtendedPoolEnabled() || _extendedPool !== null || _extPoolLoading) return;
+  _extPoolLoading = true;
+  const root = window.DMK_ROOT || './';
+  fetch(root + 'data/practice-pool-extended.json')
+    .then(r => r.ok ? r.json() : Promise.reject('not found'))
+    .then(data => {
+      _extendedPool = Array.isArray(data) ? data : [];
+      console.log('Extended word-problem pool loaded:', _extendedPool.length, 'questions');
+    })
+    .catch(() => { _extendedPool = []; });
+}
+
+function getSeenExtendedIds() {
+  try {
+    const raw = localStorage.getItem(EXTENDED_POOL_SEEN_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) { return []; }
+}
+
+function recordSeenExtendedIds(ids) {
+  if (!ids.length) return;
+  try {
+    const seen = getSeenExtendedIds().concat(ids);
+    const trimmed = seen.slice(-EXTENDED_POOL_SEEN_WINDOW);
+    localStorage.setItem(EXTENDED_POOL_SEEN_KEY, JSON.stringify(trimmed));
+  } catch (e) { /* localStorage unavailable (private mode, etc.) — skip tracking */ }
+}
+
+// Prefer questions not recently shown; fall back to the full set if that
+// would leave too few to choose from (safe fallback, never blocks a quiz).
+function preferUnseen(list, minNeeded) {
+  const seen = new Set(getSeenExtendedIds());
+  const unseen = list.filter(q => !seen.has(q._sourceId));
+  return unseen.length >= minNeeded ? unseen : list;
+}
+
 function getPoolQuestions(grade, topics) {
-  if (!_practicePool || _practicePool.length === 0) return [];
-  return _practicePool.filter(q =>
+  let pool = [];
+  if (_practicePool && _practicePool.length > 0) {
+    pool = pool.concat(_practicePool);
+  }
+  if (isExtendedPoolEnabled() && _extendedPool && _extendedPool.length > 0) {
+    pool = pool.concat(_extendedPool);
+  }
+  if (pool.length === 0) return [];
+  return pool.filter(q =>
     q.grade === grade &&
     (topics.length === 0 || topics.some(t =>
       t.toLowerCase().includes(q.topic?.toLowerCase()?.split(' ')[0] || '') ||
@@ -1014,8 +1081,8 @@ function getPoolQuestions(grade, topics) {
   );
 }
 
-// Auto-load pool on script load
-if (typeof window !== 'undefined') loadPracticePool();
+// Auto-load pools on script load
+if (typeof window !== 'undefined') { loadPracticePool(); loadExtendedPool(); }
 
 function makePoolQuestion(pq) {
   return {
@@ -1026,7 +1093,8 @@ function makePoolQuestion(pq) {
     hint: pq.hint || 'Think carefully about this problem.',
     steps: pq.steps || ['Read the problem carefully', 'Find the answer'],
     topic: pq.topic || 'Word Problem',
-    _source: 'chatgpt',
+    _source: pq._source || 'chatgpt',
+    _sourceId: pq._sourceId || null,
   };
 }
 
@@ -1035,8 +1103,8 @@ function generateQuiz(grade, topics, difficulty, count) {
   const isWordProblems = topics.length === 1 && topics[0] === 'Word Problems';
 
   if (isWordProblems) {
-    // Word Problems only — pull entirely from the ChatGPT pool
-    const poolQs = getPoolQuestions(grade, []);
+    // Word Problems only — pull entirely from the pool
+    const poolQs = preferUnseen(getPoolQuestions(grade, []), count);
     const usedPool = shuffle([...poolQs]).slice(0, count);
     usedPool.forEach(pq => questions.push(makePoolQuestion(pq)));
     // If pool doesn't have enough, pad with algorithmic from random topics
@@ -1045,12 +1113,13 @@ function generateQuiz(grade, topics, difficulty, count) {
       const topic = pick(getTopicsForGrade(grade).filter(t => t !== 'Word Problems'));
       questions.push({ ...generateQuestion(grade, topic, difficulty), topic, _source: 'algorithmic' });
     }
+    recordSeenExtendedIds(usedPool.filter(q => q._sourceId).map(q => q._sourceId));
     return shuffle(questions);
   }
 
   // Normal mode — mix in pool questions (up to ~40%)
   const nonWordTopics = topics.filter(t => t !== 'Word Problems');
-  const poolQs = getPoolQuestions(grade, nonWordTopics);
+  const poolQs = preferUnseen(getPoolQuestions(grade, nonWordTopics), 1);
   const poolCount = Math.min(Math.floor(count * 0.4), poolQs.length);
   const usedPool = shuffle([...poolQs]).slice(0, poolCount);
   usedPool.forEach(pq => questions.push(makePoolQuestion(pq)));
@@ -1062,5 +1131,6 @@ function generateQuiz(grade, topics, difficulty, count) {
     const topic = algoTopics[i % algoTopics.length];
     questions.push({ ...generateQuestion(grade, topic, difficulty), topic, _source: 'algorithmic' });
   }
+  recordSeenExtendedIds(usedPool.filter(q => q._sourceId).map(q => q._sourceId));
   return shuffle(questions);
 }
