@@ -51,6 +51,21 @@ MANUAL_WORDING_FIXES = {
         "in a different candidate revision and was not present in the final "
         "selected wording.",
     ),
+    "gsm8k-train-01110": (
+        "A doctor needs to give medicine to a child, and he knows that he "
+        "cannot give the same amount of medicine that he would give to an "
+        "adult. The instructions say that for every kilogram of weight the "
+        "child must be given 5 ml of medicine. The doctor knows that the "
+        "child weighs 30 kilograms and that also the full dose has to be "
+        "given in 3 equal parts. How many milliliters will each part of the "
+        "dose be?",
+        "Original source text asked for the answer in 'milligrams' but every "
+        "worked step computes milliliters (the dose is given in ml/kg) — a "
+        "unit-label mismatch in the original GSM8K text, caught on a later "
+        "re-read after the first review pass missed it. Corrected the "
+        "question's unit to match the math rather than rejecting an "
+        "otherwise-solid question.",
+    ),
 }
 
 GRADE_TARGETS = {4: 32, 5: 34, 6: 20, 7: 14}
