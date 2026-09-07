@@ -1,0 +1,114 @@
+name: Agent Automation V1
+
+# Deliberately a NEW workflow file, separate from test.yml and daily.yml.
+# Those two files are very likely being actively edited right now by the
+# other two parallel AI tasks (a master bug-fix pass and an 8,500-question
+# content-integration effort that touches the daily-generation pipeline),
+# so this workflow does not modify them. It gives automation/* branches
+# their own fail-closed gate instead.
+#
+# This is a REQUIRED, fail-closed gate: unlike daily.yml's `|| true`
+# pattern (see scripts/automation/AUTOMATION_V1.md for the audit of that),
+# every step here uses the real exit code. A failing step fails the job.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: ["agent/**"]
+  workflow_dispatch:
+    inputs:
+      run_e2e_against_prod:
+        description: "Also run Playwright e2e against the LIVE production site/API (writes test data to production). Leave false unless you mean it."
+        type: boolean
+        default: false
+
+jobs:
+  validate:
+    # Only for branches in the automation namespace, or PRs opened from one.
+    if: startsWith(github.head_ref || github.ref_name, 'agent/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Node dependencies
+        run: npm install
+
+      - name: Run automatic validation + automated tests (fail-closed)
+        run: python scripts/automation/validation_gate.py origin/main
+
+      - name: Run Automation V1's own unit tests
+        run: python -m unittest discover -s scripts/automation/tests -p "test_*.py" -v
+
+      - name: Install claude CLI for AI review step
+        if: ${{ always() && secrets.ANTHROPIC_API_KEY != '' }}
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Independent AI review (advisory, never blocks; ai_review.py always exits 0)
+        if: ${{ always() && secrets.ANTHROPIC_API_KEY != '' }}
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python scripts/automation/ai_review.py origin/main
+
+      - name: Upload AI review as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-review
+          path: scripts/automation/output/
+          if-no-files-found: ignore
+
+      - name: Notify Slack on blocker (validation failed)
+        if: ${{ failure() && secrets.SLACK_WEBHOOK_URL != '' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          python scripts/automation/notify_slack.py \
+            --level blocked \
+            --title "CI validation gate failed on ${{ github.ref_name }}" \
+            --detail "See workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --branch "${{ github.ref_name }}"
+
+      - name: Notify Slack on success (ready for review)
+        if: ${{ success() && github.event_name == 'pull_request' && secrets.SLACK_WEBHOOK_URL != '' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          python scripts/automation/notify_slack.py \
+            --level ready_for_review \
+            --title "PR checks passed: ${{ github.event.pull_request.title }}" \
+            --branch "${{ github.ref_name }}" \
+            --pr-url "${{ github.event.pull_request.html_url }}"
+
+  # Opt-in only. Never runs automatically on push/PR because the suite
+  # targets the LIVE production site and API (see e2e/full-flow.spec.js and
+  # e2e/global-teardown.js, which uses SUPABASE_SERVICE_ROLE against
+  # production). Trigger by hand via workflow_dispatch when you specifically
+  # want a production smoke test.
+  e2e-against-production:
+    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.run_e2e_against_prod == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install
+      - run: npx playwright install --with-deps chromium
+      - name: Run Playwright against production (deliberate, manual trigger only)
+        env:
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        run: npx playwright test --reporter=list
