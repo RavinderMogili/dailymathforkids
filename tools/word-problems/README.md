@@ -317,25 +317,31 @@ shortlist overwrites that file with the same content (idempotent). There is
 nothing to "import" into a database — Practice Mode reads this file
 statically, same as the existing `data/practice-pool.json`.
 
-**Enable:**
-1. For **local/dev testing only**, no code change needed: open Practice
-   Mode with `?enableExtendedPool=1` in the URL on a local/dev host (e.g.
-   `http://localhost:8080/practice.html?enableExtendedPool=1`, or a `file://`
-   preview). `isLocalDevHost()` in `scripts/practice-engine.js` gates this —
-   the query param is **silently ignored on any other hostname**, including
-   the production domain, so a visitor to the live site cannot self-enable
-   this by editing the URL. See the "query param is IGNORED on a
-   production-looking hostname" and "ignored on any non-dev hostname" Jest
-   tests for this guarantee.
-2. For **production rollout**, flip `EXTENDED_POOL_ENABLED` to `true` near
-   the top of the "Extended (curated, external-dataset) word-problem pool"
-   section in `scripts/practice-engine.js` and deploy. This is the single
-   switch that controls the feature for everyone.
+**Enable (two independent layers, since the fix in "Practice scoring trust
+boundary" above moved the real gate server-side):**
 
-**Disable:** set `EXTENDED_POOL_ENABLED` back to `false`. On a local/dev
-host you can also pass `?enableExtendedPool=0` to force it off for one
-session/test. No data migration needed —
-`data/practice-pool-extended.json` simply stops being read.
+1. **The real, points-earning path — server-side.** In the API repo/Vercel
+   project, set the `EXTENDED_POOL_ENABLED` environment variable to the
+   literal string `true`. `api/_practice-generators.js` checks this before
+   ever including GSM8K-derived questions in a server-issued session — the
+   client has no influence over this at all. **This is the switch to flip
+   for a real production rollout**, and it must stay unset (or any value
+   other than `true`) to keep the pilot disabled, per your instruction to
+   keep it that way for now.
+2. **The offline-fallback path — client-side, dev-only.** If
+   `/api/practice-session-start` is unreachable, `practice.html` falls back
+   to local generation, which separately checks
+   `EXTENDED_POOL_ENABLED`/`isLocalDevHost()` in `scripts/practice-engine.js`
+   — `?enableExtendedPool=1` in the URL, silently ignored on any non-dev
+   hostname including production (see the matching Jest tests). This layer
+   only ever matters for offline/fallback practice, which can't earn points
+   regardless.
+
+**Disable:** unset (or set to anything other than `true`)
+`EXTENDED_POOL_ENABLED` in the API's environment — this is sufficient on
+its own; the client-side layer only affects the non-points-eligible
+fallback path. No data migration needed —
+`data/practice-pool-extended.json` simply stops being read by either layer.
 
 **Roll back a specific bad question:** find its `_sourceId` in
 `data/practice-pool-extended.json` and delete that one object from the JSON
@@ -396,124 +402,179 @@ code — see "real approved-pool data integrity guarantees" in
   before this pilot — it has no awareness of or dependency on the extended
   pool, so it can't leak unapproved content either.
 
-## Practice scoring trust boundary
+## Practice scoring trust boundary — now fixed for every question source
 
-This section documents an existing, pre-pilot gap in Practice Mode's
-scoring architecture — precisely, not just in outline — because practice
-points feed into rewards (Math Stars, the 300-Point Club) and the review
-brief specifically asked for the request payload and trust boundary to be
-spelled out.
+**Status: fixed, in the API repo (`feature/practice-server-side-scoring`
+branch), verified with mocked handler tests; the deepest tier of
+verification (real Postgres, concurrent requests) is written and ready but
+could not be executed in this environment — see "Local verification" below
+for exactly why and how to run it.**
 
-### The exact request/response contract
+An earlier version of this document described a real, pre-existing gap
+(client-reported `{correct, total}`, trusted almost entirely by
+`/api/practice-submit`) and a narrow, client-side-only mitigation (excluding
+GSM8K-sourced questions from the points tally). That mitigation was
+explicitly documented as *not* a security control — it didn't change what
+the server would accept, only what a well-behaved browser would send. This
+section now describes the real fix, which applies to **every** practice
+question source (hand-curated pool, algorithmic, and this pilot's extended
+pool alike) — GSM8K is no longer a special case.
 
-`practice.html` tallies `practiceState.correct`/`practiceState.count`
-entirely client-side (comparing the student's clicked choice against the
-`answer` string baked into that question's `onclick` handler at render
-time — the correct answer is present in the page's DOM/HTML for every
-question, visible via view-source, for every source: hand-curated pool,
-algorithmic, and this pilot's extended pool alike). `showResults()` then
-calls `submitPracticeScore(correct, total, timeSeconds, pointsEarned)`,
-which POSTs to `/api/practice-submit` with:
+### The new design: server-issued, server-verified sessions
 
-```json
-{ "userId": "...", "correct": 8, "total": 10, "difficulty": "easy",
-  "topics": ["Word Problems"], "timeSeconds": 142, "pointsEarned": 4,
-  "wrongAnswers": [ /* question text/choices/hint for mistake-review only */ ] }
-```
+1. **`POST /api/practice-session-start`** (new endpoint, API repo): the
+   client asks for a practice round (`grade`, `topics`, `difficulty`,
+   `count`). The **server** generates the actual questions — using
+   `api/_practice-generators.js`, a deliberate line-for-line port of the
+   client's own generator logic (see "Server-side generator port" below) —
+   and stores them, including their answers, in a new `practice_sessions`
+   row. It returns `{sessionId, questions}` to the client. The server is now
+   the origin of the answer key, not a passive recipient of whatever the
+   client claims it is.
+2. The student answers as before — Practice Mode's immediate per-question
+   feedback UX is unchanged (this still means the answer key is visible in
+   the browser/DOM during the session, same as it already was for every
+   question source, and the same as the Daily Quiz's static HTML also
+   already does — see the note on this tradeoff below).
+3. **`POST /api/practice-submit`** now takes `{userId, sessionId, selections,
+   timeSeconds, wrongAnswers}` — `selections` is the student's actual
+   per-question choices (`[{index, choice}, ...]`). **There is no `correct`
+   or `total` field in this request anymore.** The handler forwards this
+   straight to one atomic database call:
+   `submit_practice_session(session_id, user_id, selections, time_seconds, day)`
+   (see `migrations/002_practice_sessions.sql`), which, in a single
+   transaction:
+   - Looks up the session by ID, locks the row (`FOR UPDATE`), and checks it
+     belongs to this user and hasn't expired.
+   - **Replay protection:** if `consumed_at` is already set, returns
+     `{already: true}` immediately — a second submission of the same
+     session can never re-score or re-award points. The row lock means a
+     *concurrent* duplicate submission blocks until the first one commits,
+     then sees `consumed_at` set — no race window.
+   - **Server-side verification:** compares each submitted `choice` against
+     the session's own stored `answer` for that index — nothing the client
+     says about correctness is read or trusted.
+   - **Atomic daily-cap enforcement:** a `practice_daily_points` table keyed
+     by `(user_id, day)`, updated under a row lock, replaces the old
+     read-then-write check (which had a real, if narrow, race condition:
+     two near-simultaneous submissions could each read the same "used so
+     far" and both get awarded up to the cap, exceeding 10 pts/day in
+     total — the new design closes that too, not just the GSM8K-specific
+     concern this document originally focused on).
+   - Inserts the resulting row into the existing `practice_submissions`
+     table with the same columns as before (`points_earned`, `correct`,
+     `total`, `difficulty`, `topics`, `time_seconds`, plus a new nullable
+     `session_id` for traceability) — **Math Stars (weekly) and lifetime
+     totals need no changes**, since they read this same table the same way
+     they always did.
 
-`api/practice-submit.js` (in the API repo):
-- **Ignores** the client-supplied `pointsEarned` entirely and recomputes
-  `rawPoints = Number(correct) * 0.5` from the client-supplied `correct`.
-- **Does not** receive, and has no code path to receive, any per-question
-  identifier or the student's actual selected answers matched against a
-  server-held answer key. `wrongAnswers` is written to the `mistakes` table
-  for the review feature and is never used to cross-check `correct`.
-- **Does** independently enforce a real limit: it queries the
-  `practice_submissions` table for the last 36 hours, computes `usedToday`
-  from those real rows (not from anything the client sends), and caps
-  `pointsEarned` at `10 − usedToday`.
+### Production safety: GSM8K gating moved server-side
 
-**Net effect:** the server verifies *how many points remain available today*
-against real data, but trusts the client's claim of *how many questions were
-answered correctly* completely. Server-side recomputation of points from
-`correct` does **not** mean the server independently verified which answers
-were correct — those are two different claims, and only the first one is
-true here. A user (or anyone who can reach the endpoint with a valid
-`userId`) could call `/api/practice-submit` directly with a fabricated
-`correct` value and no prior quiz activity at all, and receive points up to
-the same 10/day cap a legitimate session would. **This is identical for
-every practice question source — the hand-curated pool, algorithmic
-generation, and this pilot's extended pool all go through the exact same
-endpoint and the exact same trust boundary. This pilot does not create,
-worsen, or fix this gap.**
+`api/_practice-generators.js` only includes the extended (GSM8K) pool when
+`process.env.EXTENDED_POOL_ENABLED === 'true'` in the **API's** environment
+— unset in production, so a session-issuing server that hasn't had this
+turned on will never generate or serve GSM8K-derived questions, regardless
+of anything the client does. This is a strictly stronger guarantee than the
+old client-side `?enableExtendedPool=1`/hostname check (which still exists,
+gating only the offline-fallback path — see below): the questions a session
+contains are decided before the client ever sees the request, by an
+environment variable the client cannot influence at all.
 
-### What this pilot does about it (and what it explicitly does not do)
+**The GSM8K-specific points exclusion has been removed.** Once a session
+exists, all of its questions — GSM8K included — are verified and scored the
+same way. There is no longer a source-specific carve-out; see the updated
+`computePointsEligibleTally()` in `scripts/practice-engine.js`, which now
+takes a single `hasSession` boolean instead of checking `_source`.
 
-Given the choice between (a) building server-side per-question verification
-for practice scoring, or (b) excluding this pilot's content from
-point-earning until that exists, this pilot takes option (b), scoped as
-narrowly as possible:
+### What still isn't verified, and the deliberate remaining tradeoff
 
-- `computePointsEligibleTally()` in `scripts/practice-engine.js` computes a
-  *separate* tally that excludes any question with `_source === 'gsm8k'`
-  from both the correct-count and the total used for the points
-  calculation and the `/api/practice-submit` payload. Students still see
-  and answer these questions normally, with normal per-question feedback —
-  they just don't count toward points sent to the server.
-- Practice Mode's results screen shows a note — "*Some preview questions in
-  this set don't earn points yet*" — whenever any question was excluded
-  this way, and the points figure shown on screen is the exact same number
-  computed for (and sent to) the server; see "Displayed vs. submitted
-  totals" below for how that's verified.
+- **Offline/local fallback still exists and still can't earn points.** If
+  `/api/practice-session-start` is unreachable (offline, API down) or the
+  student isn't logged in, `practice.html` falls back to the old
+  client-only `generateQuiz()` — practice still works, but
+  `practiceState.sessionId` stays `null`, `computePointsEligibleTally`
+  treats the whole round as non-eligible, and `/api/practice-submit` is
+  never even called (there's no session to verify against). This is
+  unchanged in spirit from before, just generalized from "GSM8K-only" to
+  "any offline round."
+- **The answer key still travels to the client up front**, by deliberate
+  design choice (see step 2 above) — this fix closes "submit a fabricated
+  aggregate correctness count with no real answers behind it," not "a
+  technically sophisticated user reads the network response and clicks the
+  right answer they were shown." The latter is equivalent to already
+  knowing the answer, not to fabricating a score with no real activity —
+  and, worth stating plainly since an earlier version of this document
+  implied otherwise, **the Daily Quiz does not currently have a stronger
+  guarantee here either**: its generated HTML pages bake `Answer: ...` lines
+  directly into the static markup (confirmed by inspecting `daily/*.html`
+  directly), visible via view-source before submission, same as Practice
+  Mode. Hiding answer keys pre-submission across the whole site would be a
+  much larger, separate change (and would very likely require dropping
+  Practice Mode's instant per-question feedback, a real UX regression) —
+  out of scope here and not requested.
+- **Exposure tracking (avoiding immediate repeats) is not yet ported to the
+  new server-side generator.** The old client-side `preferUnseen()` /
+  `localStorage`-based mechanism only applies to the (non-points-eligible)
+  offline-fallback path now; server-issued sessions pick pool questions
+  without any repeat-avoidance. This is a real, acknowledged regression from
+  the pilot's prior behavior, not a silent one — see "Remaining work" below.
+  It's also a natural opportunity: exposure tracking could now live
+  server-side (a small table keyed by user, closing the old "doesn't
+  persist across devices" limitation this document previously documented
+  as unfixable) rather than in `localStorage` — not attempted in this pass.
 
-**This is a client-side convenience, not a security control, and must never
-be described as one.** It changes what a well-behaved browser running the
-real app *sends*; it does nothing to what `/api/practice-submit` *accepts*.
-Anyone who could already fabricate a `correct` value for hand-curated or
-algorithmic questions (the pre-existing gap above) can fabricate one that
-ignores this exclusion just as easily — the endpoint has no way to know
-whether a submitted `correct` count came from GSM8K questions, other
-questions, or no questions at all. The only real fix is server-side: give
-`/api/practice-submit` a way to verify individual answers against a
-question source it controls. For this pilot's finite, static, 100-question
-pool that's tractable (the API could bundle a copy of
-`data/practice-pool-extended.json` and verify `{sourceId, submittedAnswer}`
-pairs against it) — for the hand-curated pool it's the same shape of fix,
-and for algorithmically-*generated* questions it's harder, since the server
-would need to either regenerate and check the exact question server-side or
-sign/verify tokens per generated question. That full fix is future work,
-tracked in "Remaining work" below, not attempted in this pilot.
+### Server-side generator port
+
+`api/_practice-generators.js` (API repo) is a deliberate, acknowledged
+duplication of `scripts/practice-engine.js` lines 1-983 (frontend repo) —
+confirmed browser-API-free before porting, so running it in Node produces
+identical output. There is no automated cross-repo CI check for drift
+(each repo's CI only sees its own checkout); `tools/verify-generator-sync.js`
+in the API repo is a manual script a developer should run after editing
+either copy. If the two silently drift, the practical consequence is that
+offline-fallback questions (client-generated, non-points-eligible) could
+differ from what a real session would have generated for the same inputs —
+it does not create a scoring bug on its own, since the server's copy is
+always what actually gets scored.
 
 ### Displayed vs. submitted totals agree, by construction
 
-`showResults()` computes `tally = computePointsEligibleTally(...)` once,
-then uses `tally.correct`/`tally.total` both to compute `pointsEarned` for
-on-screen display **and** as the exact `correct`/`total` arguments passed to
-`submitPracticeScore(...)`. There's no separate code path that could let the
-screen show one number while a different one is sent. This is covered by
-the `points-eligible tally` Jest tests in
-`scripts/practice-pool-extended.test.js`, run locally (mocked, no network —
-see "Local verification" below).
-
-One pre-existing (not pilot-introduced) source of possible display/server
-disagreement remains, for completeness: the on-screen daily-cap remaining
-amount is estimated from a client-side `localStorage` counter, while the
-server computes its cap from real `practice_submissions` rows. These can
-drift apart if, for example, `localStorage` is cleared mid-day or the
-student switches devices — the server's number is always the one that
-actually governs points awarded; the client's is a best-effort preview. This
-is an existing characteristic of the daily-cap UI, not something this pilot
-changed.
+`showResults()` computes `tally = computePointsEligibleTally(questions,
+hasSession)` once and uses it both for the on-screen points estimate and to
+build the `selections` payload sent to `/api/practice-submit` — there's no
+separate code path that could show one number while sending different
+underlying data. The on-screen figure is still only an **estimate**,
+though, now more clearly so than before: the server's response from
+`submit_practice_session` is the actual authoritative `pointsEarned`, and
+recomputes correctness independently rather than trusting anything echoed
+back from the client's own tally. The two agree whenever nothing unusual
+happened (no replay, no expired session, no cap-boundary drift from a
+concurrent submission on another device); when they don't, the server's
+number is what's actually recorded, never the client's estimate.
 
 ## Remaining work to expand beyond the pilot
 
-- **Server-side practice answer verification** (see "Practice scoring trust
-  boundary" above): the highest-priority follow-up if this pilot is meant to
-  earn points, not just the highest-priority GSM8K-specific item. Scoped
-  smallest-first: verify extended-pool answers server-side (finite, static,
-  100 questions, easy to bundle into the API); the hand-curated pool is the
-  same shape of fix; algorithmic questions need a different approach
-  (regenerate-and-check, or signed per-question tokens).
+- **Real-Postgres/concurrency verification of the atomic scoring function**:
+  `tests/pg-integration/practice-scoring.pgtest.js` (API repo) is written
+  and covers incorrect answers, forged/absent selections, replay, and
+  concurrent requests racing the daily cap — but could not be run in this
+  environment because Docker Desktop's engine wasn't reachable (the CLI is
+  installed; the daemon didn't come up). Run it with a local Postgres
+  container per that file's header comment, or against any other confirmed
+  non-production Postgres via `TEST_DATABASE_URL`, before trusting the
+  concurrency claims above as verified rather than "verified by design
+  review and mocked handler tests only."
+- **Port exposure tracking server-side**: see "What still isn't verified"
+  above — server-issued sessions currently pick pool questions without
+  repeat-avoidance. A `practice_seen_questions`-style table keyed by user
+  would also fix the old localStorage version's cross-device/private-
+  browsing blind spots.
+- **Answer-key-blind practice** (bigger, separate change, not requested for
+  this pass): stop sending `answer` in the `practice-session-start`
+  response and add a small per-question "was that right?" check, trading
+  one extra round-trip per question for closing the "read the key from the
+  network tab" gap too. Would need the same treatment for the Daily Quiz's
+  static HTML to be consistent site-wide.
 - **Human/teacher review**: zero records in this dataset have had tier-3
   (qualified-person) review. If any content here needs to be described as
   "teacher-reviewed" or "teacher-approved" to parents/schools, that review

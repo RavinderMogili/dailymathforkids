@@ -193,54 +193,60 @@ describe('real approved-pool data integrity guarantees', () => {
   });
 });
 
-describe('points-eligible tally (practice scoring trust-boundary guard)', () => {
-  // api/practice-submit.js trusts the client-reported {correct, total} —
-  // see tools/word-problems/README.md "Practice scoring trust boundary".
-  // Until a server-side per-question check exists, GSM8K-sourced questions
-  // must never contribute to the points-eligible tally.
-  test('extended-pool (gsm8k) answers never count toward the points-eligible tally, right or wrong', () => {
+describe('points-eligible tally (session-based, source-agnostic)', () => {
+  // Practice scoring is now verified server-side for any question source,
+  // via a server-issued session (see api/practice-session-start.js,
+  // api/practice-submit.js, migrations/002_practice_sessions.sql, and
+  // "Practice scoring trust boundary" in tools/word-problems/README.md).
+  // computePointsEligibleTally's only job now is: were these questions part
+  // of a real session (hasSession=true) or local/offline fallback
+  // (hasSession=false)? Question source (_source) no longer matters — an
+  // earlier version of this function excluded gsm8k-sourced questions
+  // specifically, as a stand-in until server-side verification existed for
+  // everything; that carve-out is gone now that it does.
+  test('with a session: every answered question counts, regardless of source', () => {
     const ctx = freshLoad({ enabled: true });
     const questions = [
-      { _source: 'gsm8k', answer: '10', _userAnswer: '10' },   // correct, but must be excluded
-      { _source: 'gsm8k', answer: '10', _userAnswer: '99' },   // wrong, also excluded
-      { _source: 'chatgpt', answer: '5', _userAnswer: '5' },   // eligible + correct
-      { _source: 'algorithmic', answer: '7', _userAnswer: '9' }, // eligible + wrong
+      { _source: 'gsm8k', answer: '10', _userAnswer: '10' },
+      { _source: 'gsm8k', answer: '10', _userAnswer: '99' },
+      { _source: 'chatgpt', answer: '5', _userAnswer: '5' },
+      { _source: 'algorithmic', answer: '7', _userAnswer: '9' },
     ];
-    const tally = ctx.computePointsEligibleTally(questions);
-    expect(tally.total).toBe(2);
-    expect(tally.correct).toBe(1);
-    expect(tally.excludedCount).toBe(2);
+    const tally = ctx.computePointsEligibleTally(questions, true);
+    expect(tally.total).toBe(4);
+    expect(tally.correct).toBe(2);
+    expect(tally.excludedCount).toBe(0);
   });
 
-  test('flag-off default: nothing is ever excluded, since gsm8k questions never appear', () => {
+  test('without a session (offline/fallback): nothing is points-eligible, regardless of source', () => {
     const ctx = freshLoad({ enabled: false });
     const questions = [
       { _source: 'chatgpt', answer: '5', _userAnswer: '5' },
       { _source: 'algorithmic', answer: '7', _userAnswer: '7' },
     ];
-    const tally = ctx.computePointsEligibleTally(questions);
-    expect(tally.excludedCount).toBe(0);
-    expect(tally.total).toBe(2);
-    expect(tally.correct).toBe(2);
+    const tally = ctx.computePointsEligibleTally(questions, false);
+    expect(tally.excludedCount).toBe(2);
+    expect(tally.total).toBe(0);
+    expect(tally.correct).toBe(0);
   });
 
-  test('an unanswered question is never counted as correct', () => {
+  test('an unanswered question in a real session is never counted as correct', () => {
     const ctx = freshLoad({ enabled: true });
     const questions = [{ _source: 'chatgpt', answer: '5' }]; // no _userAnswer set
-    const tally = ctx.computePointsEligibleTally(questions);
+    const tally = ctx.computePointsEligibleTally(questions, true);
     expect(tally.correct).toBe(0);
     expect(tally.total).toBe(1);
   });
 
-  test('all-extended-pool quiz yields a zero points-eligible total, not a crash', () => {
+  test('an all-GSM8K session is fully points-eligible now (no source-specific carve-out remains)', () => {
     const ctx = freshLoad({ enabled: true });
     const questions = [
       { _source: 'gsm8k', answer: '1', _userAnswer: '1' },
       { _source: 'gsm8k', answer: '2', _userAnswer: '2' },
     ];
-    const tally = ctx.computePointsEligibleTally(questions);
-    expect(tally.total).toBe(0);
-    expect(tally.correct).toBe(0);
-    expect(tally.excludedCount).toBe(2);
+    const tally = ctx.computePointsEligibleTally(questions, true);
+    expect(tally.total).toBe(2);
+    expect(tally.correct).toBe(2);
+    expect(tally.excludedCount).toBe(0);
   });
 });

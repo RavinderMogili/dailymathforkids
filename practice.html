@@ -204,6 +204,7 @@
     difficulty: 'easy',
     count: 5,
     questions: [],
+    sessionId: null,  // set by startPractice() when a server session was obtained; null = offline/fallback, no points
     current: 0,
     correct: 0,
     answered: false,
@@ -281,10 +282,50 @@
   }
 
   // ── Start ─────────────────────────────────────────────────────────────
-  function startPractice() {
+  // Practice questions come from a server-issued session whenever possible
+  // (see api/practice-session-start.js in the API repo): the server
+  // generates and stores the actual questions+answers before the student
+  // sees them, and /api/practice-submit later verifies submitted choices
+  // against that stored copy — not anything the client claims. A session
+  // requires a logged-in user (points can't be attributed otherwise, same
+  // as before this change) and a reachable API. If either is unavailable,
+  // practice still works fully offline — it just falls back to local
+  // question generation and cannot earn points (see
+  // computePointsEligibleTally in practice-engine.js and the "Practice
+  // scoring trust boundary" section of tools/word-problems/README.md).
+  async function fetchPracticeSession(grade, topics, difficulty, count) {
+    const u = typeof getUser === 'function' ? getUser() : null;
+    if (!u) return null;
+    const api = window.DMK_API || '';
+    try {
+      const res = await fetch(`${api}/api/practice-session-start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: u.userId, grade, topics, difficulty, count }),
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (!data.sessionId || !Array.isArray(data.questions) || data.questions.length === 0) return null;
+      return data;
+    } catch (e) {
+      return null; // offline, API down, etc. — fall back to local generation below
+    }
+  }
+
+  async function startPractice() {
     const selected = [...document.querySelectorAll('.topic-chip.selected')].map(c => c.dataset.topic);
     practiceState.topics = selected.length > 0 ? selected : getTopicsForGrade(practiceState.grade);
-    practiceState.questions = generateQuiz(practiceState.grade, practiceState.topics, practiceState.difficulty, practiceState.count);
+
+    const session = await fetchPracticeSession(
+      practiceState.grade, practiceState.topics, practiceState.difficulty, practiceState.count
+    );
+    if (session) {
+      practiceState.sessionId = session.sessionId;
+      practiceState.questions = session.questions;
+    } else {
+      practiceState.sessionId = null; // no session => points-ineligible, see showResults()
+      practiceState.questions = generateQuiz(practiceState.grade, practiceState.topics, practiceState.difficulty, practiceState.count);
+    }
     practiceState.current = 0;
     practiceState.correct = 0;
     practiceState.answered = false;
@@ -435,12 +476,24 @@
       : pct >= 60 ? 'Great effort! Your brain grew stronger today!'
       : pct >= 40 ? 'Good work showing up! Every problem you try makes you smarter!'
       : 'You\'re braver than you think! Coming back to practice is what real learners do!';
-    // Points are computed only from the points-eligible tally (excludes
-    // preview/pilot content — see computePointsEligibleTally in
-    // practice-engine.js) — NOT the full practiceState.correct/count shown
-    // above, which stays an honest reflection of everything the student did.
-    const tally = computePointsEligibleTally(practiceState.questions);
-    // Half points: 0.5 per correct, capped at 10 pts/day (20 correct answers)
+    // Points are computed only from the points-eligible tally — questions
+    // from a server-issued session (see computePointsEligibleTally in
+    // practice-engine.js and "Practice scoring trust boundary" in
+    // tools/word-problems/README.md). practiceState.correct/count above
+    // stays an honest reflection of everything the student did, regardless
+    // of whether this round could earn points.
+    const hasSession = !!practiceState.sessionId;
+    const tally = computePointsEligibleTally(practiceState.questions, hasSession);
+    // This is a same-session ESTIMATE only, shown immediately for a
+    // responsive UI — the actual points awarded are decided by the server
+    // (submit_practice_session, atomically, under the real per-day cap) in
+    // submitPracticeScore() below. The two agree whenever the estimate below
+    // of "points used today" matches the server's real count; if they've
+    // drifted (a prior submission failed silently, another device was used,
+    // etc.) the server's number is what actually gets recorded — never this
+    // one. See "Displayed vs. submitted totals" in the README for the
+    // by-construction guarantee this preserves: both this estimate and the
+    // payload sent to the server derive from the same tally computed once.
     const today = new Date().toISOString().slice(0, 10);
     const capKey = 'dmk_practice_pts_' + today;
     const usedToday = parseFloat(localStorage.getItem(capKey) || '0');
@@ -452,9 +505,9 @@
 
     const ptsText = pointsEarned > 0 ? '+' + pointsEarned + ' pts' : '0 pts';
     document.getElementById('results-points').textContent = ptsText;
-    if (tally.excludedCount > 0) {
-      document.getElementById('results-points').textContent = ptsText;
-      document.getElementById('results-msg').textContent = msg + ' (Some preview questions in this set don\'t earn points yet.)';
+    if (!hasSession) {
+      document.getElementById('results-points').textContent = '0 pts';
+      document.getElementById('results-msg').textContent = msg + ' (Practiced offline this time, so this round doesn\'t earn points — try again when you\'re back online!)';
     } else if (remaining <= 0) {
       document.getElementById('results-points').textContent = '0 pts';
       document.getElementById('results-msg').textContent = msg + ' (Daily practice points reached — keep practising for fun!)';
@@ -503,17 +556,36 @@
     // Update weekly goals
     if (typeof addSolvedQuestions === 'function') addSolvedQuestions(practiceState.count);
 
-    // Submit practice score to API (capped points; points-eligible tally only —
-    // see computePointsEligibleTally in practice-engine.js)
-    submitPracticeScore(tally.correct, tally.total, elapsed, pointsEarned);
+    // Submit for verification/scoring only if this round came from a real
+    // server session — an offline/fallback round has no sessionId and
+    // nothing for the server to verify against (see fetchPracticeSession
+    // and startPractice() above), so it's skipped entirely rather than
+    // sent with a fabricated session id.
+    if (hasSession) {
+      submitPracticeScore(elapsed);
+    } else if (typeof bumpSessionCount === 'function') {
+      bumpSessionCount();
+    }
   }
 
-  async function submitPracticeScore(correct, total, timeSeconds, pointsEarned) {
+  async function submitPracticeScore(timeSeconds) {
     const u = typeof getUser === 'function' ? getUser() : null;
-    if (!u) return;
+    if (!u || !practiceState.sessionId) return;
     const api = window.DMK_API || '';
 
-    // Collect wrong answers to send to server
+    // What the server actually verifies correctness against is its own
+    // stored copy of this session's questions+answers (see
+    // migrations/002_practice_sessions.sql submit_practice_session) — these
+    // per-question selections are the student's actual clicks, nothing more.
+    // There is deliberately no "correct" or "total" field in this payload:
+    // the old contract that let a client just assert a correctness count no
+    // longer exists.
+    const selections = practiceState.questions
+      .map((q, i) => (q._userAnswer !== undefined ? { index: i, choice: q._userAnswer } : null))
+      .filter(Boolean);
+
+    // Wrong answers, still collected for the mistake-review feature only —
+    // never used by the server to compute correctness or points.
     const wrongAnswers = practiceState.questions
       .filter(q => q._userAnswer && q._userAnswer !== q.answer)
       .map((q, i) => ({
@@ -532,12 +604,9 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: u.userId,
-          correct,
-          total,
-          difficulty: practiceState.difficulty,
-          topics: practiceState.topics,
+          sessionId: practiceState.sessionId,
+          selections,
           timeSeconds,
-          pointsEarned,
           wrongAnswers,
         }),
       });

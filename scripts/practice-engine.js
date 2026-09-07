@@ -1113,31 +1113,29 @@ function makePoolQuestion(pq) {
   };
 }
 
-// ── Points-eligibility (client-side precaution — NOT a security control) ──
-// Practice Mode's score submission is currently an aggregate client-reported
-// count — api/practice-submit.js trusts the {correct, total} the browser
-// sends and only bounds the damage with a server-side 10-pt/day cap; it does
-// not independently re-check any individual answer (see
-// tools/word-problems/README.md "Practice scoring trust boundary" for the
-// full write-up of why, and what a real fix would need). That pre-existing
-// gap applies to every practice question source equally — this pilot does
-// not create or worsen it, and this function does NOT close it: anyone who
-// could already fabricate a `correct` value for hand-curated/algorithmic
-// questions can do the same thing here and route around this exclusion
-// entirely, since the server has no way to tell which questions a submitted
-// count came from. This is a client-side convenience for the well-behaved
-// browser running the real app, not a security boundary — the only real fix
-// is server-side per-question verification (tracked as future work).
+// ── Points-eligibility ──────────────────────────────────────────────────
+// Practice questions are points-eligible only when they came from a
+// server-issued session (see api/practice-session-start.js and
+// api/practice-submit.js in the API repo, and "Practice scoring trust
+// boundary" in tools/word-problems/README.md for the full design): the
+// server generates and stores the actual questions+answers before the
+// student sees them, and independently verifies submitted choices against
+// that stored copy at submission time — no question source is trusted more
+// or less than another anymore, because none of them are trusted at all;
+// the server checks all of them the same way.
 //
-// What it actually does: excludes GSM8K-sourced questions from the
-// points-eligible tally, so a normal Practice Mode session doesn't send
-// points for this pilot's content until that server-side fix exists.
-// Students still see and answer these questions normally; they just don't
-// feed the score sent to the server. This changes nothing when the extended
-// pool is off (its default), since no question will ever have
-// _source === 'gsm8k' in that case.
-function computePointsEligibleTally(questions) {
-  const eligible = questions.filter(q => q._source !== 'gsm8k');
+// When practice.html couldn't get a session (offline, API unreachable, or
+// no logged-in user), it falls back to local-only generation with
+// `practiceState.sessionId = null`. There is nothing for the server to
+// verify in that case, so none of those questions can earn points — this
+// function's `hasSession` parameter is exactly that flag, passed through
+// from practiceState.sessionId. This replaced an earlier, narrower version
+// of this function that excluded only GSM8K-sourced questions specifically,
+// as a stand-in until real server-side verification existed for anything —
+// now that it does (for every source), that source-specific carve-out is
+// gone and every question in a real session is treated the same.
+function computePointsEligibleTally(questions, hasSession) {
+  const eligible = hasSession ? questions : [];
   const correct = eligible.filter(q => q._userAnswer !== undefined && q._userAnswer === q.answer).length;
   return { correct, total: eligible.length, excludedCount: questions.length - eligible.length };
 }

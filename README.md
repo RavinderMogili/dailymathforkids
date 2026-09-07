@@ -71,11 +71,14 @@ Replace the API base URL with your actual Vercel deployment URL in:
 Practice Mode can optionally draw "Word Problems" from a subset of GSM8K
 (OpenAI) that passed automated checks and AI semantic review (an LLM read
 each one — **not** human/teacher review) alongside the existing hand-curated
-pool. Disabled in production by default behind a feature flag, and the
-question source doesn't currently earn points (see the linked doc's
-"Practice scoring trust boundary"). See
-[`tools/word-problems/README.md`](tools/word-problems/README.md) for the full
-pipeline, review process, and how to enable/disable/roll back.
+pool. Disabled in production by an environment variable
+(`EXTENDED_POOL_ENABLED`) on the API side, which is also what now decides
+whether any practice content earns points at all — practice scoring was
+rebuilt around server-issued, server-verified sessions (see the API repo)
+so this pilot's content is scored exactly like everything else once
+enabled. See [`tools/word-problems/README.md`](tools/word-problems/README.md)
+for the full pipeline, review process, the scoring rework, and how to
+enable/disable/roll back.
 
 ## License
 - Content: CC BY 4.0
