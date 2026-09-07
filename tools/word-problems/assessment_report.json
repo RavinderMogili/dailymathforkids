@@ -52,7 +52,7 @@
   },
   "notes": [
     "grade_estimate and topic are heuristic/automated only \u2014 not a curriculum mapping and not semantically reviewed. Treat as provisional.",
-    "review_status='auto_ok' means automated checks passed; it is NOT a claim that the question was read and judged suitable by a human or by an LLM. A separate, smaller human-reviewed pilot subset is tracked in pilot_candidates.json.",
+    "review_status='auto_ok' means automated checks passed only; it is NOT a claim that the question was read and judged suitable by a human/teacher OR by an AI/LLM. A separate, smaller subset went through AI semantic review (an LLM read each one) \u2014 see tools/word-problems/output/pilot_shortlist.json and README.md 'Three distinct review tiers.' No record in this dataset has had human/teacher review.",
     "example_model_solutions.jsonl and the Socratic variants were not used as source questions or as authoritative answers, per project instructions."
   ]
 }

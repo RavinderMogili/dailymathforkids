@@ -1012,9 +1012,24 @@ const EXTENDED_POOL_ENABLED = false;
 const EXTENDED_POOL_SEEN_KEY = 'dmk_extpool_seen_ids';
 const EXTENDED_POOL_SEEN_WINDOW = 60; // don't repeat the last N shown, per browser
 
+// The ?enableExtendedPool=1 override is a local/dev convenience ONLY. It must
+// never let a visitor to the live production site flip an unapproved content
+// pool on for themselves — so it's gated on the hostname actually being a
+// local/dev one, not just present in the URL. Add more dev hostnames here if
+// your local setup uses a different one (e.g. a custom /etc/hosts entry);
+// never add the production domain.
+function isLocalDevHost() {
+  try {
+    if (typeof window === 'undefined' || !window.location) return false;
+    if (window.location.protocol === 'file:') return true;
+    const host = window.location.hostname;
+    return host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0' || host === '';
+  } catch (e) { return false; }
+}
+
 function isExtendedPoolEnabled() {
   try {
-    if (typeof window !== 'undefined' && window.location) {
+    if (isLocalDevHost() && typeof window !== 'undefined' && window.location) {
       const params = new URLSearchParams(window.location.search);
       if (params.get('enableExtendedPool') === '1') return true;
       if (params.get('enableExtendedPool') === '0') return false;
@@ -1096,6 +1111,35 @@ function makePoolQuestion(pq) {
     _source: pq._source || 'chatgpt',
     _sourceId: pq._sourceId || null,
   };
+}
+
+// ── Points-eligibility (client-side precaution — NOT a security control) ──
+// Practice Mode's score submission is currently an aggregate client-reported
+// count — api/practice-submit.js trusts the {correct, total} the browser
+// sends and only bounds the damage with a server-side 10-pt/day cap; it does
+// not independently re-check any individual answer (see
+// tools/word-problems/README.md "Practice scoring trust boundary" for the
+// full write-up of why, and what a real fix would need). That pre-existing
+// gap applies to every practice question source equally — this pilot does
+// not create or worsen it, and this function does NOT close it: anyone who
+// could already fabricate a `correct` value for hand-curated/algorithmic
+// questions can do the same thing here and route around this exclusion
+// entirely, since the server has no way to tell which questions a submitted
+// count came from. This is a client-side convenience for the well-behaved
+// browser running the real app, not a security boundary — the only real fix
+// is server-side per-question verification (tracked as future work).
+//
+// What it actually does: excludes GSM8K-sourced questions from the
+// points-eligible tally, so a normal Practice Mode session doesn't send
+// points for this pilot's content until that server-side fix exists.
+// Students still see and answer these questions normally; they just don't
+// feed the score sent to the server. This changes nothing when the extended
+// pool is off (its default), since no question will ever have
+// _source === 'gsm8k' in that case.
+function computePointsEligibleTally(questions) {
+  const eligible = questions.filter(q => q._source !== 'gsm8k');
+  const correct = eligible.filter(q => q._userAnswer !== undefined && q._userAnswer === q.answer).length;
+  return { correct, total: eligible.length, excludedCount: questions.length - eligible.length };
 }
 
 function generateQuiz(grade, topics, difficulty, count) {

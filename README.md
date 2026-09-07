@@ -68,9 +68,12 @@ Replace the API base URL with your actual Vercel deployment URL in:
 - **Cost:** Daily generation with Claude costs only a few cents per day.
 
 ## Word Problem Pilot (experimental, off by default)
-Practice Mode can optionally draw "Word Problems" from a curated, human-reviewed
-subset of GSM8K (OpenAI) alongside the existing hand-curated pool. Disabled in
-production by default behind a feature flag. See
+Practice Mode can optionally draw "Word Problems" from a subset of GSM8K
+(OpenAI) that passed automated checks and AI semantic review (an LLM read
+each one — **not** human/teacher review) alongside the existing hand-curated
+pool. Disabled in production by default behind a feature flag, and the
+question source doesn't currently earn points (see the linked doc's
+"Practice scoring trust boundary"). See
 [`tools/word-problems/README.md`](tools/word-problems/README.md) for the full
 pipeline, review process, and how to enable/disable/roll back.
 

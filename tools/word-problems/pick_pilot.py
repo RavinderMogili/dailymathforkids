@@ -1,7 +1,9 @@
 """
 Selects a diverse, grade/topic-balanced pilot subset from candidates.jsonl
-for human review. This is a *shortlist* step only — see README.md: every
-record it outputs still gets read by a person before approval.
+for AI semantic review (an LLM reading each one — see README.md "Three
+distinct review tiers"; this is NOT human/teacher review). This is a
+*shortlist* step only — every record it outputs still gets read (by an AI
+reviewer, in this pipeline's actual usage) before approval.
 
 Usage:
   python tools/word-problems/pick_pilot.py \

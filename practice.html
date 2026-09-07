@@ -435,19 +435,27 @@
       : pct >= 60 ? 'Great effort! Your brain grew stronger today!'
       : pct >= 40 ? 'Good work showing up! Every problem you try makes you smarter!'
       : 'You\'re braver than you think! Coming back to practice is what real learners do!';
+    // Points are computed only from the points-eligible tally (excludes
+    // preview/pilot content — see computePointsEligibleTally in
+    // practice-engine.js) — NOT the full practiceState.correct/count shown
+    // above, which stays an honest reflection of everything the student did.
+    const tally = computePointsEligibleTally(practiceState.questions);
     // Half points: 0.5 per correct, capped at 10 pts/day (20 correct answers)
     const today = new Date().toISOString().slice(0, 10);
     const capKey = 'dmk_practice_pts_' + today;
     const usedToday = parseFloat(localStorage.getItem(capKey) || '0');
     const maxDaily = 10;
-    const rawPts = practiceState.correct * 0.5;
+    const rawPts = tally.correct * 0.5;
     const remaining = Math.max(0, maxDaily - usedToday);
     const pointsEarned = Math.min(rawPts, remaining);
     localStorage.setItem(capKey, String(usedToday + pointsEarned));
 
     const ptsText = pointsEarned > 0 ? '+' + pointsEarned + ' pts' : '0 pts';
     document.getElementById('results-points').textContent = ptsText;
-    if (remaining <= 0) {
+    if (tally.excludedCount > 0) {
+      document.getElementById('results-points').textContent = ptsText;
+      document.getElementById('results-msg').textContent = msg + ' (Some preview questions in this set don\'t earn points yet.)';
+    } else if (remaining <= 0) {
       document.getElementById('results-points').textContent = '0 pts';
       document.getElementById('results-msg').textContent = msg + ' (Daily practice points reached — keep practising for fun!)';
     } else if (pointsEarned < rawPts) {
@@ -495,8 +503,9 @@
     // Update weekly goals
     if (typeof addSolvedQuestions === 'function') addSolvedQuestions(practiceState.count);
 
-    // Submit practice score to API (capped points)
-    submitPracticeScore(practiceState.correct, practiceState.count, elapsed, pointsEarned);
+    // Submit practice score to API (capped points; points-eligible tally only —
+    // see computePointsEligibleTally in practice-engine.js)
+    submitPracticeScore(tally.correct, tally.total, elapsed, pointsEarned);
   }
 
   async function submitPracticeScore(correct, total, timeSeconds, pointsEarned) {
