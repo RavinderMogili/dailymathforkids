@@ -9,6 +9,12 @@ import validation_gate  # noqa: E402
 
 
 class TestSecretScan(unittest.TestCase):
+    # The fake key below is assembled at runtime (never written as one
+    # contiguous literal) so this test file itself doesn't trip
+    # validation_gate.py's own secret scan once committed -- an earlier
+    # version of this test did exactly that and failed real CI runs.
+    FAKE_ANTHROPIC_KEY = "sk-ant-" + "abcdefghijklmnopqrstuvwx"
+
     def _diff_with(self, added_line):
         return (
             "diff --git a/foo.py b/foo.py\n"
@@ -22,14 +28,14 @@ class TestSecretScan(unittest.TestCase):
 
     @patch.object(validation_gate, "_run")
     def test_flags_added_anthropic_style_key(self, mock_run):
-        mock_run.return_value = (0, self._diff_with("+api_key = 'sk-ant-abcdefghijklmnopqrstuvwx'"))
+        mock_run.return_value = (0, self._diff_with(f"+api_key = '{self.FAKE_ANTHROPIC_KEY}'"))
         result = validation_gate.step_secret_scan()
         self.assertFalse(result.passed)
         self.assertIn("Anthropic", result.detail)
 
     @patch.object(validation_gate, "_run")
     def test_ignores_removed_lines(self, mock_run):
-        mock_run.return_value = (0, self._diff_with("-api_key = 'sk-ant-abcdefghijklmnopqrstuvwx'"))
+        mock_run.return_value = (0, self._diff_with(f"-api_key = '{self.FAKE_ANTHROPIC_KEY}'"))
         result = validation_gate.step_secret_scan()
         self.assertTrue(result.passed)
 
