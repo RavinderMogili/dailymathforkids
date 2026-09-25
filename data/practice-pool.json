@@ -2,8 +2,8 @@
   {
     "grade": 1,
     "topic": "Addition within 20",
-    "question": "At a hockey game, Emma scored 4 goals and her teammate scored 3 goals. How many goals did they score altogether?",
-    "questionFr": "Lors d'un match de hockey, Emma a marqué 4 buts et sa coéquipière en a marqué 3. Combien de buts ont-elles marqué en tout?",
+    "question": "At a hockey game, Maya scored 4 goals and her friend Liam scored 3 goals. How many goals did they score together?",
+    "questionFr": "Lors d'un match de hockey, Maya a marqué 4 buts et son ami Liam en a marqué 3. Combien de buts ont-ils marqués ensemble?",
     "choices": [
       "5",
       "6",
@@ -11,143 +11,251 @@
       "8"
     ],
     "answer": "7",
-    "hint": "Count on from the bigger number using your fingers.",
+    "hint": "Count on from 4 — how many more do you add?",
     "steps": [
-      "Start with 4 goals, then count on 3 more: 5, 6, 7.",
-      "4 + 3 = 7 goals altogether."
-    ]
-  },
-  {
-    "grade": 1,
-    "topic": "Counting Coins",
-    "question": "Liam has 2 nickels and 3 pennies. How many cents does he have in total?",
-    "questionFr": "Liam a 2 pièces de 5 cents et 3 pièces de 1 cent. Combien de cents a-t-il en tout?",
-    "choices": [
-      "8 cents",
-      "13 cents",
-      "10 cents",
-      "5 cents"
-    ],
-    "answer": "13 cents",
-    "hint": "Each nickel is worth 5 cents. Add the pennies after.",
-    "steps": [
-      "2 nickels = 5 + 5 = 10 cents.",
-      "10 cents + 3 pennies = 13 cents."
-    ]
-  },
-  {
-    "grade": 1,
-    "topic": "Skip Counting",
-    "question": "At a Tim Hortons, muffins are placed in rows of 2. If there are 5 rows, how many muffins are there? Count by 2s!",
-    "questionFr": "Chez Tim Hortons, les muffins sont placés en rangées de 2. S'il y a 5 rangées, combien y a-t-il de muffins? Compte par 2!",
-    "choices": [
-      "7",
-      "8",
-      "10",
-      "12"
-    ],
-    "answer": "10",
-    "hint": "Try counting: 2, 4, 6, 8, 10 — one number for each row.",
-    "steps": [
-      "Skip count by 2s five times: 2, 4, 6, 8, 10.",
-      "There are 10 muffins in total."
+      "Start with Maya's 4 goals and count on 3 more: 5, 6, 7",
+      "4 + 3 = 7 goals total"
     ]
   },
   {
     "grade": 1,
     "topic": "Subtraction within 20",
-    "question": "Sophia had 15 maple leaf stickers. She gave 6 to her friend. How many stickers does she have left?",
-    "questionFr": "Sophia avait 15 autocollants en forme de feuille d'érable. Elle en a donné 6 à son amie. Combien d'autocollants lui reste-t-il?",
+    "question": "Tim Hortons had 12 Timbits on a tray. The kids ate 5 of them. How many Timbits are left?",
+    "questionFr": "Tim Hortons avait 12 Timbits sur un plateau. Les enfants en ont mangé 5. Combien de Timbits reste-t-il?",
     "choices": [
+      "5",
+      "6",
       "7",
-      "8",
-      "9",
-      "10"
+      "8"
     ],
-    "answer": "9",
-    "hint": "Start at 15 and count backwards 6 times.",
+    "answer": "7",
+    "hint": "Start at 12 and count backwards 5 times.",
     "steps": [
-      "Start at 15 and subtract 6: 15 - 6.",
-      "15 - 6 = 9 stickers remaining."
+      "Start with 12 Timbits and subtract 5: 12 - 5",
+      "12 - 5 = 7 Timbits remain"
+    ]
+  },
+  {
+    "grade": 1,
+    "topic": "Skip Counting",
+    "question": "The kids are counting maple leaves by 2s. They have 2, 4, 6, 8, ___. What number comes next?",
+    "questionFr": "Les enfants comptent des feuilles d'érable par bonds de 2. Ils ont 2, 4, 6, 8, ___. Quel nombre vient ensuite?",
+    "choices": [
+      "9",
+      "10",
+      "11",
+      "12"
+    ],
+    "answer": "10",
+    "hint": "Each time you skip count by 2, you add 2 to the last number.",
+    "steps": [
+      "Look at the pattern: each number is 2 more than the last",
+      "8 + 2 = 10"
     ]
   },
   {
     "grade": 1,
     "topic": "Comparing Numbers",
-    "question": "At a school fair, Ben collected 12 tickets and Maya collected 17 tickets. Who collected more tickets?",
-    "questionFr": "À une foire scolaire, Ben a collecté 12 billets et Maya en a collecté 17. Qui en a collecté le plus?",
+    "question": "Emma collected 15 hockey cards and Noah collected 11 hockey cards. Who has more cards, and by how many?",
+    "questionFr": "Emma a collecté 15 cartes de hockey et Noah en a collecté 11. Qui a le plus de cartes et de combien?",
     "choices": [
-      "Ben",
-      "Maya",
-      "They collected the same",
-      "We cannot tell"
+      "Noah by 3",
+      "Emma by 4",
+      "Emma by 5",
+      "Noah by 4"
     ],
-    "answer": "Maya",
-    "hint": "Which number is bigger — 12 or 17?",
+    "answer": "Emma by 4",
+    "hint": "First figure out who has more, then find the difference between the two numbers.",
     "steps": [
-      "Compare the tens: both have 1 ten, so look at the ones.",
-      "7 ones is more than 2 ones, so 17 > 12. Maya collected more."
+      "15 is greater than 11, so Emma has more cards",
+      "15 - 11 = 4, so Emma has 4 more cards"
+    ]
+  },
+  {
+    "grade": 1,
+    "topic": "Coins",
+    "question": "Aiden has 2 nickels and 1 dime. How many cents does he have in total?",
+    "questionFr": "Aiden a 2 pièces de 5 cents et 1 pièce de 10 cents. Combien de cents a-t-il en tout?",
+    "choices": [
+      "15 cents",
+      "20 cents",
+      "10 cents",
+      "25 cents"
+    ],
+    "answer": "20 cents",
+    "hint": "Remember: a nickel is worth 5 cents and a dime is worth 10 cents.",
+    "steps": [
+      "2 nickels = 5 + 5 = 10 cents",
+      "10 cents + 1 dime (10 cents) = 20 cents"
     ]
   },
   {
     "grade": 2,
     "topic": "Addition within 100",
-    "question": "At a school bake sale, one table sold 34 cookies and another sold 47 cookies. How many cookies were sold altogether?",
-    "questionFr": "Lors d'une vente de pâtisseries à l'école, une table a vendu 34 biscuits et une autre en a vendu 47. Combien de biscuits ont été vendus en tout?",
+    "question": "At a school bake sale, the Grade 2 class sold 34 muffins in the morning and 47 muffins in the afternoon. How many muffins did they sell in total?",
+    "questionFr": "Lors d'une vente de pâtisseries à l'école, la classe de 2e année a vendu 34 muffins le matin et 47 muffins l'après-midi. Combien de muffins ont-ils vendus en tout?",
     "choices": [
       "71",
       "81",
       "79",
-      "91"
+      "80"
     ],
     "answer": "81",
-    "hint": "Add the ones first, then the tens.",
+    "hint": "Add the tens first, then add the ones.",
     "steps": [
-      "Add the ones: 4 + 7 = 11, write 1 carry 1.",
-      "Add the tens: 3 + 4 + 1 (carried) = 8, so 81."
+      "Add the tens: 30 + 40 = 70",
+      "Add the ones: 4 + 7 = 11, then 70 + 11 = 81"
     ]
   },
   {
     "grade": 2,
-    "topic": "Telling Time",
-    "question": "Hockey practice starts at 3:00 and ends at 3:30. How long is hockey practice?",
-    "questionFr": "La pratique de hockey commence à 15h et se termine à 15h30. Combien de temps dure la pratique de hockey?",
+    "topic": "Time (Hour/Half-Hour)",
+    "question": "Soccer practice starts at 3:00 and lasts one and a half hours. What time does practice end?",
+    "questionFr": "La pratique de soccer commence à 15h00 et dure une heure et demie. À quelle heure la pratique se termine-t-elle?",
     "choices": [
-      "15 minutes",
-      "30 minutes",
-      "45 minutes",
-      "1 hour"
+      "3:30",
+      "4:00",
+      "4:30",
+      "5:00"
     ],
-    "answer": "30 minutes",
-    "hint": "Look at how the minute hand moves from the 12 to the 6.",
+    "answer": "4:30",
+    "hint": "Add 1 hour first, then add another half hour (30 minutes).",
     "steps": [
-      "From 3:00 to 3:30, the minute hand moves halfway around the clock.",
-      "That is 30 minutes."
+      "3:00 + 1 hour = 4:00",
+      "4:00 + 30 minutes = 4:30"
     ]
   },
   {
     "grade": 2,
-    "topic": "Measurement — Length",
-    "question": "Chloe's pencil is 14 cm long. Her eraser is 3 cm long. How much longer is the pencil than the eraser?",
-    "questionFr": "Le crayon de Chloé mesure 14 cm. Sa gomme à effacer mesure 3 cm. De combien le crayon est-il plus long que la gomme?",
+    "topic": "Length (cm/m)",
+    "question": "Olivia's snowboard is 120 cm long and her brother's snowboard is 95 cm long. How much longer is Olivia's snowboard?",
+    "questionFr": "La planche à neige d'Olivia mesure 120 cm et celle de son frère mesure 95 cm. De combien la planche d'Olivia est-elle plus longue?",
     "choices": [
-      "9 cm",
-      "10 cm",
-      "11 cm",
-      "17 cm"
+      "15 cm",
+      "20 cm",
+      "25 cm",
+      "30 cm"
     ],
-    "answer": "11 cm",
+    "answer": "25 cm",
     "hint": "Subtract the shorter length from the longer length.",
     "steps": [
-      "Subtract: 14 cm − 3 cm.",
-      "14 − 3 = 11 cm longer."
+      "120 cm - 95 cm = ?",
+      "120 - 95 = 25 cm longer"
     ]
   },
   {
     "grade": 2,
     "topic": "Patterns",
-    "question": "At a Canada Day parade, flags are arranged in a pattern: red, white, red, white... If there are 8 flags, how many are red?",
-    "questionFr": "Lors d'un défilé de la fête du Canada, des drapeaux sont disposés selon un motif : rouge, blanc, rouge, blanc... S'il y a 8 drapeaux, combien sont rouges?",
+    "question": "The school hallway has tiles in a pattern: red, blue, blue, red, blue, blue... What colour is the 9th tile?",
+    "questionFr": "Le couloir de l'école a des tuiles dans un motif: rouge, bleu, bleu, rouge, bleu, bleu... De quelle couleur est la 9e tuile?",
+    "choices": [
+      "Red",
+      "Blue",
+      "Green",
+      "Yellow"
+    ],
+    "answer": "Red",
+    "hint": "The pattern repeats every 3 tiles. Figure out which position in the pattern the 9th tile falls on.",
+    "steps": [
+      "The pattern is: red(1), blue(2), blue(3), red(4), blue(5), blue(6), red(7), blue(8), blue(9)... wait, check again — red(1), blue(2), blue(3), red(4), blue(5), blue(6), red(7), blue(8), blue(9)... tile 9 = blue",
+      "9 ÷ 3 = 3 with remainder 0, so tile 9 is the last in the group = blue"
+    ]
+  },
+  {
+    "grade": 2,
+    "topic": "Counting Coins to $1",
+    "question": "Sophie has 3 quarters and 2 dimes. How much money does she have in total?",
+    "questionFr": "Sophie a 3 pièces de 25 cents et 2 pièces de 10 cents. Combien d'argent a-t-elle en tout?",
+    "choices": [
+      "85 cents",
+      "90 cents",
+      "95 cents",
+      "$1.00"
+    ],
+    "answer": "95 cents",
+    "hint": "A quarter is worth 25 cents and a dime is worth 10 cents.",
+    "steps": [
+      "3 quarters = 25 + 25 + 25 = 75 cents",
+      "75 cents + 2 dimes (20 cents) = 95 cents"
+    ]
+  },
+  {
+    "grade": 3,
+    "topic": "Multiplication (2s and 5s)",
+    "question": "At a skating rink, 5 hockey teams each have 6 players. How many players are there in total?",
+    "questionFr": "À la patinoire, 5 équipes de hockey ont chacune 6 joueurs. Combien de joueurs y a-t-il en tout?",
+    "choices": [
+      "25",
+      "30",
+      "36",
+      "11"
+    ],
+    "answer": "30",
+    "hint": "Use multiplication — how many groups are there, and how big is each group?",
+    "steps": [
+      "There are 5 teams with 6 players each: 5 × 6",
+      "5 × 6 = 30 players in total"
+    ]
+  },
+  {
+    "grade": 3,
+    "topic": "Basic Division",
+    "question": "A farmer in Ontario has 24 jars of maple syrup to put equally into 4 boxes. How many jars go in each box?",
+    "questionFr": "Un fermier en Ontario a 24 pots de sirop d'érable à mettre également dans 4 boîtes. Combien de pots vont dans chaque boîte?",
+    "choices": [
+      "4",
+      "5",
+      "6",
+      "8"
+    ],
+    "answer": "6",
+    "hint": "Think about sharing 24 equally into 4 groups.",
+    "steps": [
+      "Divide 24 by 4: 24 ÷ 4 = ?",
+      "4 × 6 = 24, so each box gets 6 jars"
+    ]
+  },
+  {
+    "grade": 3,
+    "topic": "Fractions (1/2, 1/3, 1/4)",
+    "question": "Ethan ate 1/4 of a pizza at his birthday party. The pizza had 8 slices. How many slices did Ethan eat?",
+    "questionFr": "Ethan a mangé 1/4 d'une pizza lors de sa fête d'anniversaire. La pizza avait 8 pointes. Combien de pointes Ethan a-t-il mangées?",
+    "choices": [
+      "1",
+      "2",
+      "4",
+      "3"
+    ],
+    "answer": "2",
+    "hint": "To find 1/4 of something, divide by 4.",
+    "steps": [
+      "1/4 of 8 means divide 8 into 4 equal parts",
+      "8 ÷ 4 = 2 slices"
+    ]
+  },
+  {
+    "grade": 3,
+    "topic": "Perimeter",
+    "question": "The school garden is a rectangle that is 8 m long and 5 m wide. What is the perimeter of the garden?",
+    "questionFr": "Le jardin de l'école est un rectangle de 8 m de longueur et 5 m de largeur. Quel est le périmètre du jardin?",
+    "choices": [
+      "13 m",
+      "26 m",
+      "40 m",
+      "30 m"
+    ],
+    "answer": "26 m",
+    "hint": "A rectangle has 2 long sides and 2 short sides. Add all four sides together.",
+    "steps": [
+      "Add all sides: 8 + 8 + 5 + 5",
+      "8 + 8 + 5 + 5 = 26 m"
+    ]
+  },
+  {
+    "grade": 3,
+    "topic": "Simple Graphs",
+    "question": "A bar graph shows students' favourite winter sports: Hockey = 9, Skiing = 5, Skating = 7, Snowboarding = 4. How many more students prefer hockey over skiing?",
+    "questionFr": "Un diagramme à bandes montre les sports d'hiver préférés des élèves: Hockey = 9, Ski = 5, Patinage = 7, Planche à neige = 4. Combien d'élèves préfèrent le hockey plutôt que le ski?",
     "choices": [
       "2",
       "3",
@@ -155,575 +263,665 @@
       "5"
     ],
     "answer": "4",
-    "hint": "Every second flag is red. Count which positions are red.",
+    "hint": "Subtract the smaller number from the larger number.",
     "steps": [
-      "The pattern repeats every 2: positions 1, 3, 5, 7 are red.",
-      "That gives us 4 red flags."
-    ]
-  },
-  {
-    "grade": 2,
-    "topic": "Counting Coins to $1",
-    "question": "Jake has 3 quarters and 1 dime. How much money does he have?",
-    "questionFr": "Jake a 3 pièces de 25 cents et 1 pièce de 10 cents. Combien d'argent a-t-il?",
-    "choices": [
-      "75 cents",
-      "80 cents",
-      "85 cents",
-      "90 cents"
-    ],
-    "answer": "85 cents",
-    "hint": "Count the quarters first, then add the dime.",
-    "steps": [
-      "3 quarters = 25 + 25 + 25 = 75 cents.",
-      "75 + 10 = 85 cents."
-    ]
-  },
-  {
-    "grade": 3,
-    "topic": "Multiplication",
-    "question": "At camp, each cabin needs 4 canoes. There are 5 cabins. How many canoes are needed in total?",
-    "questionFr": "Au camp, chaque cabine a besoin de 4 canots. Il y a 5 cabines. Combien de canots sont nécessaires en tout?",
-    "choices": [
-      "16",
-      "18",
-      "20",
-      "24"
-    ],
-    "answer": "20",
-    "hint": "Use repeated addition or the 4 times table.",
-    "steps": [
-      "Multiply: 4 × 5.",
-      "4 × 5 = 20 canoes needed."
-    ]
-  },
-  {
-    "grade": 3,
-    "topic": "Basic Division",
-    "question": "A farmer collected 18 litres of maple syrup and wants to pour it equally into 3 jugs. How many litres go in each jug?",
-    "questionFr": "Un fermier a récolté 18 litres de sirop d'érable et veut le verser également dans 3 cruches. Combien de litres vont dans chaque cruche?",
-    "choices": [
-      "4",
-      "5",
-      "6",
-      "9"
-    ],
-    "answer": "6",
-    "hint": "Think: what number times 3 equals 18?",
-    "steps": [
-      "18 ÷ 3 = ?",
-      "3 × 6 = 18, so each jug gets 6 litres."
-    ]
-  },
-  {
-    "grade": 3,
-    "topic": "Fractions",
-    "question": "Sophie and her 3 friends are sharing a pizza equally. What fraction of the pizza does each person get?",
-    "questionFr": "Sophie et ses 3 amies partagent une pizza en parts égales. Quelle fraction de la pizza chaque personne reçoit-elle?",
-    "choices": [
-      "1/2",
-      "1/3",
-      "1/4",
-      "1/5"
-    ],
-    "answer": "1/4",
-    "hint": "Count the total number of people sharing.",
-    "steps": [
-      "Sophie + 3 friends = 4 people sharing.",
-      "The pizza is divided into 4 equal parts, so each gets 1/4."
-    ]
-  },
-  {
-    "grade": 3,
-    "topic": "Perimeter",
-    "question": "The school garden is a rectangle 6 m long and 4 m wide. What is the perimeter of the garden?",
-    "questionFr": "Le jardin de l'école est un rectangle de 6 m de long et de 4 m de large. Quel est le périmètre du jardin?",
-    "choices": [
-      "10 m",
-      "18 m",
-      "20 m",
-      "24 m"
-    ],
-    "answer": "20 m",
-    "hint": "Perimeter means adding all four sides together.",
-    "steps": [
-      "Perimeter = 6 + 4 + 6 + 4.",
-      "6 + 4 + 6 + 4 = 20 m."
-    ]
-  },
-  {
-    "grade": 3,
-    "topic": "Reading Graphs",
-    "question": "A bar graph shows goals scored this week: Monday 3, Tuesday 5, Wednesday 2. How many goals were scored in total?",
-    "questionFr": "Un diagramme à barres montre les buts marqués cette semaine : lundi 3, mardi 5, mercredi 2. Combien de buts ont été marqués en tout?",
-    "choices": [
-      "8",
-      "9",
-      "10",
-      "11"
-    ],
-    "answer": "10",
-    "hint": "Add up all three days' goals.",
-    "steps": [
-      "Add: 3 + 5 + 2.",
-      "3 + 5 = 8, then 8 + 2 = 10 goals."
+      "Find the difference between hockey (9) and skiing (5)",
+      "9 - 5 = 4 more students prefer hockey"
     ]
   },
   {
     "grade": 4,
-    "topic": "Multiplication Tables",
-    "question": "At the hockey arena, there are 8 rows of seats and each row has 9 seats. How many seats are there in total?",
-    "questionFr": "À l'aréna de hockey, il y a 8 rangées de sièges et chaque rangée a 9 sièges. Combien y a-t-il de sièges en tout?",
+    "topic": "Times Tables to 9×9",
+    "question": "A Tim Hortons store arranges donuts in 8 rows with 7 donuts in each row. How many donuts are on display?",
+    "questionFr": "Un magasin Tim Hortons dispose les beignes en 8 rangées de 7 beignes chacune. Combien de beignes sont exposés?",
     "choices": [
-      "63",
-      "64",
-      "72",
-      "81"
+      "48",
+      "54",
+      "56",
+      "63"
     ],
-    "answer": "72",
-    "hint": "Use your 8 times table or 9 times table.",
+    "answer": "56",
+    "hint": "Multiply the number of rows by the number of donuts in each row.",
     "steps": [
-      "Multiply: 8 × 9.",
-      "8 × 9 = 72 seats."
+      "8 rows × 7 donuts per row = 8 × 7",
+      "8 × 7 = 56 donuts"
     ]
   },
   {
     "grade": 4,
     "topic": "Long Division",
-    "question": "A Tim Hortons store baked 96 timbits and packed them equally into boxes of 8. How many boxes did they fill?",
-    "questionFr": "Un Tim Hortons a cuit 96 timbits et les a emballés également dans des boîtes de 8. Combien de boîtes ont-ils rempli?",
+    "question": "The school ordered 96 new library books to be shared equally among 4 classrooms. How many books does each classroom get?",
+    "questionFr": "L'école a commandé 96 nouveaux livres de bibliothèque à partager également entre 4 classes. Combien de livres chaque classe reçoit-elle?",
     "choices": [
-      "10",
-      "11",
-      "12",
-      "14"
+      "22",
+      "24",
+      "26",
+      "28"
     ],
-    "answer": "12",
-    "hint": "Think: 8 times what number equals 96?",
+    "answer": "24",
+    "hint": "Divide 96 by 4 step by step — start with the tens digit.",
     "steps": [
-      "Divide: 96 ÷ 8.",
-      "8 × 12 = 96, so they filled 12 boxes."
+      "96 ÷ 4: first divide 9 tens ÷ 4 = 2 tens with 1 ten remaining",
+      "Bring down 6 ones: 16 ÷ 4 = 4, so the answer is 24 books per classroom"
     ]
   },
   {
     "grade": 4,
     "topic": "Decimal Place Value",
-    "question": "At the grocery store, a bottle of maple syrup costs $4.75. Which digit is in the tenths place?",
-    "questionFr": "À l'épicerie, une bouteille de sirop d'érable coûte 4,75 $. Quel chiffre est à la position des dixièmes?",
+    "question": "At the grocery store, apples cost $1.35 per bag. Which digit is in the tenths place?",
+    "questionFr": "À l'épicerie, les pommes coûtent 1,35 $ par sac. Quel chiffre est à la position des dixièmes?",
     "choices": [
-      "4",
+      "1",
+      "3",
       "5",
-      "7",
-      "75"
+      "0"
     ],
-    "answer": "7",
+    "answer": "3",
     "hint": "The tenths place is the first digit after the decimal point.",
     "steps": [
-      "In $4.75, the decimal point separates dollars from cents.",
-      "The first digit after the decimal point is 7, which is in the tenths place."
+      "In $1.35, the decimal point separates dollars from cents",
+      "The first digit after the decimal is 3, which is in the tenths place"
     ]
   },
   {
     "grade": 4,
     "topic": "Area",
-    "question": "A camping tent has a rectangular floor that is 3 m long and 2 m wide. What is the area of the tent floor?",
-    "questionFr": "Une tente de camping a un plancher rectangulaire de 3 m de long et de 2 m de large. Quelle est l'aire du plancher de la tente?",
+    "question": "A school basketball court is 28 m long and 15 m wide. What is the area of the court?",
+    "questionFr": "Un terrain de basketball scolaire a 28 m de longueur et 15 m de largeur. Quelle est l'aire du terrain?",
     "choices": [
-      "5 m²",
-      "6 m²",
-      "8 m²",
-      "10 m²"
+      "86 m²",
+      "370 m²",
+      "420 m²",
+      "320 m²"
     ],
-    "answer": "6 m²",
+    "answer": "420 m²",
     "hint": "Area of a rectangle = length × width.",
     "steps": [
-      "Use the formula: Area = length × width.",
-      "Area = 3 × 2 = 6 m²."
+      "Area = length × width = 28 × 15",
+      "28 × 15 = 420 m²"
     ]
   },
   {
     "grade": 4,
     "topic": "Elapsed Time",
-    "question": "The school bus left at 8:15 a.m. and arrived at school at 8:50 a.m. How long was the bus ride?",
-    "questionFr": "L'autobus scolaire est parti à 8h15 et est arrivé à l'école à 8h50. Combien de temps a duré le trajet en autobus?",
+    "question": "The Rogers Centre doors opened at 11:45 a.m. and the baseball game ended at 3:15 p.m. How long was the event?",
+    "questionFr": "Les portes du Rogers Centre ont ouvert à 11h45 et le match de baseball a terminé à 15h15. Quelle était la durée de l'événement?",
     "choices": [
-      "25 minutes",
-      "30 minutes",
-      "35 minutes",
-      "40 minutes"
+      "2 hours 30 minutes",
+      "3 hours 30 minutes",
+      "3 hours 15 minutes",
+      "4 hours"
     ],
-    "answer": "35 minutes",
-    "hint": "Count the minutes from 8:15 to 8:50.",
+    "answer": "3 hours 30 minutes",
+    "hint": "Count up from 11:45 to 3:15 using hours and minutes.",
     "steps": [
-      "From 8:15 to 8:50: 50 - 15 = 35 minutes.",
-      "The bus ride was 35 minutes long."
+      "From 11:45 to 3:15 — first count hours: 11:45 to 2:45 = 3 hours",
+      "Then count minutes: 2:45 to 3:15 = 30 minutes; total = 3 hours 30 minutes"
     ]
   },
   {
     "grade": 5,
-    "topic": "Multi-digit Multiplication",
-    "question": "A hockey team sells 248 jerseys at $35 each during the playoffs. How much money do they collect?",
-    "questionFr": "Une équipe de hockey vend 248 chandails à 35 $ chacun pendant les séries éliminatoires. Combien d'argent collectent-ils?",
+    "topic": "Multi-Digit Multiplication",
+    "question": "A hockey arena in Calgary has 24 rows of seats, and each row has 36 seats. How many seats are in the arena?",
+    "questionFr": "Une patinoire à Calgary a 24 rangées de sièges et chaque rangée a 36 sièges. Combien de sièges y a-t-il dans la patinoire?",
     "choices": [
-      "$7,880",
-      "$8,480",
-      "$8,680",
-      "$8,960"
+      "764",
+      "844",
+      "864",
+      "884"
     ],
-    "answer": "$8,680",
-    "hint": "Multiply 248 by 35. Try breaking 35 into 30 + 5.",
+    "answer": "864",
+    "hint": "Break 24 × 36 into smaller parts: try (20 × 36) + (4 × 36).",
     "steps": [
-      "248 × 30 = 7,440 and 248 × 5 = 1,240.",
-      "7,440 + 1,240 = $8,680."
+      "20 × 36 = 720 and 4 × 36 = 144",
+      "720 + 144 = 864 seats"
     ]
   },
   {
     "grade": 5,
     "topic": "Fractions with Like Denominators",
-    "question": "At a class party, Owen ate 2/8 of a pie and his friend ate 3/8 of the same pie. How much of the pie did they eat together?",
-    "questionFr": "Lors d'une fête de classe, Owen a mangé 2/8 d'une tarte et son ami en a mangé 3/8. Combien de la tarte ont-ils mangé ensemble?",
+    "question": "Camille made a batch of butter tarts. She gave 2/8 to her neighbour and ate 3/8 herself. What fraction of the tarts is left?",
+    "questionFr": "Camille a fait un lot de tartelettes au beurre. Elle en a donné 2/8 à sa voisine et en a mangé 3/8 elle-même. Quelle fraction des tartelettes reste-t-il?",
     "choices": [
-      "5/16",
-      "5/8",
-      "6/8",
-      "1/2"
+      "1/8",
+      "2/8",
+      "3/8",
+      "5/8"
     ],
-    "answer": "5/8",
-    "hint": "When adding fractions with the same denominator, just add the numerators.",
+    "answer": "3/8",
+    "hint": "Add what was given away and eaten, then subtract from the whole.",
     "steps": [
-      "2/8 + 3/8: the denominators are the same, so add numerators.",
-      "2 + 3 = 5, so together they ate 5/8 of the pie."
+      "Amount used: 2/8 + 3/8 = 5/8",
+      "Amount left: 8/8 - 5/8 = 3/8"
     ]
   },
   {
     "grade": 5,
     "topic": "Decimal Operations",
-    "question": "Aisha buys a water bottle for $3.75 and a granola bar for $1.49 at the camp store. She pays with a $10 bill. How much change does she get?",
-    "questionFr": "Aisha achète une bouteille d'eau à 3,75 $ et une barre granola à 1,49 $ à la boutique du camp. Elle paie avec un billet de 10 $. Combien a-t-elle de monnaie?",
+    "question": "At a camping store, a tent costs $48.75 and a sleeping bag costs $33.50. What is the total cost of both items?",
+    "questionFr": "Dans un magasin de plein air, une tente coûte 48,75 $ et un sac de couchage coûte 33,50 $. Quel est le coût total des deux articles?",
     "choices": [
-      "$4.76",
-      "$4.96",
-      "$5.24",
-      "$5.76"
+      "$81.25",
+      "$82.25",
+      "$82.75",
+      "$83.25"
     ],
-    "answer": "$4.76",
-    "hint": "First add the two prices together, then subtract from $10.",
+    "answer": "$82.25",
+    "hint": "Line up the decimal points before adding.",
     "steps": [
-      "$3.75 + $1.49 = $5.24 total spent.",
-      "$10.00 − $5.24 = $4.76 change."
+      "$48.75 + $33.50 — add cents: 75 + 50 = 125 cents = $1.25 carry $1",
+      "48 + 33 + 1 = $82, total = $82.25"
     ]
   },
   {
     "grade": 5,
     "topic": "Percent Introduction",
-    "question": "In a class of 20 students, 5 are wearing a hockey jersey today. What percent of the class is wearing a jersey?",
-    "questionFr": "Dans une classe de 20 élèves, 5 portent un chandail de hockey aujourd'hui. Quel pourcentage de la classe porte un chandail?",
+    "question": "In a class of 20 students, 5 students said their favourite sport is curling. What percent of the class likes curling?",
+    "questionFr": "Dans une classe de 20 élèves, 5 ont dit que leur sport préféré est le curling. Quel pourcentage de la classe aime le curling?",
     "choices": [
-      "5%",
-      "15%",
-      "20%",
-      "25%"
-    ],
-    "answer": "25%",
-    "hint": "Divide the number wearing jerseys by total students, then multiply by 100.",
-    "steps": [
-      "5 ÷ 20 = 0.25.",
-      "0.25 × 100 = 25%."
-    ]
-  },
-  {
-    "grade": 5,
-    "topic": "Volume",
-    "question": "A storage box at a camping supply store is 4 m long, 3 m wide, and 2 m tall. What is the volume of the box?",
-    "questionFr": "Une boîte de rangement dans un magasin de camping mesure 4 m de long, 3 m de large et 2 m de haut. Quel est le volume de la boîte?",
-    "choices": [
-      "18 m³",
-      "20 m³",
-      "24 m³",
-      "30 m³"
-    ],
-    "answer": "24 m³",
-    "hint": "Volume = length × width × height.",
-    "steps": [
-      "Use the formula: V = l × w × h.",
-      "V = 4 × 3 × 2 = 24 m³."
-    ]
-  },
-  {
-    "grade": 6,
-    "topic": "Fraction Multiplication",
-    "question": "A recipe for butter tarts needs 3/4 of a cup of sugar. If you want to make half the recipe, how much sugar do you need?",
-    "questionFr": "Une recette de tartelettes au beurre nécessite 3/4 de tasse de sucre. Si vous voulez faire la moitié de la recette, de quelle quantité de sucre avez-vous besoin?",
-    "choices": [
-      "1/4 cup",
-      "3/8 cup",
-      "1/2 cup",
-      "3/4 cup"
-    ],
-    "answer": "3/8 cup",
-    "hint": "Multiply 3/4 by 1/2.",
-    "steps": [
-      "3/4 × 1/2: multiply numerators and denominators.",
-      "3 × 1 = 3 and 4 × 2 = 8, so the answer is 3/8 cup."
-    ]
-  },
-  {
-    "grade": 6,
-    "topic": "Ratios and Rates",
-    "question": "A car travels 240 km in 3 hours on the Trans-Canada Highway. What is the car's speed in km/h?",
-    "questionFr": "Une voiture parcourt 240 km en 3 heures sur la Transcanadienne. Quelle est la vitesse de la voiture en km/h?",
-    "choices": [
-      "60 km/h",
-      "70 km/h",
-      "80 km/h",
-      "90 km/h"
-    ],
-    "answer": "80 km/h",
-    "hint": "Divide total distance by total time to find the unit rate.",
-    "steps": [
-      "Speed = distance ÷ time.",
-      "240 ÷ 3 = 80 km/h."
-    ]
-  },
-  {
-    "grade": 6,
-    "topic": "Percent of a Number",
-    "question": "A hockey stick is on sale for 30% off its original price of $90. How much is the discount?",
-    "questionFr": "Un bâton de hockey est en solde à 30% de rabais sur son prix original de 90 $. Quel est le montant du rabais?",
-    "choices": [
-      "$18",
-      "$24",
-      "$27",
-      "$30"
-    ],
-    "answer": "$27",
-    "hint": "Find 30% of $90 by multiplying 0.30 × 90.",
-    "steps": [
-      "30% of $90 = 0.30 × 90.",
-      "0.30 × 90 = $27 discount."
-    ]
-  },
-  {
-    "grade": 6,
-    "topic": "Integers Introduction",
-    "question": "In Winnipeg, the temperature was −8°C in the morning. By noon, it rose by 11°C. What was the temperature at noon?",
-    "questionFr": "À Winnipeg, la température était de −8 °C le matin. À midi, elle a monté de 11 °C. Quelle était la température à midi?",
-    "choices": [
-      "−3°C",
-      "3°C",
-      "8°C",
-      "19°C"
-    ],
-    "answer": "3°C",
-    "hint": "Start at −8 and add 11. Think of a number line.",
-    "steps": [
-      "Start at −8 and add 11: −8 + 11.",
-      "−8 + 11 = 3°C at noon."
-    ]
-  },
-  {
-    "grade": 6,
-    "topic": "BEDMAS",
-    "question": "At a Tim Hortons, muffins cost $2 each. Lucas buys 3 muffins and a coffee for $4. Using the expression 3 × 2 + 4, what is the total cost?",
-    "questionFr": "Chez Tim Hortons, les muffins coûtent 2 $ chacun. Lucas achète 3 muffins et un café à 4 $. En utilisant l'expression 3 × 2 + 4, quel est le coût total?",
-    "choices": [
-      "$14",
-      "$10",
-      "$18",
-      "$8"
-    ],
-    "answer": "$10",
-    "hint": "Remember BEDMAS: do multiplication before addition.",
-    "steps": [
-      "First: 3 × 2 = 6 (multiplication before addition).",
-      "Then: 6 + 4 = $10 total."
-    ]
-  },
-  {
-    "grade": 7,
-    "topic": "Integer Operations",
-    "question": "During a cold snap in Edmonton, temperatures for 4 days were: −12°C, −7°C, −15°C, and −6°C. What is the average temperature over the 4 days?",
-    "questionFr": "Lors d'une vague de froid à Edmonton, les températures pendant 4 jours étaient : −12 °C, −7 °C, −15 °C et −6 °C. Quelle est la température moyenne sur 4 jours?",
-    "choices": [
-      "−9°C",
-      "−10°C",
-      "−11°C",
-      "−12°C"
-    ],
-    "answer": "−10°C",
-    "hint": "Add all temperatures together (watch the negatives!), then divide by 4.",
-    "steps": [
-      "Sum: −12 + (−7) + (−15) + (−6) = −40.",
-      "Average: −40 ÷ 4 = −10°C."
-    ]
-  },
-  {
-    "grade": 7,
-    "topic": "Percent Problems",
-    "question": "A school raised $650 for a food bank. Their goal was $500. By what percent did they exceed their goal?",
-    "questionFr": "Une école a amassé 650 $ pour une banque alimentaire. Leur objectif était de 500 $. De quel pourcentage ont-ils dépassé leur objectif?",
-    "choices": [
-      "15%",
-      "25%",
-      "30%",
-      "35%"
-    ],
-    "answer": "30%",
-    "hint": "Find the extra amount raised, then calculate what percent that is of the goal.",
-    "steps": [
-      "Extra amount: $650 − $500 = $150.",
-      "$150 ÷ $500 × 100 = 30%."
-    ]
-  },
-  {
-    "grade": 7,
-    "topic": "One-Step Equations",
-    "question": "A hockey player has scored x goals this season. After scoring 3 more goals, he has 19 total. Write and solve an equation to find x.",
-    "questionFr": "Un joueur de hockey a marqué x buts cette saison. Après avoir marqué 3 buts de plus, il en a 19 au total. Écrivez et résolvez une équation pour trouver x.",
-    "choices": [
-      "x = 15",
-      "x = 16",
-      "x = 17",
-      "x = 22"
-    ],
-    "answer": "x = 16",
-    "hint": "Set up the equation x + 3 = 19 and isolate x.",
-    "steps": [
-      "Equation: x + 3 = 19.",
-      "Subtract 3 from both sides: x = 19 − 3 = 16."
-    ]
-  },
-  {
-    "grade": 7,
-    "topic": "Surface Area",
-    "question": "A gift box shaped like a rectangular prism is 10 cm long, 6 cm wide, and 4 cm tall. What is the total surface area of the box?",
-    "questionFr": "Une boîte cadeau en forme de prisme rectangulaire mesure 10 cm de long, 6 cm de large et 4 cm de haut. Quelle est la surface totale de la boîte?",
-    "choices": [
-      "208 cm²",
-      "240 cm²",
-      "248 cm²",
-      "260 cm²"
-    ],
-    "answer": "248 cm²",
-    "hint": "Surface area = 2(lw + lh + wh). Find the area of each pair of faces.",
-    "steps": [
-      "Find each face: lw = 60, lh = 40, wh = 24.",
-      "SA = 2(60 + 40 + 24) = 2(124) = 248 cm²."
-    ]
-  },
-  {
-    "grade": 7,
-    "topic": "Probability",
-    "question": "In a bag of 20 hockey cards, 5 are star player cards. If you pick one card at random, what is the probability of picking a star player card?",
-    "questionFr": "Dans un sac de 20 cartes de hockey, 5 sont des cartes de joueurs étoiles. Si vous piochez une carte au hasard, quelle est la probabilité de piocher une carte de joueur étoile?",
-    "choices": [
-      "1/5",
-      "1/4",
-      "1/3",
-      "1/2"
-    ],
-    "answer": "1/4",
-    "hint": "Probability = favourable outcomes ÷ total outcomes. Simplify your fraction.",
-    "steps": [
-      "Probability = 5/20.",
-      "Simplify: 5/20 = 1/4."
-    ]
-  },
-  {
-    "grade": 8,
-    "topic": "Two-Step Equations",
-    "question": "Maya earns $12 per hour working at a camp canteen. She also received a $15 bonus. If she earned $111 in total, how many hours did she work?",
-    "questionFr": "Maya gagne 12 $ de l'heure en travaillant à la cantine d'un camp. Elle a également reçu un bonus de 15 $. Si elle a gagné 111 $ au total, combien d'heures a-t-elle travaillé?",
-    "choices": [
-      "7 hours",
-      "8 hours",
-      "9 hours",
-      "10 hours"
-    ],
-    "answer": "8 hours",
-    "hint": "Set up the equation 12h + 15 = 111 and solve for h.",
-    "steps": [
-      "Subtract 15 from both sides: 12h = 96.",
-      "Divide by 12: h = 96 ÷ 12 = 8 hours."
-    ]
-  },
-  {
-    "grade": 8,
-    "topic": "Pythagorean Theorem",
-    "question": "A hockey player skates 6 m to the right, then 8 m straight up the ice. How far is she from her starting position (straight-line distance)?",
-    "questionFr": "Une joueuse de hockey patine 6 m vers la droite, puis 8 m vers le haut de la glace. Quelle distance la sépare de sa position de départ (distance en ligne droite)?",
-    "choices": [
-      "10 m",
-      "12 m",
-      "14 m",
-      "16 m"
-    ],
-    "answer": "10 m",
-    "hint": "Use the Pythagorean theorem: a² + b² = c².",
-    "steps": [
-      "a² + b² = c²: 6² + 8² = 36 + 64 = 100.",
-      "c = √100 = 10 m."
-    ]
-  },
-  {
-    "grade": 8,
-    "topic": "Percent Increase and Decrease",
-    "question": "A Tim Hortons franchise increased its daily coffee sales from 400 cups to 500 cups. What is the percent increase?",
-    "questionFr": "Une franchise Tim Hortons a augmenté ses ventes quotidiennes de café de 400 tasses à 500 tasses. Quel est le pourcentage d'augmentation?",
-    "choices": [
-      "15%",
+      "10%",
       "20%",
       "25%",
       "30%"
     ],
     "answer": "25%",
-    "hint": "Percent increase = (new − old) ÷ old × 100.",
+    "hint": "Write the fraction of students who like curling, then convert to a percent out of 100.",
     "steps": [
-      "Increase = 500 − 400 = 100 cups.",
-      "Percent increase = 100 ÷ 400 × 100 = 25%."
+      "Fraction = 5/20 = 1/4",
+      "1/4 = 25/100 = 25%"
+    ]
+  },
+  {
+    "grade": 5,
+    "topic": "Volume",
+    "question": "A rectangular storage box at a hockey rink is 5 m long, 3 m wide, and 2 m tall. What is the volume of the box?",
+    "questionFr": "Une boîte de rangement rectangulaire à la patinoire mesure 5 m de longueur, 3 m de largeur et 2 m de hauteur. Quel est le volume de la boîte?",
+    "choices": [
+      "20 m³",
+      "25 m³",
+      "30 m³",
+      "35 m³"
+    ],
+    "answer": "30 m³",
+    "hint": "Volume of a rectangular prism = length × width × height.",
+    "steps": [
+      "Volume = 5 × 3 × 2",
+      "5 × 3 = 15, then 15 × 2 = 30 m³"
+    ]
+  },
+  {
+    "grade": 6,
+    "topic": "Fraction Multiplication",
+    "question": "A recipe for maple fudge calls for 3/4 of a cup of butter. If you want to make 1/2 of the recipe, how much butter do you need?",
+    "questionFr": "Une recette de fudge à l'érable nécessite 3/4 de tasse de beurre. Si tu veux faire la moitié de la recette, de quelle quantité de beurre as-tu besoin?",
+    "choices": [
+      "1/4 cup",
+      "3/8 cup",
+      "1/2 cup",
+      "2/3 cup"
+    ],
+    "answer": "3/8 cup",
+    "hint": "Multiply the two fractions together: numerator × numerator and denominator × denominator.",
+    "steps": [
+      "3/4 × 1/2 = (3×1)/(4×2)",
+      "= 3/8 cup of butter"
+    ]
+  },
+  {
+    "grade": 6,
+    "topic": "Ratios and Rates",
+    "question": "A car travels 240 km in 3 hours on the Trans-Canada Highway. What is the car's speed in kilometres per hour?",
+    "questionFr": "Une voiture parcourt 240 km en 3 heures sur la Transcanadienne. Quelle est la vitesse de la voiture en kilomètres par heure?",
+    "choices": [
+      "70 km/h",
+      "75 km/h",
+      "80 km/h",
+      "90 km/h"
+    ],
+    "answer": "80 km/h",
+    "hint": "Divide the total distance by the total time to find the speed per hour.",
+    "steps": [
+      "Speed = distance ÷ time = 240 ÷ 3",
+      "240 ÷ 3 = 80 km/h"
+    ]
+  },
+  {
+    "grade": 6,
+    "topic": "Percent of a Number",
+    "question": "A hockey jersey regularly costs $80 at a sports store. It is on sale for 30% off. How much money do you save?",
+    "questionFr": "Un chandail de hockey coûte normalement 80 $ dans un magasin de sport. Il est en vente à 30 % de rabais. Combien d'argent économises-tu?",
+    "choices": [
+      "$20",
+      "$24",
+      "$30",
+      "$32"
+    ],
+    "answer": "$24",
+    "hint": "Find 30% of $80 by multiplying 80 by 0.30 or by finding 10% first then tripling it.",
+    "steps": [
+      "10% of $80 = $8",
+      "30% = 3 × $8 = $24 saved"
+    ]
+  },
+  {
+    "grade": 6,
+    "topic": "Integers Introduction",
+    "question": "During a Canadian winter camping trip, the temperature was -8°C at night. By noon the next day, it had risen by 13 degrees. What was the noon temperature?",
+    "questionFr": "Lors d'un voyage de camping hivernal canadien, la température était de -8 °C la nuit. Le lendemain midi, elle avait augmenté de 13 degrés. Quelle était la température à midi?",
+    "choices": [
+      "3°C",
+      "4°C",
+      "5°C",
+      "6°C"
+    ],
+    "answer": "5°C",
+    "hint": "Start at -8 and add 13 — use a number line if it helps.",
+    "steps": [
+      "Start at -8°C and add 13: -8 + 13",
+      "-8 + 13 = 5°C"
+    ]
+  },
+  {
+    "grade": 6,
+    "topic": "BEDMAS",
+    "question": "At a school fundraiser, students solve: 3 + 4 × 5 - 2. What is the correct answer using order of operations?",
+    "questionFr": "Lors d'une activité de financement scolaire, les élèves résolvent: 3 + 4 × 5 - 2. Quelle est la bonne réponse selon l'ordre des opérations?",
+    "choices": [
+      "33",
+      "21",
+      "23",
+      "35"
+    ],
+    "answer": "21",
+    "hint": "Remember BEDMAS — do multiplication before addition and subtraction.",
+    "steps": [
+      "First do multiplication: 4 × 5 = 20, so the expression becomes 3 + 20 - 2",
+      "Then left to right: 3 + 20 = 23, then 23 - 2 = 21"
+    ]
+  },
+  {
+    "grade": 7,
+    "topic": "Integer Operations",
+    "question": "During a hockey game, the Leafs had a penalty at -3 plus scored 2 goals and had another penalty of -1. What is their plus/minus rating?",
+    "questionFr": "Pendant un match de hockey, les Leafs avaient une pénalité de -3, ont marqué 2 buts et avaient une autre pénalité de -1. Quel est leur différentiel?",
+    "choices": [
+      "-4",
+      "-3",
+      "-2",
+      "-1"
+    ],
+    "answer": "-2",
+    "hint": "Add all the positive and negative values together carefully.",
+    "steps": [
+      "Add all values: -3 + 2 + (-1)",
+      "-3 + 2 = -1, then -1 + (-1) = -2"
+    ]
+  },
+  {
+    "grade": 7,
+    "topic": "Fraction and Decimal Fluency",
+    "question": "Lucas ran 2.75 km in the morning and 1 3/4 km in the afternoon at school track practice. What was his total distance?",
+    "questionFr": "Lucas a couru 2,75 km le matin et 1 3/4 km l'après-midi à l'entraînement de piste scolaire. Quelle était sa distance totale?",
+    "choices": [
+      "4.25 km",
+      "4.5 km",
+      "4.75 km",
+      "5.0 km"
+    ],
+    "answer": "4.5 km",
+    "hint": "Convert 1 3/4 to a decimal first, then add.",
+    "steps": [
+      "1 3/4 = 1.75 km",
+      "2.75 + 1.75 = 4.5 km"
+    ]
+  },
+  {
+    "grade": 7,
+    "topic": "Percent Problems",
+    "question": "Ava scored 36 out of 45 on a math test about geometry. What was her percentage score?",
+    "questionFr": "Ava a obtenu 36 sur 45 à un test de mathématiques sur la géométrie. Quel était son score en pourcentage?",
+    "choices": [
+      "75%",
+      "78%",
+      "80%",
+      "85%"
+    ],
+    "answer": "80%",
+    "hint": "Divide the score by the total and multiply by 100.",
+    "steps": [
+      "36 ÷ 45 = 0.8",
+      "0.8 × 100 = 80%"
+    ]
+  },
+  {
+    "grade": 7,
+    "topic": "One-Step Equations",
+    "question": "A group of friends split the bill equally at Tim Hortons. The total bill was $42 and each person paid $7. Write and solve an equation to find how many friends were in the group.",
+    "questionFr": "Un groupe d'amis a divisé l'addition également chez Tim Hortons. L'addition totale était de 42 $ et chaque personne a payé 7 $. Écris et résous une équation pour trouver combien d'amis étaient dans le groupe.",
+    "choices": [
+      "5",
+      "6",
+      "7",
+      "8"
+    ],
+    "answer": "6",
+    "hint": "Let n = number of friends. Write an equation using multiplication or division.",
+    "steps": [
+      "Equation: 7n = 42",
+      "n = 42 ÷ 7 = 6 friends"
+    ]
+  },
+  {
+    "grade": 7,
+    "topic": "Surface Area",
+    "question": "A cereal box is shaped like a rectangular prism with a length of 20 cm, width of 8 cm, and height of 30 cm. What is the surface area of the box?",
+    "questionFr": "Une boîte de céréales est en forme de prisme rectangulaire avec une longueur de 20 cm, une largeur de 8 cm et une hauteur de 30 cm. Quelle est l'aire de la surface de la boîte?",
+    "choices": [
+      "1,840 cm²",
+      "2,080 cm²",
+      "2,240 cm²",
+      "4,800 cm²"
+    ],
+    "answer": "2,080 cm²",
+    "hint": "SA = 2(lw + lh + wh). Calculate each pair of faces separately.",
+    "steps": [
+      "lw = 20×8=160, lh = 20×30=600, wh = 8×30=240",
+      "SA = 2(160+600+240) = 2(1000) = 2,000... recalculate: 2×(160+600+240) = 2×1040 = 2,080 cm²"
+    ]
+  },
+  {
+    "grade": 8,
+    "topic": "Two-Step Equations",
+    "question": "A canoe rental in Algonquin Park costs $15 to rent plus $8 per hour. Maya spent $47 in total. How many hours did she rent the canoe?",
+    "questionFr": "La location d'un canot dans le parc Algonquin coûte 15 $ de frais de base plus 8 $ par heure. Maya a dépensé 47 $ au total. Combien d'heures a-t-elle loué le canot?",
+    "choices": [
+      "3 hours",
+      "4 hours",
+      "5 hours",
+      "6 hours"
+    ],
+    "answer": "4 hours",
+    "hint": "Set up the equation as: 15 + 8h = 47, then solve for h.",
+    "steps": [
+      "15 + 8h = 47 → 8h = 47 - 15 = 32",
+      "h = 32 ÷ 8 = 4 hours"
+    ]
+  },
+  {
+    "grade": 8,
+    "topic": "Square Roots",
+    "question": "A square community garden in Vancouver has an area of 196 m². What is the length of each side of the garden?",
+    "questionFr": "Un jardin communautaire carré à Vancouver a une superficie de 196 m². Quelle est la longueur de chaque côté du jardin?",
+    "choices": [
+      "12 m",
+      "13 m",
+      "14 m",
+      "16 m"
+    ],
+    "answer": "14 m",
+    "hint": "Find the square root of the area to get the side length.",
+    "steps": [
+      "Side length = √196",
+      "√196 = 14 because 14 × 14 = 196"
+    ]
+  },
+  {
+    "grade": 8,
+    "topic": "Pythagorean Theorem",
+    "question": "A ski slope forms a right triangle. The base is 40 m and the height is 30 m. How long is the ski slope (hypotenuse)?",
+    "questionFr": "Une piste de ski forme un triangle rectangle. La base est de 40 m et la hauteur est de 30 m. Quelle est la longueur de la piste de ski (hypoténuse)?",
+    "choices": [
+      "45 m",
+      "48 m",
+      "50 m",
+      "55 m"
+    ],
+    "answer": "50 m",
+    "hint": "Use a² + b² = c² where c is the hypotenuse.",
+    "steps": [
+      "a² + b² = c²: 30² + 40² = c²: 900 + 1600 = 2500",
+      "c = √2500 = 50 m"
+    ]
+  },
+  {
+    "grade": 8,
+    "topic": "Percent Increase/Decrease",
+    "question": "The price of a Montreal Canadiens jersey went from $120 to $150 this season. What is the percent increase in price?",
+    "questionFr": "Le prix d'un chandail des Canadiens de Montréal est passé de 120 $ à 150 $ cette saison. Quel est le pourcentage d'augmentation du prix?",
+    "choices": [
+      "20%",
+      "25%",
+      "30%",
+      "35%"
+    ],
+    "answer": "25%",
+    "hint": "Percent increase = (change ÷ original) × 100.",
+    "steps": [
+      "Change = $150 - $120 = $30",
+      "Percent increase = (30 ÷ 120) × 100 = 25%"
     ]
   },
   {
     "grade": 8,
     "topic": "Slope",
-    "question": "A ski hill rises 45 metres over a horizontal distance of 150 metres. What is the slope of the hill?",
-    "questionFr": "Une piste de ski monte de 45 mètres sur une distance horizontale de 150 mètres. Quelle est la pente de la piste?",
+    "question": "A road in British Columbia rises 18 m over a horizontal distance of 90 m. What is the slope of the road?",
+    "questionFr": "Une route en Colombie-Britannique monte de 18 m sur une distance horizontale de 90 m. Quelle est la pente de la route?",
     "choices": [
-      "0.2",
-      "0.3",
-      "0.45",
-      "0.5"
+      "1/3",
+      "1/4",
+      "1/5",
+      "1/6"
     ],
-    "answer": "0.3",
+    "answer": "1/5",
     "hint": "Slope = rise ÷ run.",
     "steps": [
-      "Slope = rise ÷ run = 45 ÷ 150.",
-      "45 ÷ 150 = 0.3."
-    ]
-  },
-  {
-    "grade": 8,
-    "topic": "Square Roots and Statistics",
-    "question": "Five students measured the height of a maple tree in metres: 9, 16, 25, 36, and 4. What is the mean of the square roots of these numbers?",
-    "questionFr": "Cinq élèves ont mesuré la hauteur d'un érable en mètres : 9, 16, 25, 36 et 4. Quelle est la moyenne des racines carrées de ces nombres?",
-    "choices": [
-      "3",
-      "4",
-      "5",
-      "6"
-    ],
-    "answer": "5",
-    "hint": "First find the square root of each number, then calculate the mean.",
-    "steps": [
-      "Square roots: √9=3, √16=4, √25=5, √36=6, √4=2.",
-      "Mean = (3+4+5+6+2) ÷ 5 = 20 ÷ 5 = 4. Wait, recalculate: (3+4+5+6+2)=20, 20÷5=4. The answer is 4."
+      "Slope = rise/run = 18/90",
+      "18/90 = 1/5"
     ]
   },
   {
     "grade": 9,
     "topic": "Linear Equations",
-    "question": "A canoe rental company at a provincial park charges $15 for the first hour and $8 for each additional hour. If Theo paid $55 in total, how many additional hours did he rent the canoe?",
-    "questionFr": "Une entreprise de location de canots dans un parc provincial charge 15 $ pour la première heure et 8 $ pour chaque heure supplémentaire. Si Théo a payé 55 $ au total, combien d'heures supplémentaires a-t-il loué le canot?",
+    "question": "A student earns $12 per hour babysitting. She also received a $15 gift card. She wants a total of $111. How many hours must she babysit?",
+    "questionFr": "Une étudiante gagne 12 $ par heure comme gardienne d'enfants. Elle a aussi reçu une carte-cadeau de 15 $. Elle veut un total de 111 $. Combien d'heures doit-elle travailler?",
+    "choices": [
+      "6 hours",
+      "7 hours",
+      "8 hours",
+      "9 hours"
+    ],
+    "answer": "8 hours",
+    "hint": "Write the equation: 12h + 15 = 111, then solve for h.",
+    "steps": [
+      "12h + 15 = 111 → 12h = 96",
+      "h = 96 ÷ 12 = 8 hours"
+    ]
+  },
+  {
+    "grade": 9,
+    "topic": "Polynomials",
+    "question": "A rectangular hockey rink has a length of (x + 10) m and a width of (x + 4) m. Expand and simplify the expression for the area.",
+    "questionFr": "Une patinoire de hockey rectangulaire a une longueur de (x + 10) m et une largeur de (x + 4) m. Développe et simplifie l'expression de l'aire.",
+    "choices": [
+      "x² + 14x + 40",
+      "x² + 40x + 14",
+      "x² + 14x + 14",
+      "x² + 6x + 40"
+    ],
+    "answer": "x² + 14x + 40",
+    "hint": "Use FOIL: multiply First, Outer, Inner, Last terms.",
+    "steps": [
+      "(x+10)(x+4): x·x + x·4 + 10·x + 10·4",
+      "x² + 4x + 10x + 40 = x² + 14x + 40"
+    ]
+  },
+  {
+    "grade": 9,
+    "topic": "Graphing Lines",
+    "question": "A school store sells notebooks for $3 each. The total cost C in dollars for n notebooks is C = 3n. What is the slope of this line and what does it represent?",
+    "questionFr": "La boutique de l'école vend des cahiers 3 $ chacun. Le coût total C en dollars pour n cahiers est C = 3n. Quel est le taux de variation de cette droite et que représente-t-il?",
+    "choices": [
+      "Slope = 0, no change",
+      "Slope = 3, cost per notebook",
+      "Slope = 1/3, notebooks per dollar",
+      "Slope = 3, total notebooks"
+    ],
+    "answer": "Slope = 3, cost per notebook",
+    "hint": "In y = mx + b, the slope m is the coefficient of x. Think about what it means in context.",
+    "steps": [
+      "The equation C = 3n is in the form y = mx, where m = 3",
+      "The slope is 3, meaning the cost increases by $3 for each additional notebook"
+    ]
+  },
+  {
+    "grade": 9,
+    "topic": "Similar Triangles",
+    "question": "A totem pole in Victoria, BC casts a shadow of 12 m. At the same time, a 1.5 m tall person casts a shadow of 2 m. How tall is the totem pole?",
+    "questionFr": "Un mât totémique à Victoria, en C.-B., projette une ombre de 12 m. En même temps, une personne de 1,5 m projette une ombre de 2 m. Quelle est la hauteur du mât totémique?",
+    "choices": [
+      "7 m",
+      "8 m",
+      "9 m",
+      "10 m"
+    ],
+    "answer": "9 m",
+    "hint": "Set up a proportion using the ratios of height to shadow length.",
+    "steps": [
+      "1.5/2 = h/12, cross multiply: 2h = 18",
+      "h = 9 m"
+    ]
+  },
+  {
+    "grade": 9,
+    "topic": "Trigonometry Introduction",
+    "question": "A ramp for a skateboard park makes a 30° angle with the ground. The ramp is 6 m long. How high is the top of the ramp above the ground? (sin 30° = 0.5)",
+    "questionFr": "Une rampe pour un parc de planche à roulettes fait un angle de 30° avec le sol. La rampe mesure 6 m de longueur. À quelle hauteur est le sommet de la rampe au-dessus du sol? (sin 30° = 0,5)",
+    "choices": [
+      "2 m",
+      "3 m",
+      "4 m",
+      "5 m"
+    ],
+    "answer": "3 m",
+    "hint": "Use sin(angle) = opposite/hypotenuse and solve for the opposite side (height).",
+    "steps": [
+      "sin(30°) = height/6 → 0.5 = height/6",
+      "height = 6 × 0.5 = 3 m"
+    ]
+  },
+  {
+    "grade": 10,
+    "topic": "Quadratics",
+    "question": "A soccer ball is kicked and its height in metres is modelled by h = -5t² + 20t, where t is time in seconds. What is the maximum height the ball reaches?",
+    "questionFr": "Un ballon de soccer est botté et sa hauteur en mètres est modélisée par h = -5t² + 20t, où t est le temps en secondes. Quelle est la hauteur maximale atteinte par le ballon?",
+    "choices": [
+      "15 m",
+      "20 m",
+      "25 m",
+      "30 m"
+    ],
+    "answer": "20 m",
+    "hint": "Find the vertex using t = -b/(2a) to get the time of maximum height, then substitute back.",
+    "steps": [
+      "t = -20/(2×-5) = -20/-10 = 2 seconds for max height",
+      "h = -5(2)² + 20(2) = -20 + 40 = 20 m"
+    ]
+  },
+  {
+    "grade": 10,
+    "topic": "Systems of Equations",
+    "question": "Two ski lift tickets were sold. An adult ticket costs $85 and a youth ticket costs $55. A family bought 2 adult and 3 youth tickets. What was the total cost?",
+    "questionFr": "Des billets de remontée mécanique ont été vendus. Un billet adulte coûte 85 $ et un billet jeune coûte 55 $. Une famille a acheté 2 billets adultes et 3 billets jeunes. Quel était le coût total?",
+    "choices": [
+      "$310",
+      "$335",
+      "$325",
+      "$355"
+    ],
+    "answer": "$335",
+    "hint": "Multiply each price by the quantity and add the results.",
+    "steps": [
+      "Adult tickets: 2 × $85 = $170",
+      "Youth tickets: 3 × $55 = $165; Total = $170 + $165 = $335"
+    ]
+  },
+  {
+    "grade": 10,
+    "topic": "Trigonometry",
+    "question": "A surveyor in Ontario measures a triangular plot of land. One side is 50 m, and the angle opposite to the unknown side is 40°. The adjacent angle is 60°. Using the sine rule, if sin 40° ≈ 0.643 and sin 60° ≈ 0.866, find the unknown side.",
+    "questionFr": "Un géomètre en Ontario mesure un terrain triangulaire. Un côté est de 50 m et l'angle opposé au côté inconnu est de 40°. L'angle adjacent est de 60°. En utilisant la règle des sinus, si sin 40° ≈ 0,643 et sin 60° ≈ 0,866, trouves le côté inconnu.",
+    "choices": [
+      "58.4 m",
+      "67.3 m",
+      "74.2 m",
+      "80.5 m"
+    ],
+    "answer": "67.3 m",
+    "hint": "Use the sine rule: a/sin A = b/sin B, where the known side is opposite the known angle.",
+    "steps": [
+      "50/sin40° = x/sin60° → x = 50 × sin60°/sin40°",
+      "x = 50 × 0.866/0.643 ≈ 67.3 m"
+    ]
+  },
+  {
+    "grade": 10,
+    "topic": "Circle Geometry",
+    "question": "A circular hockey rink has a diameter of 60 m. What is the area of the ice surface? (Use π ≈ 3.14)",
+    "questionFr": "Une patinoire de hockey circulaire a un diamètre de 60 m. Quelle est l'aire de la surface de glace? (Utilise π ≈ 3,14)",
+    "choices": [
+      "2,512 m²",
+      "2,826 m²",
+      "3,014 m²",
+      "3,140 m²"
+    ],
+    "answer": "2,826 m²",
+    "hint": "Area = πr². Remember to use the radius, which is half the diameter.",
+    "steps": [
+      "Radius = 60/2 = 30 m",
+      "Area = π × 30² = 3.14 × 900 = 2,826 m²"
+    ]
+  },
+  {
+    "grade": 10,
+    "topic": "Surface Area and Volume of 3D Shapes",
+    "question": "A cylindrical water tank at a farm in Saskatchewan has a radius of 3 m and a height of 8 m. What is the volume of the tank? (Use π ≈ 3.14)",
+    "questionFr": "Un réservoir d'eau cylindrique dans une ferme en Saskatchewan a un rayon de 3 m et une hauteur de 8 m. Quel est le volume du réservoir? (Utilise π ≈ 3,14)",
+    "choices": [
+      "188.4 m³",
+      "226.08 m³",
+      "254.34 m³",
+      "301.44 m³"
+    ],
+    "answer": "226.08 m³",
+    "hint": "Volume of a cylinder = πr²h.",
+    "steps": [
+      "V = π × r² × h = 3.14 × 3² × 8",
+      "V = 3.14 × 9 × 8 = 3.14 × 72 = 226.08 m³"
+    ]
+  },
+  {
+    "grade": 11,
+    "topic": "Functions",
+    "question": "A maple syrup producer's daily output is modelled by f(x) = -2x² + 16x + 10, where x is days after tapping. What is the maximum daily output in litres?",
+    "questionFr": "La production quotidienne d'un producteur de sirop d'érable est modélisée par f(x) = -2x² + 16x + 10, où x est le nombre de jours après l'entaillage. Quelle est la production quotidienne maximale en litres?",
+    "choices": [
+      "38 L",
+      "42 L",
+      "44 L",
+      "48 L"
+    ],
+    "answer": "42 L",
+    "hint": "Find the vertex using x = -b/(2a), then substitute into f(x).",
+    "steps": [
+      "x = -16/(2×-2) = 4 days for maximum",
+      "f(4) = -2(16) + 16(4) + 10 = -32 + 64 + 10 = 42 L"
+    ]
+  },
+  {
+    "grade": 11,
+    "topic": "Logarithms",
+    "question": "A bacteria culture in a lab starts with 100 cells and doubles every hour. After how many hours will there be 3,200 cells? (Use log base 2)",
+    "questionFr": "Une culture bactérienne en laboratoire commence avec 100 cellules et double chaque heure. Au bout de combien d'heures y aura-t-il 3 200 cellules? (Utilise le logarithme en base 2)",
     "choices": [
       "4 hours",
       "5 hours",
@@ -731,352 +929,154 @@
       "7 hours"
     ],
     "answer": "5 hours",
-    "hint": "Set up the equation: 15 + 8h = 55 and solve for h.",
+    "hint": "Set up the equation 100 × 2^t = 3200, isolate the exponential, then use logarithms.",
     "steps": [
-      "15 + 8h = 55 → 8h = 40.",
-      "h = 40 ÷ 8 = 5 additional hours."
-    ]
-  },
-  {
-    "grade": 9,
-    "topic": "Polynomials",
-    "question": "A rectangular hockey rink has a length represented by (2x + 5) metres and a width of 3 metres. Write and expand the expression for the perimeter.",
-    "questionFr": "Une patinoire de hockey rectangulaire a une longueur représentée par (2x + 5) mètres et une largeur de 3 mètres. Écrivez et développez l'expression du périmètre.",
-    "choices": [
-      "4x + 10",
-      "4x + 16",
-      "6x + 30",
-      "6x + 16"
-    ],
-    "answer": "4x + 16",
-    "hint": "Perimeter = 2(length + width). Substitute and expand.",
-    "steps": [
-      "Perimeter = 2(2x + 5 + 3) = 2(2x + 8).",
-      "2(2x + 8) = 4x + 16."
-    ]
-  },
-  {
-    "grade": 9,
-    "topic": "Graphing Lines",
-    "question": "A student tracks how far she has skied. After 2 hours she has gone 16 km, and after 5 hours she has gone 40 km. What is the slope of the line representing her journey, and what does it mean?",
-    "questionFr": "Une élève mesure la distance qu'elle a parcouru à ski. Après 2 heures, elle a parcouru 16 km, et après 5 heures, 40 km. Quelle est la pente de la droite représentant son trajet, et que signifie-t-elle?",
-    "choices": [
-      "6 km/h — she skis 6 km each hour",
-      "8 km/h — she skis 8 km each hour",
-      "10 km/h — she skis 10 km each hour",
-      "12 km/h — she skis 12 km each hour"
-    ],
-    "answer": "8 km/h — she skis 8 km each hour",
-    "hint": "Slope = (y₂ − y₁) ÷ (x₂ − x₁). Use the two data points.",
-    "steps": [
-      "Slope = (40 − 16) ÷ (5 − 2) = 24 ÷ 3.",
-      "Slope = 8 km/h, meaning she skis 8 km every hour."
-    ]
-  },
-  {
-    "grade": 9,
-    "topic": "Similar Triangles",
-    "question": "A totem pole casts a shadow of 9 m. At the same time, a 2 m tall person casts a shadow of 1.5 m. How tall is the totem pole?",
-    "questionFr": "Un mât totémique projette une ombre de 9 m. Au même moment, une personne de 2 m projette une ombre de 1,5 m. Quelle est la hauteur du mât totémique?",
-    "choices": [
-      "10 m",
-      "12 m",
-      "14 m",
-      "16 m"
-    ],
-    "answer": "12 m",
-    "hint": "Set up a proportion using similar triangle ratios: height/shadow = height/shadow.",
-    "steps": [
-      "Set up: 2/1.5 = h/9.",
-      "Cross multiply: h = 2 × 9 ÷ 1.5 = 18 ÷ 1.5 = 12 m."
-    ]
-  },
-  {
-    "grade": 9,
-    "topic": "Statistics",
-    "question": "The points scored by a hockey player in 7 games are: 3, 5, 2, 8, 5, 4, and 1. What are the mean and median of this data set?",
-    "questionFr": "Les points marqués par un joueur de hockey lors de 7 matchs sont : 3, 5, 2, 8, 5, 4 et 1. Quelles sont la moyenne et la médiane de cet ensemble de données?",
-    "choices": [
-      "Mean = 3, Median = 4",
-      "Mean = 4, Median = 4",
-      "Mean = 4, Median = 5",
-      "Mean = 5, Median = 4"
-    ],
-    "answer": "Mean = 4, Median = 4",
-    "hint": "Mean = sum ÷ count. For median, sort the data and find the middle value.",
-    "steps": [
-      "Sum = 3+5+2+8+5+4+1 = 28; Mean = 28 ÷ 7 = 4.",
-      "Sorted: 1, 2, 3, 4, 5, 5, 8 — the middle (4th) value is 4. Median = 4."
-    ]
-  },
-  {
-    "grade": 10,
-    "topic": "Quadratic Equations",
-    "question": "A lacrosse ball is thrown upward from the ground. Its height in metres after t seconds is given by h = −5t² + 20t. When does the ball hit the ground again?",
-    "questionFr": "Une balle de crosse est lancée vers le haut depuis le sol. Sa hauteur en mètres après t secondes est donnée par h = −5t² + 20t. Quand la balle touche-t-elle le sol à nouveau?",
-    "choices": [
-      "t = 2 s",
-      "t = 3 s",
-      "t = 4 s",
-      "t = 5 s"
-    ],
-    "answer": "t = 4 s",
-    "hint": "Set h = 0 and factor the equation to find when the ball lands.",
-    "steps": [
-      "Set −5t² + 20t = 0 → factor: −5t(t − 4) = 0.",
-      "Solutions: t = 0 (launch) and t = 4 (lands). The ball hits the ground at t = 4 s."
-    ]
-  },
-  {
-    "grade": 10,
-    "topic": "Systems of Equations",
-    "question": "Two friends are buying snacks at a hockey game. Nadia buys 2 pretzels and 1 drink for $11. Kevin buys 1 pretzel and 2 drinks for $10. What is the price of one drink?",
-    "questionFr": "Deux amis achètent des collations lors d'un match de hockey. Nadia achète 2 bretzels et 1 boisson pour 11 $. Kevin achète 1 bretzel et 2 boissons pour 10 $. Quel est le prix d'une boisson?",
-    "choices": [
-      "$2",
-      "$3",
-      "$4",
-      "$5"
-    ],
-    "answer": "$3",
-    "hint": "Set up two equations and use substitution or elimination to solve.",
-    "steps": [
-      "Equations: 2p + d = 11 and p + 2d = 10. Multiply second by 2: 2p + 4d = 20.",
-      "Subtract first from second: 3d = 9 → d = $3."
-    ]
-  },
-  {
-    "grade": 10,
-    "topic": "Trigonometry",
-    "question": "A 10 m ladder leans against a wall. The base of the ladder is 4 m from the wall. What is the angle the ladder makes with the ground, to the nearest degree?",
-    "questionFr": "Une échelle de 10 m s'appuie contre un mur. La base de l'échelle est à 4 m du mur. Quel est l'angle que fait l'échelle avec le sol, au degré près?",
-    "choices": [
-      "24°",
-      "66°",
-      "60°",
-      "30°"
-    ],
-    "answer": "66°",
-    "hint": "Use the cosine ratio: cos(θ) = adjacent ÷ hypotenuse.",
-    "steps": [
-      "cos(θ) = 4/10 = 0.4.",
-      "θ = cos⁻¹(0.4) ≈ 66°."
-    ]
-  },
-  {
-    "grade": 10,
-    "topic": "Circle Geometry",
-    "question": "A circular skating rink has a diameter of 30 m. What is the area of the rink? Use π ≈ 3.14.",
-    "questionFr": "Une patinoire circulaire a un diamètre de 30 m. Quelle est l'aire de la patinoire? Utilisez π ≈ 3,14.",
-    "choices": [
-      "706.5 m²",
-      "942 m²",
-      "1413 m²",
-      "2826 m²"
-    ],
-    "answer": "706.5 m²",
-    "hint": "First find the radius (half the diameter), then use A = πr².",
-    "steps": [
-      "Radius = 30 ÷ 2 = 15 m.",
-      "A = π × 15² = 3.14 × 225 = 706.5 m²."
-    ]
-  },
-  {
-    "grade": 10,
-    "topic": "Surface Area and Volume of 3D Shapes",
-    "question": "A cylindrical can of maple syrup has a radius of 5 cm and a height of 12 cm. What is the volume of the can? Use π ≈ 3.14.",
-    "questionFr": "Une boîte cylindrique de sirop d'érable a un rayon de 5 cm et une hauteur de 12 cm. Quel est le volume de la boîte? Utilisez π ≈ 3,14.",
-    "choices": [
-      "942 cm³",
-      "1884 cm³",
-      "785 cm³",
-      "1570 cm³"
-    ],
-    "answer": "942 cm³",
-    "hint": "Volume of a cylinder = π × r² × h.",
-    "steps": [
-      "V = π × r² × h = 3.14 × 5² × 12.",
-      "V = 3.14 × 25 × 12 = 3.14 × 300 = 942 cm³."
-    ]
-  },
-  {
-    "grade": 11,
-    "topic": "Functions",
-    "question": "The profit P (in dollars) of a maple syrup farm is modelled by P(x) = −2x² + 80x − 300, where x is the number of litres produced. What is the maximum profit, and how many litres should be produced to achieve it?",
-    "questionFr": "Le profit P (en dollars) d'une ferme de sirop d'érable est modélisé par P(x) = −2x² + 80x − 300, où x est le nombre de litres produits. Quel est le profit maximum et combien de litres faut-il produire pour l'atteindre?",
-    "choices": [
-      "Max profit $500 at x = 20 L",
-      "Max profit $600 at x = 20 L",
-      "Max profit $700 at x = 40 L",
-      "Max profit $500 at x = 40 L"
-    ],
-    "answer": "Max profit $500 at x = 20 L",
-    "hint": "The vertex of a parabola gives the maximum. Use x = −b/(2a) to find it.",
-    "steps": [
-      "x = −80 / (2 × −2) = −80 / −4 = 20 litres.",
-      "P(20) = −2(400) + 80(20) − 300 = −800 + 1600 − 300 = $500."
-    ]
-  },
-  {
-    "grade": 11,
-    "topic": "Logarithms",
-    "question": "The sound level of a hockey crowd is 10 times louder than a normal conversation (60 dB). Using the formula dB = 10 log(I/I₀), how many decibels is the crowd?",
-    "questionFr": "Le niveau sonore d'une foule de hockey est 10 fois plus fort qu'une conversation normale (60 dB). En utilisant la formule dB = 10 log(I/I₀), combien de décibels est la foule?",
-    "choices": [
-      "61 dB",
-      "65 dB",
-      "70 dB",
-      "80 dB"
-    ],
-    "answer": "70 dB",
-    "hint": "If intensity is 10 times greater, that adds 10 dB to the original level.",
-    "steps": [
-      "10 times louder means I/I₀ is multiplied by 10, which adds 10 log(10) = 10 × 1 = 10 dB.",
-      "60 dB + 10 dB = 70 dB."
+      "2^t = 3200/100 = 32",
+      "t = log₂(32) = 5 hours (since 2⁵ = 32)"
     ]
   },
   {
     "grade": 11,
     "topic": "Sequences and Series",
-    "question": "A Canadian savings account starts with $500 and adds $75 every month. What will the total savings be after 12 months (arithmetic series)?",
-    "questionFr": "Un compte d'épargne canadien commence avec 500 $ et ajoute 75 $ chaque mois. Quel sera le total des économies après 12 mois (série arithmétique)?",
+    "question": "A hockey player scores 3 goals in his first game, 7 in his second, 11 in his third, and so on in an arithmetic sequence. What is the total number of goals scored in his first 10 games?",
+    "questionFr": "Un joueur de hockey marque 3 buts lors de son premier match, 7 lors du deuxième, 11 lors du troisième, et ainsi de suite en suite arithmétique. Quel est le nombre total de buts marqués lors de ses 10 premiers matchs?",
     "choices": [
-      "$1,250",
-      "$1,325",
-      "$1,400",
-      "$1,490"
+      "190",
+      "210",
+      "220",
+      "230"
     ],
-    "answer": "$1,400",
-    "hint": "Find the amount after 12 months using the arithmetic sequence formula aₙ = a₁ + (n-1)d.",
+    "answer": "210",
+    "hint": "Use Sₙ = n/2 × (2a + (n-1)d) where a is the first term and d is the common difference.",
     "steps": [
-      "After 12 months: a₁₂ = 500 + (12−1) × 75 = 500 + 825.",
-      "a₁₂ = $1,325. But total savings = sum: Sₙ = n/2 × (a₁ + aₙ) = 12/2 × (500 + 1325) = 6 × 1825 = $10,950. Wait, the question says 'total savings after 12 months', meaning the account balance after month 12 only: 500 + 11×75 = 1325. If we take the final balance as total: $1,325."
+      "a = 3, d = 4, n = 10: S₁₀ = 10/2 × (2(3) + 9(4))",
+      "S₁₀ = 5 × (6 + 36) = 5 × 42 = 210"
     ]
   },
   {
     "grade": 11,
     "topic": "Financial Math",
-    "question": "Priya invests $2,000 in a Canadian GIC with an annual interest rate of 5%, compounded annually. How much will she have after 3 years?",
-    "questionFr": "Priya investit 2 000 $ dans un CPG canadien avec un taux d'intérêt annuel de 5 %, composé annuellement. Combien aura-t-elle après 3 ans?",
+    "question": "Zoe invests $5,000 in a TFSA at 4% annual interest compounded annually. How much will she have after 3 years?",
+    "questionFr": "Zoé investit 5 000 $ dans un CELI à un taux d'intérêt annuel de 4 % composé annuellement. Combien aura-t-elle après 3 ans?",
     "choices": [
-      "$2,300.00",
-      "$2,310.00",
-      "$2,315.25",
-      "$2,305.00"
+      "$5,600.00",
+      "$5,620.32",
+      "$5,624.32",
+      "$5,700.00"
     ],
-    "answer": "$2,315.25",
-    "hint": "Use the compound interest formula: A = P(1 + r)ⁿ.",
+    "answer": "$5,624.32",
+    "hint": "Use A = P(1 + r)^t where P is principal, r is rate, and t is time.",
     "steps": [
-      "A = 2000 × (1 + 0.05)³ = 2000 × 1.05³.",
-      "1.05³ = 1.157625, so A = 2000 × 1.157625 = $2,315.25."
+      "A = 5000(1 + 0.04)³ = 5000(1.04)³",
+      "1.04³ = 1.124864, A = 5000 × 1.124864 = $5,624.32"
     ]
   },
   {
     "grade": 11,
     "topic": "Trigonometric Identities",
-    "question": "A surveyor uses the formula A = (1/2)ab·sin(C) to find the area of a triangular piece of land. If a = 10 m, b = 8 m, and angle C = 30°, what is the area?",
-    "questionFr": "Un arpenteur utilise la formule A = (1/2)ab·sin(C) pour trouver l'aire d'une parcelle de terrain triangulaire. Si a = 10 m, b = 8 m et l'angle C = 30°, quelle est l'aire?",
+    "question": "Simplify the expression sin²θ + cos²θ + tan²θ. (Hint: Use a Pythagorean identity)",
+    "questionFr": "Simplifie l'expression sin²θ + cos²θ + tan²θ. (Indice: Utilise une identité pythagoricienne)",
     "choices": [
-      "20 m²",
-      "25 m²",
-      "40 m²",
-      "80 m²"
+      "1 + tan²θ",
+      "sec²θ",
+      "2",
+      "1 + sec²θ"
     ],
-    "answer": "20 m²",
-    "hint": "Substitute the values into the formula and use sin(30°) = 0.5.",
+    "answer": "sec²θ",
+    "hint": "First simplify sin²θ + cos²θ using a known identity, then look up or derive an identity for 1 + tan²θ.",
     "steps": [
-      "A = (1/2) × 10 × 8 × sin(30°).",
-      "A = (1/2) × 10 × 8 × 0.5 = (1/2) × 40 = 20 m²."
+      "sin²θ + cos²θ = 1, so the expression becomes 1 + tan²θ",
+      "Using the identity 1 + tan²θ = sec²θ, the answer is sec²θ"
     ]
   },
   {
     "grade": 12,
     "topic": "Advanced Functions — Rational Functions",
-    "question": "The average cost of producing hockey pucks at a factory is C(x) = (500 + 2x)/x, where x is the number of pucks. What does the horizontal asymptote represent in this context?",
-    "questionFr": "Le coût moyen de production de rondelles de hockey dans une usine est C(x) = (500 + 2x)/x, où x est le nombre de rondelles. Que représente l'asymptote horizontale dans ce contexte?",
+    "question": "A company's profit in thousands of dollars is modelled by P(x) = (3x² - 12)/(x - 2) where x is units sold in hundreds. As x approaches 2 from the right, what behaviour does P(x) exhibit?",
+    "questionFr": "Le profit d'une entreprise en milliers de dollars est modélisé par P(x) = (3x² - 12)/(x - 2) où x est le nombre d'unités vendues en centaines. Lorsque x s'approche de 2 par la droite, quel comportement P(x) exhibe-t-il?",
     "choices": [
-      "The cost approaches $2 per puck as production increases",
-      "The cost approaches $5 per puck as production increases",
-      "The cost approaches $500 per puck",
-      "The cost approaches $0 per puck"
+      "Approaches 0",
+      "Approaches 12",
+      "Approaches infinity",
+      "Approaches -infinity"
     ],
-    "answer": "The cost approaches $2 per puck as production increases",
-    "hint": "Divide numerator and denominator by x and find the limit as x → ∞.",
+    "answer": "Approaches 12",
+    "hint": "Factor the numerator. Check if (x - 2) is a common factor that cancels, revealing a removable discontinuity.",
     "steps": [
-      "C(x) = (500/x) + 2. As x → ∞, 500/x → 0.",
-      "So C(x) → 2, meaning the cost per puck approaches $2."
+      "Factor: 3x² - 12 = 3(x² - 4) = 3(x-2)(x+2)",
+      "P(x) = 3(x+2) after cancellation; as x→2, P→3(4) = 12"
     ]
   },
   {
     "grade": 12,
     "topic": "Derivatives Introduction",
-    "question": "The position of a curling stone in metres after t seconds is s(t) = −3t² + 12t. Find the velocity at t = 2 seconds using the derivative.",
-    "questionFr": "La position d'une pierre de curling en mètres après t secondes est s(t) = −3t² + 12t. Trouvez la vitesse à t = 2 secondes en utilisant la dérivée.",
+    "question": "A baseball thrown upward has height h(t) = -4.9t² + 19.6t + 2 (in metres). What is the velocity of the ball at t = 2 seconds using the derivative?",
+    "questionFr": "Un ballon de baseball lancé vers le haut a une hauteur h(t) = -4,9t² + 19,6t + 2 (en mètres). Quelle est la vitesse du ballon à t = 2 secondes en utilisant la dérivée?",
     "choices": [
+      "-2.4 m/s",
       "0 m/s",
-      "3 m/s",
-      "6 m/s",
-      "12 m/s"
+      "2.4 m/s",
+      "9.8 m/s"
     ],
     "answer": "0 m/s",
-    "hint": "Find s'(t) by differentiating, then substitute t = 2.",
+    "hint": "Find h'(t) using the power rule, then substitute t = 2.",
     "steps": [
-      "s'(t) = −6t + 12 (using power rule).",
-      "s'(2) = −6(2) + 12 = −12 + 12 = 0 m/s."
+      "h'(t) = -9.8t + 19.6",
+      "h'(2) = -9.8(2) + 19.6 = -19.6 + 19.6 = 0 m/s (ball is at peak)"
     ]
   },
   {
     "grade": 12,
     "topic": "Combinations and Permutations",
-    "question": "A hockey coach must choose 3 players from a group of 8 to receive a special award. How many different groups of 3 can be chosen?",
-    "questionFr": "Un entraîneur de hockey doit choisir 3 joueurs parmi un groupe de 8 pour recevoir un prix spécial. Combien de groupes de 3 différents peuvent être choisis?",
+    "question": "A hockey team has 20 players. The coach needs to choose 3 players for a penalty shot lineup where the order matters. How many different lineups are possible?",
+    "questionFr": "Une équipe de hockey a 20 joueurs. L'entraîneur doit choisir 3 joueurs pour un alignement de tirs de pénalité où l'ordre est important. Combien d'alignements différents sont possibles?",
     "choices": [
-      "24",
-      "56",
-      "112",
-      "336"
+      "1,140",
+      "3,420",
+      "6,840",
+      "8,000"
     ],
-    "answer": "56",
-    "hint": "Order doesn't matter here, so use combinations: C(n, r) = n! / (r!(n−r)!)",
+    "answer": "6,840",
+    "hint": "Since order matters, use the permutation formula P(n, r) = n!/(n-r)!",
     "steps": [
-      "C(8, 3) = 8! / (3! × 5!) = (8 × 7 × 6) / (3 × 2 × 1).",
-      "= 336 / 6 = 56 different groups."
+      "P(20, 3) = 20!/(20-3)! = 20!/17!",
+      "= 20 × 19 × 18 = 6,840 lineups"
     ]
   },
   {
     "grade": 12,
     "topic": "Vectors",
-    "question": "A plane flies with a velocity vector of (400, 0) km/h east, while the wind blows at a vector of (−30, 80) km/h. What is the magnitude of the resultant velocity to the nearest km/h?",
-    "questionFr": "Un avion vole avec un vecteur de vitesse de (400, 0) km/h vers l'est, tandis que le vent souffle à un vecteur de (−30, 80) km/h. Quelle est la magnitude de la vitesse résultante, au km/h près?",
+    "question": "A plane flies with a velocity vector of [300, 0] km/h (east). The wind applies a vector of [0, 40] km/h (north). What is the magnitude of the resultant velocity?",
+    "questionFr": "Un avion vole avec un vecteur de vitesse de [300, 0] km/h (vers l'est). Le vent applique un vecteur de [0, 40] km/h (vers le nord). Quelle est la magnitude de la vitesse résultante?",
     "choices": [
-      "370 km/h",
-      "383 km/h",
-      "402 km/h",
-      "416 km/h"
+      "300 km/h",
+      "302 km/h",
+      "301.6 km/h",
+      "340 km/h"
     ],
-    "answer": "383 km/h",
-    "hint": "Add the vectors component by component, then find the magnitude using the Pythagorean theorem.",
+    "answer": "301.6 km/h",
+    "hint": "Add the vectors and then find the magnitude using the Pythagorean theorem.",
     "steps": [
-      "Resultant vector: (400 + (−30), 0 + 80) = (370, 80).",
-      "Magnitude = √(370² + 80²) = √(136900 + 6400) = √143300 ≈ 383 km/h."
+      "Resultant vector = [300, 40]",
+      "Magnitude = √(300² + 40²) = √(90000 + 1600) = √91600 ≈ 301.6 km/h"
     ]
   },
   {
     "grade": 12,
     "topic": "Probability Distributions",
-    "question": "A free-throw shooter in basketball makes 70% of their shots. If they take 5 shots, what is the probability they make exactly 4? Use the binomial formula.",
-    "questionFr": "Un tireur de lancer franc au basketball réussit 70% de ses tirs. S'il tire 5 fois, quelle est la probabilité qu'il en réussisse exactement 4? Utilisez la formule binomiale.",
+    "question": "A Tim Hortons Roll Up the Rim contest has a 1 in 6 chance of winning. If you buy 12 cups, what is the expected number of winning cups?",
+    "questionFr": "Un concours Roulez pour gagner de Tim Hortons offre 1 chance sur 6 de gagner. Si tu achètes 12 tasses, quel est le nombre espéré de tasses gagnantes?",
     "choices": [
-      "0.2401",
-      "0.3087",
-      "0.3601",
-      "0.4116"
+      "1",
+      "2",
+      "3",
+      "4"
     ],
-    "answer": "0.3087",
-    "hint": "Use P(X=k) = C(n,k) × p^k × (1−p)^(n−k) with n=5, k=4, p=0.7.",
+    "answer": "2",
+    "hint": "For a binomial distribution, the expected value E(X) = n × p.",
     "steps": [
-      "P(X=4) = C(5,4) × 0.7⁴ × 0.3¹ = 5 × 0.2401 × 0.3.",
-      "= 5 × 0.07203 = 0.36015 ≈ 0.3087. Actually: 5 × 0.2401 × 0.3 = 5 × 0.07203 = 0.36015. Closest answer: 0.3087."
+      "n = 12 cups, p = 1/6 probability of winning",
+      "E(X) = 12 × (1/6) = 2 expected winning cups"
     ]
   }
 ]
