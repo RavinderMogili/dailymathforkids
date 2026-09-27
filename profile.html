@@ -589,21 +589,22 @@ async function saveGrade() {
   msgEl.textContent = 'Saving…';
   try {
     const api = window.DMK_API || '';
-    const res = await fetch(`${api}/api/register`, {
+    const res = await fetch(`${api}/api/update-grade`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nickname: u.nickname, grade: newGrade, school: u.school || '', city: u.city || '' })
+      body: JSON.stringify({ userId: u.userId, grade: newGrade })
     });
-    if (!res.ok) throw new Error('Server error');
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Server error');
     saveUser({ ...u, grade: newGrade });
+    msgEl.style.color = 'var(--success, #16a34a)';
     msgEl.textContent = '✓ Grade updated!';
     document.getElementById('profile-meta').textContent =
       ['Grade ' + newGrade, u.school].filter(Boolean).join(' · ');
     setTimeout(() => { msgEl.textContent = ''; }, 3000);
-  } catch {
-    saveUser({ ...u, grade: newGrade });
-    msgEl.textContent = '✓ Saved locally';
-    setTimeout(() => { msgEl.textContent = ''; }, 3000);
+  } catch (e) {
+    msgEl.textContent = 'Could not save: ' + (e.message || 'try again');
+    msgEl.style.color = '#dc2626';
   }
 }
 
