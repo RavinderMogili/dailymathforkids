@@ -1,0 +1,58 @@
+{
+  "dataset": "GSM8K (OpenAI, MIT License)",
+  "source_files": [
+    "train.jsonl",
+    "test.jsonl"
+  ],
+  "records_per_split": {
+    "train": 7473,
+    "test": 1319
+  },
+  "total_records_parsed": 8792,
+  "automated_checks": {
+    "arithmetic_independently_verified": 8319,
+    "arithmetic_verification_failed": 473,
+    "suitability_keyword_hits": 113,
+    "exact_duplicates": 0,
+    "near_duplicates_flagged": 3,
+    "missing_space_auto_fixed": 0
+  },
+  "review_status_counts": {
+    "auto_ok": 8053,
+    "rejected": 581,
+    "needs_review": 158
+  },
+  "grade_estimate_distribution": {
+    "4": 659,
+    "5": 1252,
+    "6": 1705,
+    "7": 1556,
+    "8": 1408,
+    "9": 875,
+    "10": 646,
+    "11": 348,
+    "12": 343
+  },
+  "difficulty_distribution": {
+    "easy": 2287,
+    "medium": 4476,
+    "hard": 2029
+  },
+  "topic_distribution": {
+    "Money": 3600,
+    "Time": 2473,
+    "Fractions": 679,
+    "Word Problems (general)": 581,
+    "Multiplication & Division": 489,
+    "Counting & Comparison": 322,
+    "Percentages": 266,
+    "Measurement": 256,
+    "Ratios & Rates": 112,
+    "Geometry": 14
+  },
+  "notes": [
+    "grade_estimate and topic are heuristic/automated only \u2014 not a curriculum mapping and not semantically reviewed. Treat as provisional.",
+    "review_status='auto_ok' means automated checks passed only; it is NOT a claim that the question was read and judged suitable by a human/teacher OR by an AI/LLM. A separate, smaller subset went through AI semantic review (an LLM read each one) \u2014 see tools/word-problems/output/pilot_shortlist.json and README.md 'Three distinct review tiers.' No record in this dataset has had human/teacher review.",
+    "example_model_solutions.jsonl and the Socratic variants were not used as source questions or as authoritative answers, per project instructions."
+  ]
+}

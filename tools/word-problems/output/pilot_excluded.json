@@ -1,0 +1,182 @@
+[
+  {
+    "id": "gsm8k-train-00692",
+    "question": "Edric's monthly salary is $576. If he works 8 hours a day for 6 days a week, how much is his hourly rate?",
+    "reason": "Relies on an unstated assumption that a month has exactly 4 weeks, which a student who checks a real calendar would reasonably contest.",
+    "stage": "manual_review"
+  },
+  {
+    "id": "gsm8k-train-01991",
+    "question": "Sally is saving up for a trip to Sea World. She already has $28 saved. It costs her $10 to park, $55 to get into the park and $25 for a meal pass. Sea World is 165 miles away and her car gets 30 miles per gallon of gas. If gas costs $3 a gallon, how much more will she have to save up?",
+    "reason": "The worked explanation jumps to a $123 total cost that is never shown being calculated in the visible steps — the explanation would confuse rather than help a child.",
+    "stage": "manual_review"
+  },
+  {
+    "id": "gsm8k-train-01979",
+    "question": "Val cuts a single watermelon into 40 slices, and each slice has 20 black seeds and 20 white seeds. What is the total number of seeds in a watermelon?",
+    "reason": "Source answer text ends with the question restated verbatim as a non-step; even with that line stripped, the paired explanation reads awkwardly for this record.",
+    "stage": "manual_review"
+  },
+  {
+    "id": "gsm8k-train-01574",
+    "question": "Two brick walls are being built. Each wall has 30 bricks in a single row and there are 50 rows in each wall. How many bricks will be used to make both walls?",
+    "reason": "not needed to reach pilot capacity for this grade",
+    "stage": "capacity_trim"
+  },
+  {
+    "id": "gsm8k-train-04674",
+    "question": "Steve is 5'6\".  He grows 6 inches.  How tall is he in inches?",
+    "reason": "not needed to reach pilot capacity for this grade",
+    "stage": "capacity_trim"
+  },
+  {
+    "id": "gsm8k-train-05516",
+    "question": "A cat has nine lives.  A dog has 3 less lives than a cat.  A mouse has 7 more lives than a dog.  How many lives does a mouse have?",
+    "reason": "not needed to reach pilot capacity for this grade",
+    "stage": "capacity_trim"
+  },
+  {
+    "id": "gsm8k-train-03596",
+    "question": "Two-thirds of the class have brown eyes. Half of the students with brown eyes have black hair. If there are 6 students in the class with brown eyes and black hair, how many students are there in total?",
+    "reason": "not needed to reach pilot capacity for this grade",
+    "stage": "capacity_trim"
+  },
+  {
+    "id": "gsm8k-train-04741",
+    "question": "Carson counts 6 clouds that look like funny animals. His little brother counts three times as many clouds that look like dragons. How many clouds did they count in total?",
+    "reason": "not needed to reach pilot capacity for this grade",
+    "stage": "capacity_trim"
+  },
+  {
+    "id": "gsm8k-train-01547",
+    "question": "John buys bags of popcorn for $4 and sells them for $8.  How much profit does he get by selling 30 bags?",
+    "reason": "not needed to reach pilot capacity for this grade",
+    "stage": "capacity_trim"
+  },
+  {
+    "id": "gsm8k-train-00255",
+    "question": "Bush and Matt are brothers. Bush is younger than Matt by 3 years. This year Bush will be 12 years old. What will be Matt's age 10 years from now?",
+    "reason": "not needed to reach pilot capacity for this grade",
+    "stage": "capacity_trim"
+  },
+  {
+    "id": "gsm8k-train-01679",
+    "question": "A park is 1000 feet long and 2000 feet wide. If there is 1 tree per 20 square feet, how many trees are there in the park?",
+    "reason": "not needed to reach pilot capacity for this grade",
+    "stage": "capacity_trim"
+  },
+  {
+    "id": "gsm8k-train-00209",
+    "question": "Five coaster vans are used to transport students for their field trip. Each van carries 28 students, 60 of which are boys. How many are girls?",
+    "reason": "not needed to reach pilot capacity for this grade",
+    "stage": "capacity_trim"
+  },
+  {
+    "id": "gsm8k-train-05348",
+    "question": "There are 12 inches to a foot. Blossom measures her room and finds that it is exactly 10 feet long in each direction. In square inches, what is the area of her room?",
+    "reason": "not needed to reach pilot capacity for this grade",
+    "stage": "capacity_trim"
+  },
+  {
+    "id": "gsm8k-train-01767",
+    "question": "Juvy has a garden that has 20 rows with 10 plants in each row. She plants parsley in the first 3 rows and rosemary in the last two rows. The rest of the rows will be planted with chives. How many chives will Juvy plant?",
+    "reason": "not needed to reach pilot capacity for this grade",
+    "stage": "capacity_trim"
+  },
+  {
+    "id": "gsm8k-train-02758",
+    "question": "Mohammad has 80 bags of chips. One quarter of the bags of chips are Doritos. If Mohammad wants to split the bags of Doritos into 4 equal piles, how many bags of Doritos will be in each pile?",
+    "reason": "not needed to reach pilot capacity for this grade",
+    "stage": "capacity_trim"
+  },
+  {
+    "id": "gsm8k-train-01687",
+    "question": "A farmer hires small trucks to transport his lemons to the markets. The load on a truck may not be more than 900 kilograms. One bag of lemons has a mass of 8 kilograms. If there are 100 bags of lemons, how many more kilograms can still be loaded into the truck?",
+    "reason": "not needed to reach pilot capacity for this grade",
+    "stage": "capacity_trim"
+  },
+  {
+    "id": "gsm8k-train-02438",
+    "question": "Brian has twice as many tennis balls as Frodo, who has 8 more than Lily. If Lily has 3 tennis balls, how many does Brian have?",
+    "reason": "not needed to reach pilot capacity for this grade",
+    "stage": "capacity_trim"
+  },
+  {
+    "id": "gsm8k-train-01241",
+    "question": "John carves a giant marble rectangular prism 8 meters tall with a 2-meter square base.  It has a density of 2700 kg per cubic meter.  How much does it weigh?",
+    "reason": "not needed to reach pilot capacity for this grade",
+    "stage": "capacity_trim"
+  },
+  {
+    "id": "gsm8k-train-00737",
+    "question": "Michael has 4 packs of crayons and wants to buy 2 more. One pack of crayons costs $2.5. How much are all the packs of crayons Michael will have after the purchase worth?",
+    "reason": "not needed to reach pilot capacity for this grade",
+    "stage": "capacity_trim"
+  },
+  {
+    "id": "gsm8k-train-00410",
+    "question": "Mark wants to set the record for most consecutive ropes jumped.  The record is 54,000.  He can jump 3 times a second.  How many hours would he need to jump rope?",
+    "reason": "not needed to reach pilot capacity for this grade",
+    "stage": "capacity_trim"
+  },
+  {
+    "id": "gsm8k-train-00484",
+    "question": "Leticia, Nina, and Rosalie have a total of 25 people on their dance team. If 8 people quit, but 13 new people got in, how many people are there now on the team?",
+    "reason": "not needed to reach pilot capacity for this grade",
+    "stage": "capacity_trim"
+  },
+  {
+    "id": "gsm8k-train-01891",
+    "question": "After sharing 100 stickers with her friends, Xia had five sheets of stickers left. If each sheet had ten stickers on it, how many stickers did Xia have at the beginning?",
+    "reason": "not needed to reach pilot capacity for this grade",
+    "stage": "capacity_trim"
+  },
+  {
+    "id": "gsm8k-train-01088",
+    "question": "We the People has 17 cows. Happy Good Healthy Family has two more than three times the number of cows We the People has. If their cows are taken to a ranch to graze together, how many cows will be in the ranch altogether?",
+    "reason": "not needed to reach pilot capacity for this grade",
+    "stage": "capacity_trim"
+  },
+  {
+    "id": "gsm8k-train-00109",
+    "question": "Alyssa, Keely, and Kendall ordered 100 chicken nuggets from a fast-food restaurant. Keely and Kendall each ate twice as many as Alyssa. How many did Alyssa eat?",
+    "reason": "not needed to reach pilot capacity for this grade",
+    "stage": "capacity_trim"
+  },
+  {
+    "id": "gsm8k-train-00973",
+    "question": "The buyers who came to Mr. Brandon's shop yesterday bought goods worth $80. If 2/5 of the total amount of sales Mr. Brandon made yesterday were credit sales, and the rest were cash sales, how much did Mr. Brandon get from cash sales?",
+    "reason": "not needed to reach pilot capacity for this grade",
+    "stage": "capacity_trim"
+  },
+  {
+    "id": "gsm8k-train-01485",
+    "question": "Adam has 50 balls. 20 balls are red, 10 are blue, and the rest are either pink or orange. If there are 3 times as many pink as orange balls, how many orange balls are there?",
+    "reason": "not needed to reach pilot capacity for this grade",
+    "stage": "capacity_trim"
+  },
+  {
+    "id": "gsm8k-train-00306",
+    "question": "Parker is 4 inches shorter than Daisy. Daisy is 8 inches taller than Reese. If Reese is 60 inches tall, what is the average height for the three of them?",
+    "reason": "not needed to reach pilot capacity for this grade",
+    "stage": "capacity_trim"
+  },
+  {
+    "id": "gsm8k-train-00610",
+    "question": "68% of all pies are eaten with forks. If there are 2000 pies of all kinds, how many of the pies are not eaten with forks?",
+    "reason": "not needed to reach pilot capacity for this grade",
+    "stage": "capacity_trim"
+  },
+  {
+    "id": "gsm8k-train-01282",
+    "question": "Karen had the giant box of crayons, containing twice as many crayons as were in Beatrice's box. But Beatrice's box contained twice as many crayons as were in Gilbert's box of crayons. And Gilbert had four times as many crayons as were in Judah's box of crayons. If Karen's box contained 128 crayons, how many crayons were in Judah's box?",
+    "reason": "not needed to reach pilot capacity for this grade",
+    "stage": "capacity_trim"
+  },
+  {
+    "id": "gsm8k-train-01433",
+    "question": "Among the career home run leaders for MLB, Hank Aaron has 175 fewer than twice the number that Dave Winfield has.  Hank Aaron hit 755 home runs.  How many home runs did Dave Winfield hit in his career?",
+    "reason": "not needed to reach pilot capacity for this grade",
+    "stage": "capacity_trim"
+  }
+]

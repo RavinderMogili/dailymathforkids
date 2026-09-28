@@ -67,5 +67,22 @@ Replace the API base URL with your actual Vercel deployment URL in:
 - **Time zone:** Workflow runs at 07:00 America/Moncton (10:00 UTC). Adjust cron in `.github/workflows/daily.yml`.
 - **Cost:** Daily generation with Claude costs only a few cents per day.
 
+## Word Problem Pilot (experimental, off by default)
+Practice Mode can optionally draw "Word Problems" from a subset of GSM8K
+(OpenAI) that passed automated checks and AI semantic review (an LLM read
+each one — **not** human/teacher review) alongside the existing hand-curated
+pool. Disabled in production by an environment variable
+(`EXTENDED_POOL_ENABLED`) on the API side, which is also what now decides
+whether any practice content earns points at all — practice scoring was
+rebuilt around server-issued, server-verified sessions (see the API repo)
+so this pilot's content is scored exactly like everything else once
+enabled. See [`tools/word-problems/README.md`](tools/word-problems/README.md)
+for the full pipeline, review process, the scoring rework, and how to
+enable/disable/roll back.
+
 ## License
 - Content: CC BY 4.0
+- Some Practice Mode "Word Problems" are adapted from GSM8K (OpenAI), used
+  under its MIT License — see
+  [`tools/word-problems/THIRD_PARTY_NOTICES.md`](tools/word-problems/THIRD_PARTY_NOTICES.md)
+  for the retained copyright/license notice and attribution.
