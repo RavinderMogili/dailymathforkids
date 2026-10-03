@@ -48,6 +48,7 @@ function makeExtRecord(id, grade, overrides = {}) {
     grade, topic: 'Word Problems',
     question: `Q ${id}`, questionFr: '', choices: ['1', '2', '3', '4'], answer: '1',
     hint: 'hint', steps: ['step'], _source: 'gsm8k', _sourceId: id,
+    _difficulty: 'easy', _sourceTopic: 'Word Problems (general)',
     ...overrides,
   };
 }
@@ -154,6 +155,35 @@ describe('extended pool feature flag', () => {
     const matches = q.choices.filter(c => c === q.answer);
     expect(matches.length).toBe(1);
   });
+
+  test('difficulty filter: Word Problems quiz only uses pool questions matching the selected difficulty', async () => {
+    const ctx = freshLoad({ enabled: true, extendedPool: [
+      makeExtRecord('gsm8k-easy', 4, { _difficulty: 'easy' }),
+      makeExtRecord('gsm8k-medium', 4, { _difficulty: 'medium' }),
+      makeExtRecord('gsm8k-hard', 4, { _difficulty: 'hard' }),
+    ] });
+    await settle();
+    // Ask for 3 hard word problems — the hard record should surface, not easy/medium.
+    const quiz = ctx.generateQuiz(4, ['Word Problems'], 'hard', 3);
+    expect(quiz.some(q => q._sourceId === 'gsm8k-hard')).toBe(true);
+    expect(quiz.some(q => q._sourceId === 'gsm8k-easy')).toBe(false);
+    expect(quiz.some(q => q._sourceId === 'gsm8k-medium')).toBe(false);
+    // Returned pool question carries both _difficulty and _sourceTopic forward.
+    const used = quiz.find(q => q._sourceId === 'gsm8k-hard');
+    expect(used._difficulty).toBe('hard');
+    expect(used._sourceTopic).toBe('Word Problems (general)');
+  });
+
+  test('difficulty filter: mixed-topic quiz still respects difficulty for pooled questions', async () => {
+    const ctx = freshLoad({ enabled: true, extendedPool: [
+      makeExtRecord('gsm8k-easy', 4, { topic: 'Fractions', _difficulty: 'easy' }),
+      makeExtRecord('gsm8k-hard', 4, { topic: 'Fractions', _difficulty: 'hard' }),
+    ] });
+    await settle();
+    const pool = ctx.getPoolQuestions(4, ['Fractions'], 'hard');
+    expect(pool.some(q => q._sourceId === 'gsm8k-hard')).toBe(true);
+    expect(pool.some(q => q._sourceId === 'gsm8k-easy')).toBe(false);
+  });
 });
 
 describe('real approved-pool data integrity guarantees', () => {
@@ -184,6 +214,14 @@ describe('real approved-pool data integrity guarantees', () => {
     for (const topic of ['Fractions', 'Geometry', 'Place Value', 'Perimeter']) {
       const pool = ctx.getPoolQuestions(4, [topic]);
       expect(pool.some(q => q._source === 'gsm8k')).toBe(false);
+    }
+  });
+
+  test('every approved record carries _difficulty and _sourceTopic metadata', () => {
+    for (const q of realPool) {
+      expect(q._difficulty).toMatch(/^(easy|medium|hard)$/);
+      expect(typeof q._sourceTopic).toBe('string');
+      expect(q._sourceTopic.length).toBeGreaterThan(0);
     }
   });
 

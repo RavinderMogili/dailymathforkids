@@ -1078,7 +1078,7 @@ function preferUnseen(list, minNeeded) {
   return unseen.length >= minNeeded ? unseen : list;
 }
 
-function getPoolQuestions(grade, topics) {
+function getPoolQuestions(grade, topics, difficulty = null) {
   let pool = [];
   if (_practicePool && _practicePool.length > 0) {
     pool = pool.concat(_practicePool);
@@ -1087,13 +1087,18 @@ function getPoolQuestions(grade, topics) {
     pool = pool.concat(_extendedPool);
   }
   if (pool.length === 0) return [];
-  return pool.filter(q =>
-    q.grade === grade &&
-    (topics.length === 0 || topics.some(t =>
+  return pool.filter(q => {
+    if (q.grade !== grade) return false;
+    if (difficulty && q._difficulty &&
+        String(q._difficulty).toLowerCase() !== String(difficulty).toLowerCase()) {
+      return false;
+    }
+    if (topics.length === 0) return true;
+    return topics.some(t =>
       t.toLowerCase().includes(q.topic?.toLowerCase()?.split(' ')[0] || '') ||
       q.topic?.toLowerCase().includes(t.toLowerCase().split(' ')[0] || '')
-    ))
-  );
+    );
+  });
 }
 
 // Auto-load pools on script load
@@ -1110,6 +1115,8 @@ function makePoolQuestion(pq) {
     topic: pq.topic || 'Word Problem',
     _source: pq._source || 'chatgpt',
     _sourceId: pq._sourceId || null,
+    _difficulty: pq._difficulty || null,
+    _sourceTopic: pq._sourceTopic || null,
   };
 }
 
@@ -1146,7 +1153,7 @@ function generateQuiz(grade, topics, difficulty, count) {
 
   if (isWordProblems) {
     // Word Problems only — pull entirely from the pool
-    const poolQs = preferUnseen(getPoolQuestions(grade, []), count);
+    const poolQs = preferUnseen(getPoolQuestions(grade, [], difficulty), count);
     const usedPool = shuffle([...poolQs]).slice(0, count);
     usedPool.forEach(pq => questions.push(makePoolQuestion(pq)));
     // If pool doesn't have enough, pad with algorithmic from random topics
@@ -1161,7 +1168,7 @@ function generateQuiz(grade, topics, difficulty, count) {
 
   // Normal mode — mix in pool questions (up to ~40%)
   const nonWordTopics = topics.filter(t => t !== 'Word Problems');
-  const poolQs = preferUnseen(getPoolQuestions(grade, nonWordTopics), 1);
+  const poolQs = preferUnseen(getPoolQuestions(grade, nonWordTopics, difficulty), 1);
   const poolCount = Math.min(Math.floor(count * 0.4), poolQs.length);
   const usedPool = shuffle([...poolQs]).slice(0, poolCount);
   usedPool.forEach(pq => questions.push(makePoolQuestion(pq)));
