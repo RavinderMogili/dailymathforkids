@@ -397,9 +397,11 @@ code — see "real approved-pool data integrity guarantees" in
   question, because `getPoolQuestions()` filters strictly on `q.grade` and
   no approved record exists outside grades 4-7 — this holds regardless of
   exposure-tracking state.
-- A non-"Word Problems" topic request never surfaces an extended-pool
-  question, for the same reason (every approved record's `topic` field is
-  exactly `"Word Problems"`).
+- A non-"Word Problems" topic request surfaces an extended-pool question only
+  when the question's `_sourceTopic` maps to the requested practice topic
+  (e.g., `_sourceTopic: "Fractions"` matches the "Fractions" practice topic).
+  Questions whose `_sourceTopic` doesn't map to any topic still appear only
+  under "Word Problems".
 - No candidate, rejected, or capacity-trimmed record can ever be served —
   the app only ever fetches `data/practice-pool-extended.json` itself; there
   is no code path that reads `output/candidates.jsonl`,

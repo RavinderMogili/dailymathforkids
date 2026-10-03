@@ -208,13 +208,18 @@ describe('real approved-pool data integrity guarantees', () => {
     }
   });
 
-  test('requesting a non-"Word Problems" topic never surfaces an extended-pool question', async () => {
+  test('extended-pool questions surface under their mapped practice topics', async () => {
     const ctx = freshLoad({ enabled: true, extendedPool: realPool });
     await settle();
-    for (const topic of ['Fractions', 'Geometry', 'Place Value', 'Perimeter']) {
-      const pool = ctx.getPoolQuestions(4, [topic]);
-      expect(pool.some(q => q._source === 'gsm8k')).toBe(false);
-    }
+    // Fractions-mapped GSM8K questions should appear when Fractions is selected
+    const fractionsPool = ctx.getPoolQuestions(4, ['Fractions']);
+    expect(fractionsPool.some(q => q._source === 'gsm8k')).toBe(true);
+    // Geometry-mapped GSM8K questions should appear when Geometry is selected
+    const geometryPool = ctx.getPoolQuestions(4, ['Geometry']);
+    expect(geometryPool.some(q => q._source === 'gsm8k')).toBe(true);
+    // A topic that maps to nothing (e.g. Place Value) should not surface GSM8K questions
+    const otherPool = ctx.getPoolQuestions(4, ['Place Value']);
+    expect(otherPool.some(q => q._source === 'gsm8k')).toBe(false);
   });
 
   test('every approved record carries _difficulty and _sourceTopic metadata', () => {
