@@ -469,11 +469,11 @@ def safe_generate_today():
 CANADIAN MATH CURRICULUM GUIDE — use this to calibrate each problem:
   G1 (Grade 1): counting to 100, addition/subtraction within 20, skip counting by 2s/5s/10s, comparing numbers, coin recognition (pennies/nickels/dimes)
   G2 (Grade 2): addition/subtraction within 100, telling time (hour/half-hour), measuring length (cm/m), simple patterns, counting coins to $1
-  G3 (Grade 3): multiplication tables (2,3,4,5,10), basic division, fractions (1/2,1/3,1/4), perimeter of simple shapes, reading simple graphs
-  G4 (Grade 4): all multiplication tables to 9×9, long division with remainders, decimal place value (tenths/hundredths), comparing fractions, area of rectangles, elapsed time
-  G5 (Grade 5): multi-digit multiplication/division, adding/subtracting fractions with like denominators, decimal operations, percentage intro (50%, 25%, 10%), volume of rectangular prism
-  G6 (Grade 6): fraction multiplication/division, ratios and rates, percent of a number, integers intro (positive/negative), order of operations (BEDMAS), simple algebraic expressions
-  G7 (Grade 7): integer operations (all four), fraction and decimal fluency, percentage problems (discount/tax/tip), one-step linear equations, surface area, data/probability
+  G3 (Grade 3): multiplication tables (2,3,4,5,10), basic division, fractions (1/2,1/3,1/4), perimeter of simple shapes, reading simple graphs, missing-factor equations (e.g., __ × 5 = 20)
+  G4 (Grade 4): all multiplication tables to 9×9, long division with remainders, decimal place value (tenths/hundredths), comparing fractions, area of rectangles, elapsed time, missing-factor multiplication/division equations (e.g., 36 ÷ __ = 9), simple table-of-information word problems
+  G5 (Grade 5): multi-digit multiplication/division, adding/subtracting fractions with like denominators, decimal operations, percentage intro (50%, 25%, 10%), volume of rectangular prism, missing-factor equations with larger numbers, table-of-information word problems
+  G6 (Grade 6): fraction multiplication/division, ratios and rates, percent of a number, integers intro (positive/negative), order of operations (BEDMAS), simple algebraic expressions, table-of-information word problems with multiple steps
+  G7 (Grade 7): integer operations (all four), fraction and decimal fluency, percentage problems (discount/tax/tip), one-step linear equations, surface area, data/probability, table-of-information word problems requiring inference from 2-3 given facts
   G8 (Grade 8): two-step linear equations, square roots and perfect squares, Pythagorean theorem (simple), percent increase/decrease, slope intro, mean/median/mode
   G9 (Grade 9): linear equations and inequalities, polynomials (add/subtract/multiply), graphing lines (slope-intercept), similar triangles, trigonometry intro (SOH-CAH-TOA), statistics
   G10 (Grade 10): quadratic equations (factoring, completing the square), systems of equations, circle geometry, trigonometry (all ratios), surface area and volume of 3D shapes
@@ -538,6 +538,12 @@ CRITICAL RULES — violations will break the quiz:
 
 3. CONTENT:
    - Match curriculum for each grade. No topics above grade level.
+   - Include missing-factor equations and table-of-information word problems according to the grade curriculum above.
+     Examples by grade:
+     - G3: __ × 5 = 20 (Answer: 4)
+     - G4: 36 ÷ __ = 9 (Answer: 4); or a small table of snack prices then "How much for 2 cookies and 1 juice?"
+     - G5: __ × 18 = 108 (Answer: 6); or a table showing items, quantities, and prices
+     - G6-G7: tables with 2-3 facts requiring a multi-step calculation
    - Canadian contexts: loonies/toonies, hockey, Tim Hortons, snowfall (cm), school supplies in CAD.
    - Short, friendly, age-appropriate language. Both English and French.
    - Hint: teach the METHOD using DIFFERENT numbers (never the actual problem's numbers).
