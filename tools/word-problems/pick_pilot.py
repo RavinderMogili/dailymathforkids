@@ -1,9 +1,7 @@
 """
-Selects a diverse, grade/topic-balanced pilot subset from candidates.jsonl
-for AI semantic review (an LLM reading each one — see README.md "Three
-distinct review tiers"; this is NOT human/teacher review). This is a
-*shortlist* step only — every record it outputs still gets read (by an AI
-reviewer, in this pipeline's actual usage) before approval.
+Selects a diverse, grade/topic-balanced pilot subset from candidates.jsonl.
+The shortlist is larger than the final approved pool to allow for rejections
+or manual review downstream.
 
 Usage:
   python tools/word-problems/pick_pilot.py \
@@ -21,15 +19,30 @@ random.seed(20260905)
 # Priority skews toward Grades 1-5 per project brief; GSM8K has essentially no
 # content that reads at a true Grade 1-3 level (see assessment_report.json),
 # so the pilot is weighted to grades 4-5 with a smaller stretch into 6-7.
+# These base targets sum to 130 and are scaled proportionally to the --target.
 GRADE_TARGETS = {4: 42, 5: 44, 6: 26, 7: 18}
 MAX_SHARE_PER_TOPIC = 0.4  # no single topic should dominate a grade's slice
+
+
+def scale_targets(target):
+    base_total = sum(GRADE_TARGETS.values())
+    scaled = {g: (t * target) // base_total for g, t in GRADE_TARGETS.items()}
+    remainder = target - sum(scaled.values())
+    if remainder:
+        biggest_grade = max(GRADE_TARGETS, key=GRADE_TARGETS.get)
+        scaled[biggest_grade] += remainder
+    return scaled
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--in", dest="infile", required=True)
     ap.add_argument("--out", dest="outfile", required=True)
+    ap.add_argument("--target", type=int, default=130,
+                    help="Total number of shortlist candidates to select")
     args = ap.parse_args()
+
+    targets = scale_targets(args.target)
 
     by_grade = defaultdict(list)
     with open(args.infile, encoding="utf-8") as f:
@@ -38,7 +51,7 @@ def main():
             by_grade[rec["grade_estimate"]].append(rec)
 
     selected = []
-    for grade, target in GRADE_TARGETS.items():
+    for grade, target in targets.items():
         pool = by_grade.get(grade, [])
         random.shuffle(pool)
         by_topic = defaultdict(list)

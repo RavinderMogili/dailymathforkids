@@ -6,7 +6,7 @@ Pilot integration of a curated subset of GSM8K (OpenAI, MIT License; see
 
 This directory holds the offline pipeline that produced
 [`data/practice-pool-extended.json`](../../data/practice-pool-extended.json)
-(100 approved questions). It is intentionally separate from the runtime app
+(500 approved questions). It is intentionally separate from the runtime app
 code in `scripts/` — nothing here runs in production; it only produces a
 static JSON file the app can optionally load.
 
@@ -44,8 +44,8 @@ Run it yourself (requires a local copy of
 ```bash
 python tools/word-problems/assess.py --data-dir <path>/grade_school_math/data --out tools/word-problems/output
 python tools/word-problems/adapt.py --in tools/word-problems/output/assessed_records.jsonl --out tools/word-problems/output/candidates.jsonl --grades 4 5 6 7 --max-per-grade 400
-python tools/word-problems/pick_pilot.py --in tools/word-problems/output/candidates.jsonl --out tools/word-problems/output/pilot_shortlist.json
-python tools/word-problems/finalize_pilot.py --in tools/word-problems/output/pilot_shortlist.json --approved-out data/practice-pool-extended.json --rejected-out tools/word-problems/output/pilot_excluded.json --target 100
+python tools/word-problems/pick_pilot.py --in tools/word-problems/output/candidates.jsonl --out tools/word-problems/output/pilot_shortlist.json --target 650
+python tools/word-problems/finalize_pilot.py --in tools/word-problems/output/pilot_shortlist.json --approved-out data/practice-pool-extended.json --rejected-out tools/word-problems/output/pilot_excluded.json --target 500
 ```
 
 `adapt.py` seeds Python's `random` with a fixed value, so distractor
@@ -59,26 +59,29 @@ importing a *new* batch alongside an already-shipped one, dedupe by the
 
 ## Three distinct review tiers — do not conflate them
 
-This project used **two** of three possible review tiers. Neither
-`review_status: "auto_ok"` nor anything else in this pipeline should be read
-as "a teacher confirmed this question is good" — that tier was never used.
+The current pool of **500** questions uses **two** review tiers for the
+**original 100** and **only tier 1** for the additional 400 added later.
+Neither `review_status: "auto_ok"` nor anything else in this pipeline should
+be read as "a teacher confirmed this question is good" — that tier was never
+used.
 
 1. **Automated checks** (`assess.py`/`adapt.py`) — deterministic code, no AI
    involved at all. Full dataset, all 8,792 records. Described in detail
-   below.
-2. **AI semantic review** — a Claude session (this one) reading questions
-   and judging them the way an LLM does: fast, consistent about the checks
-   it's explicitly told to look for, but not a substitute for subject-matter
-   or child-development expertise, and not infallible (see the mg/ml example
+   below. **This is the only review applied to the 400 records beyond the
+   original 100.**
+2. **AI semantic review** — a Claude session reading questions and judging
+   them the way an LLM does: fast, consistent about the checks it's explicitly
+   told to look for, but not a substitute for subject-matter or
+   child-development expertise, and not infallible (see the mg/ml example
    below, which an earlier pass of this same review missed). Applied to a
-   130-item shortlist only, **not** the full 8,792 — see "Candidate funnel"
-   below.
+   130-item shortlist only, producing the **original 100 approved questions**.
 3. **Human / teacher review** — a qualified person (teacher, curriculum
    specialist, parent reviewer) reading and judging the content. **Not
    performed on any record in this pipeline.** If you see "reviewed" or
    "approved" language anywhere in the app, docs, or UI referring to this
-   content, it means tier 1 + tier 2 above — flag it if it ever gets
-   rephrased to imply tier 3 happened.
+   content, be precise: the original 100 means tier 1 + tier 2, while the
+   additional 400 means tier 1 only. Flag any wording that implies tier 3
+   happened.
 
 ### Tier 1: automated checks (all 8,792 records)
 
@@ -220,18 +223,23 @@ consistent with this heuristic's output — but that's corroborating context,
 not independent proof. Treat "no Grade 1-3 content in the pilot" as this
 assessment's finding, not a settled fact about the dataset.
 
-## Candidate funnel: 8,792 → 130 → 100
+## Candidate funnel
+
+The current pool is **500** approved records. The **first 100** passed tier 1
+(automated) plus tier 2 (AI semantic review). The **additional 400** passed only
+tier 1.
 
 | Stage | Count | What happened |
 |---|---:|---|
 | Original dataset (train + test) | 8,792 | Every record, tier 1 (automated) only |
 | `auto_ok` after tier 1 | 8,053 | Passed all automated checks — **not** tier-2/3 reviewed |
 | Grade 4-7 candidates generated | 1,600 | `adapt.py`, capped at 400/grade |
-| Shortlisted for tier 2 (AI semantic) review | 130 | `pick_pilot.py`, grade/topic-balanced |
+| Shortlisted for AI semantic review (tier 2) | 130 | `pick_pilot.py --target 130`, grade/topic-balanced |
+| Shortlisted for auto-check-only expansion | 520 more | `pick_pilot.py --target 650` beyond the original 130 |
 | Rejected in tier 2 | 3 | Content problems — see above |
 | Reworded in tier 2 (still approved) | 2 | Wording fixes — see above |
-| Trimmed for pilot capacity (not a quality rejection) | 27 | `capacity_trim` in `pilot_excluded.json` |
-| **Approved into the pilot** | **100** | `data/practice-pool-extended.json` |
+| Trimmed for pilot capacity (not a quality rejection) | 147 | `capacity_trim` in `pilot_excluded.json` |
+| **Approved into the pool** | **500** | `data/practice-pool-extended.json` |
 
 Both reworded records (`gsm8k-train-01480`, `gsm8k-train-01110`) are
 included in the 100 approved, with their corrected wording — they were
@@ -252,15 +260,16 @@ never in the "rejected" 3.
 - **8,792 / 8,792** original records ran through tier 1 (automated checks).
 - **130** were hand-picked (grade/topic-balanced) and went through tier 2
   (AI semantic review, performed by this Claude session); **100** were
-  approved.
+  approved into the original pilot.
 - **0** records have had tier 3 (human/teacher) review.
-- The remaining ~7,900 `auto_ok` records have **only passed tier 1** —
+- The pool was later expanded to **500**: the additional **400** records were
+  drawn from the same `auto_ok` set and received **only tier 1** review.
+- The remaining ~7,500 `auto_ok` records have **only passed tier 1** —
   arithmetic self-consistency is checked and keyword/duplicate screens ran,
   but no one and nothing has read them for whether they solve the right
   problem, for tone, realism, or kid-appropriateness beyond the keyword
   screen. Treat `assessment_report.json`'s counts as "passed automated
-  gates," not "approved for kids." See "Remaining work" below for what
-  expanding this would take.
+  gates," not "approved for kids."
 
 ## Dataset assessment results (full 8,792 records)
 
@@ -294,14 +303,14 @@ this run produced. Headline findings:
   topic diversity in the pilot is deliberately capped per-topic (see
   `pick_pilot.py`) to avoid an all-money pilot set.
 
-## Pilot composition (100 approved)
+## Pilot composition (500 approved)
 
 | Grade | Count |
 |-------|-------|
-| 4     | 32    |
-| 5     | 34    |
-| 6     | 20    |
-| 7     | 14    |
+| 4     | 160   |
+| 5     | 170   |
+| 6     | 100   |
+| 7     | 70    |
 
 Five complete examples (question, all choices, answer, and explanation) are
 in "Candidate funnel" above. Every approved record carries `_sourceId`
