@@ -222,6 +222,18 @@ describe('real approved-pool data integrity guarantees', () => {
     expect(otherPool.some(q => q._source === 'gsm8k')).toBe(false);
   });
 
+  test('topic mapping respects grade boundaries: grade 4 ratios question only appears under Word Problems', async () => {
+    // Simulate a Grade 4 question whose source topic would map to Ratios & Proportions
+    // for older grades, but Grade 4 has no such topic.
+    const ctx = freshLoad({ enabled: true, extendedPool: [
+      makeExtRecord('gsm8k-g4-ratio', 4, { _sourceTopic: 'Ratios & Rates' }),
+    ] });
+    await settle();
+    expect(ctx.getPoolQuestions(4, ['Word Problems']).some(q => q._sourceId === 'gsm8k-g4-ratio')).toBe(true);
+    expect(ctx.getPoolQuestions(4, ['Fractions']).some(q => q._sourceId === 'gsm8k-g4-ratio')).toBe(false);
+    expect(ctx.getPoolQuestions(4, ['Geometry']).some(q => q._sourceId === 'gsm8k-g4-ratio')).toBe(false);
+  });
+
   test('every approved record carries _difficulty and _sourceTopic metadata', () => {
     for (const q of realPool) {
       expect(q._difficulty).toMatch(/^(easy|medium|hard)$/);

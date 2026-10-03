@@ -1091,9 +1091,13 @@ const SOURCE_TOPIC_TO_TOPICS = {
   'Counting & Comparison': ['Counting', 'Comparison'],
 };
 
-function getPoolQuestionTopics(q) {
+function getPoolQuestionTopics(q, grade) {
   const mapped = SOURCE_TOPIC_TO_TOPICS[q._sourceTopic] || [];
-  return [q.topic || 'Word Problems', ...mapped];
+  const gradeTopics = getTopicsForGrade(grade);
+  const validMapped = mapped.filter(pt =>
+    gradeTopics.some(gt => gt.toLowerCase().includes(pt.toLowerCase()))
+  );
+  return [q.topic || 'Word Problems', ...validMapped];
 }
 
 function getPoolQuestions(grade, topics, difficulty = null) {
@@ -1112,7 +1116,7 @@ function getPoolQuestions(grade, topics, difficulty = null) {
       return false;
     }
     if (topics.length === 0) return true;
-    const poolTopics = getPoolQuestionTopics(q);
+    const poolTopics = getPoolQuestionTopics(q, grade);
     return topics.some(t => {
       const topicWords = t.toLowerCase().split(' ')[0] || '';
       return poolTopics.some(pt =>
