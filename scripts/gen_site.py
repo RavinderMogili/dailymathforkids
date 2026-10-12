@@ -11,11 +11,6 @@ except Exception:
     OpenAI = None
 
 try:
-    import anthropic
-except Exception:
-    anthropic = None
-
-try:
     from google import genai
 except Exception:
     genai = None
@@ -549,21 +544,11 @@ def upsert_quiz_to_supabase(quiz_id, questions, answers):
 
 
 def call_llm(prompt):
-    """Call Claude Sonnet 4 if available, otherwise fall back to OpenAI gpt-4o."""
-    anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+    """Call OpenAI gpt-4o for main generation."""
     openai_key = os.environ.get("OPENAI_API_KEY", "").strip()
 
-    if anthropic and anthropic_key:
-        print("INFO: Using Claude Sonnet 4.6 for generation (high math accuracy).")
-        client = anthropic.Anthropic(api_key=anthropic_key, timeout=600.0, max_retries=2)
-        msg = client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=64000,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        return msg.content[0].text.strip()
-    elif OpenAI and openai_key:
-        print("INFO: Using OpenAI gpt-4o for generation (Anthropic key not found).")
+    if OpenAI and openai_key:
+        print("INFO: Using OpenAI gpt-4o for generation.")
         os.environ["OPENAI_API_KEY"] = openai_key
         client = OpenAI(timeout=600, max_retries=2)
         resp = client.chat.completions.create(
@@ -580,7 +565,7 @@ def call_free_llm(prompt):
     """Free/cheap LLM for secondary tasks: review, translation, titles.
 
     Uses Gemini if GEMINI_API_KEY is set, otherwise falls back to call_llm().
-    This lets the main generation stay on Anthropic/OpenAI while the review
+    This lets the main generation stay on OpenAI while the review
     pass and GSM8K French translation run on Gemini's free tier."""
     gemini_key = os.environ.get("GEMINI_API_KEY", "").strip()
     gemini_model = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash").strip() or "gemini-3.5-flash"
@@ -616,19 +601,18 @@ def call_free_llm(prompt):
 
 
 def _require_llm_available(context):
-    """Confirm at least one provider SDK imported successfully AND has a key.
+    """Confirm the OpenAI SDK imported successfully AND has a key.
     Exits loudly (non-zero) instead of returning silently, so a broken
     dependency or missing secret shows up as a failed CI run, not a quiet
     no-op that looks identical to a normal day."""
-    anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
     openai_key = os.environ.get("OPENAI_API_KEY", "").strip()
-    if (anthropic and anthropic_key) or (OpenAI and openai_key):
-        return anthropic_key, openai_key
-    if (anthropic_key and not anthropic) or (openai_key and not OpenAI):
-        print(f"ERROR: {context}: API key is set but the anthropic/openai SDK failed to import "
+    if OpenAI and openai_key:
+        return openai_key
+    if openai_key and not OpenAI:
+        print(f"ERROR: {context}: OPENAI_API_KEY is set but the openai SDK failed to import "
               f"(likely a dependency version conflict, e.g. httpx/anyio).", file=sys.stderr)
     else:
-        print(f"ERROR: {context}: no API key found for Anthropic or OpenAI.", file=sys.stderr)
+        print(f"ERROR: {context}: OPENAI_API_KEY is required for generation.", file=sys.stderr)
     sys.exit(1)
 
 

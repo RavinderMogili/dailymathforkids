@@ -46,8 +46,9 @@ Replace the API base URL with your actual Vercel deployment URL in:
 - `daily/*.html` (auto-set by `scripts/gen_site.py` via `PUBLIC_API_BASE` env var)
 
 ### 3. Configure GitHub Actions secrets
-- `ANTHROPIC_API_KEY` — for daily problem generation (Claude)
-- `OPENAI_API_KEY` — optional fallback for generation
+- `OPENAI_API_KEY` — for daily problem generation (gpt-4o)
+- `GEMINI_API_KEY` — for free review pass and French translation
+- `GEMINI_MODEL` — optional Gemini model (defaults to `gemini-3.5-flash`)
 - `PUBLIC_API_BASE` — your Vercel API URL (e.g. `https://myapi.vercel.app`)
 
 ### 4. Enable GitHub Pages
@@ -65,7 +66,7 @@ Replace the API base URL with your actual Vercel deployment URL in:
 
 ## Notes
 - **Time zone:** Workflow runs at 07:00 America/Moncton (10:00 UTC). Adjust cron in `.github/workflows/daily.yml`.
-- **Cost:** Daily generation with Claude costs only a few cents per day.
+- **Cost:** Daily generation uses OpenAI gpt-4o; review and translation run on free Gemini.
 
 ## Word Problem Pilot (experimental, off by default)
 Practice Mode can optionally draw "Word Problems" from a subset of GSM8K
