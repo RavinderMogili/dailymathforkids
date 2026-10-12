@@ -1,4 +1,4 @@
-import os, pathlib, datetime, sys, re
+import os, pathlib, datetime, sys, re, json
 
 try:
     import markdown2
@@ -22,6 +22,14 @@ DAILY_DIR.mkdir(parents=True, exist_ok=True)
 TITLE       = os.getenv("SITE_TITLE", "Daily Math for Kids")
 PUBLIC_API  = os.getenv("PUBLIC_API_BASE", "https://dailymathforkids-api.vercel.app").rstrip("/")
 GRADE_CODES = ["G1","G2","G3","G4","G5","G6","G7","G8","G9","G10","G11","G12"]
+
+# Phase 3 — mix curated GSM8K pool questions into the daily quiz.
+# The pool only covers grades 4-7; other grades are unaffected.
+# Set GSM8K_DAILY_ENABLED=0 to disable; GSM8K_DAILY_PER_GRADE controls count.
+EXTENDED_POOL_PATH    = ROOT / "data" / "practice-pool-extended.json"
+GSM8K_DAILY_ENABLED   = os.getenv("GSM8K_DAILY_ENABLED", "1").strip().lower() not in ("0", "false", "off")
+GSM8K_DAILY_PER_GRADE = max(0, int(os.getenv("GSM8K_DAILY_PER_GRADE", "1") or "1"))
+GSM8K_DAILY_GRADES    = (4, 5, 6, 7)
 
 HELPERS_JS = r"""
 <script>
@@ -339,6 +347,146 @@ def parse_grade_sections(text):
     return sections
 
 
+def _gsm8k_daily_picks(today):
+    """Deterministically pick GSM8K_DAILY_PER_GRADE pool questions per grade,
+    rotating through the pool by day so coverage is even and no question
+    repeats until its grade's pool is exhausted."""
+    if not GSM8K_DAILY_ENABLED or GSM8K_DAILY_PER_GRADE <= 0 or not EXTENDED_POOL_PATH.exists():
+        return {}
+    try:
+        pool = json.loads(EXTENDED_POOL_PATH.read_text(encoding="utf-8"))
+    except Exception as e:
+        print(f"WARN: Could not load GSM8K pool ({e}) — daily injection skipped.")
+        return {}
+
+    day_num = datetime.date.fromisoformat(today).toordinal()
+    picks = {}
+    for g in GSM8K_DAILY_GRADES:
+        grade_pool = sorted(
+            (q for q in pool if q.get("grade") == g),
+            key=lambda q: q.get("_sourceId") or "",
+        )
+        if not grade_pool:
+            continue
+        start = (day_num * GSM8K_DAILY_PER_GRADE) % len(grade_pool)
+        picks[g] = [grade_pool[(start + i) % len(grade_pool)] for i in range(GSM8K_DAILY_PER_GRADE)]
+    return picks
+
+
+def _gsm8k_translate_batch(picks):
+    """One small LLM call: translate each picked question to Canadian French
+    and give it a short quiz title. Returns {_sourceId: {"fr":..., "title":...}}.
+    Fails soft — injection still happens with English FR fallback."""
+    picked = [q for g in sorted(picks) for q in picks[g]]
+    if not picked:
+        return {}
+    numbered = "\n".join(f"{i+1}. {q['question']}" for i, q in enumerate(picked))
+    prompt = (
+        "For each numbered English math word problem below, provide a natural Canadian "
+        "French translation and a short kid-friendly title (2-4 words, English). "
+        "Keep all numbers identical. Output ONLY a JSON array, one object per problem, "
+        'in order: [{"fr": "...", "title": "..."}, ...]\n\n' + numbered
+    )
+    try:
+        raw = call_llm(prompt)
+        if not raw:
+            return {}
+        raw = re.sub(r"^```(?:json)?\s*", "", raw.strip())
+        raw = re.sub(r"\s*```$", "", raw)
+        arr = json.loads(raw)
+        out = {}
+        for i, q in enumerate(picked):
+            item = arr[i] if isinstance(arr, list) and i < len(arr) else {}
+            out[q.get("_sourceId")] = {
+                "fr": (item.get("fr") or "").strip() if isinstance(item, dict) else "",
+                "title": (item.get("title") or "").strip() if isinstance(item, dict) else "",
+            }
+        return out
+    except Exception as e:
+        print(f"WARN: GSM8K translation batch failed ({e}) — using English fallback for FR.")
+        return {}
+
+
+def _gsm8k_item_md(q, num, fr, title):
+    """Render one pool question as a quiz markdown item, matching the exact
+    format produced by the LLM prompt (parsed by validate_quiz.py and the
+    front-end HELPERS_JS)."""
+    diff = str(q.get("_difficulty") or "medium").strip().lower()
+    diff_tag = {"easy": "Easy", "medium": "Medium", "hard": "Hard"}.get(diff, "Medium")
+    question = re.sub(r"\s+", " ", str(q.get("question") or "")).strip()
+    choices = [re.sub(r"\s+", " ", str(c)).strip() for c in (q.get("choices") or [])]
+    answer = str(q.get("answer") or "").strip()
+    if len(choices) != 4 or answer not in choices:
+        return None  # defensive: only inject well-formed MC questions
+    labels = ["A", "B", "C", "D"]
+    choice_str = "   ".join(f"{labels[i]}) {c}" for i, c in enumerate(choices))
+    hint = re.sub(r"\s+", " ", str(q.get("hint") or "Read the problem carefully.")).strip()
+    steps = [re.sub(r"\s+", " ", str(s)).strip() for s in (q.get("steps") or [])] or ["Read the problem carefully."]
+    fr_line = re.sub(r"\s+", " ", str(fr or "(French translation unavailable)")).strip()
+    return (
+        f"{num}. **[{diff_tag}] {title or 'Word Problem'}**\n"
+        f"   - EN: {question}\n"
+        f"   - FR: {fr_line}\n"
+        f"   - Choices: {choice_str}\n"
+        f"   - Hint: {hint}\n"
+        f"   - Steps:\n"
+        + "".join(f"     - {s}\n" for s in steps)
+        + f"   - Answer: {answer}\n"
+    )
+
+
+def _replace_item(section, new_item, difficulty):
+    """Replace the LAST numbered item in a grade section whose [Difficulty] tag
+    matches `difficulty` (fallback: last item overall). Keeps the item count
+    and the Easy→Medium→Hard ordering intact."""
+    matches = list(re.finditer(r"^(\d+)\.\s*\*\*\[(\w+)\]", section, re.MULTILINE))
+    if not matches:
+        return section, None
+    target = next(
+        (m for m in reversed(matches) if m.group(2).lower() == str(difficulty).lower()),
+        matches[-1],
+    )
+    idx = matches.index(target)
+    end = matches[idx + 1].start() if idx + 1 < len(matches) else len(section)
+    new_item = re.sub(r"^\d+\.", target.group(1) + ".", new_item, count=1)
+    return section[:target.start()] + new_item + section[end:], target
+
+
+def inject_gsm8k_daily_questions(text, today):
+    """Swap one LLM-generated item per grade (G4-G7) for a curated GSM8K pool
+    question. Runs AFTER review_and_fix_quiz so curated content is never
+    rewritten by the review pass."""
+    picks = _gsm8k_daily_picks(today)
+    if not picks:
+        return text
+    translations = _gsm8k_translate_batch(picks)
+    total = 0
+    for grade, qs in picks.items():
+        code = f"G{grade}"
+        m = re.search(rf"## {code}\n(.*?)(?=\n## |\Z)", text, re.DOTALL)
+        if not m:
+            continue
+        section = m.group(1)
+        for q in qs:
+            meta = translations.get(q.get("_sourceId")) or {}
+            item = _gsm8k_item_md(q, 0, meta.get("fr") or "", meta.get("title"))
+            if not item:
+                continue
+            section, target = _replace_item(section, item, q.get("_difficulty"))
+            if target is not None:
+                total += 1
+        new_text, n = re.subn(
+            rf"(## {code}\n).*?(?=\n## |\Z)",
+            lambda mm: mm.group(1) + section,
+            text, count=1, flags=re.DOTALL,
+        )
+        if n:
+            text = new_text
+    if total:
+        print(f"INFO: Injected {total} GSM8K question(s) into the daily quiz (grades {sorted(picks)}).")
+    return text
+
+
 def extract_qa_pairs(content):
     """Extract aligned (question, answer) lists from a grade section.
 
@@ -649,6 +797,9 @@ FINAL CHECK before outputting: Verify you have 12 grade sections (G1-G12), each 
                     print(f"INFO: All 12 grades now present after retry.")
 
         # Second AI review pass: fix any validation errors before publishing
+        # Phase 3: swap in curated GSM8K questions for grades 4-7
+        text = inject_gsm8k_daily_questions(text, today)
+
         text = review_and_fix_quiz(text)
 
         md_path.write_text(text + "\n", encoding="utf-8")

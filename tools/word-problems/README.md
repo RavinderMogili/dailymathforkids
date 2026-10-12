@@ -10,20 +10,40 @@ This directory holds the offline pipeline that produced
 code in `scripts/` — nothing here runs in production; it only produces a
 static JSON file the app can optionally load.
 
-## Why Practice Mode, not the Daily Quiz
+## Where the curated pool is used
 
-The **daily quiz** (`scripts/gen_site.py`) has no concept of a curated
-question bank — it asks an LLM to write 10 fresh grade-tagged questions every
-morning and publishes the HTML directly. Retrofitting a static, pre-approved
-question set into that pipeline would be a much larger, riskier change than
-this brief calls for.
+The approved records in `data/practice-pool-extended.json` now surface in **two
+places**:
 
-**Practice Mode** (`scripts/practice-engine.js`) already has exactly the
-right shape: `data/practice-pool.json` is a static, curated JSON bank
-(grade/topic/question/choices/answer/hint/steps) that `generateQuiz()` uses
-100% for the "Word Problems" topic and blends up to ~40% into other topics,
-with algorithmic-question fallback already built in when the pool runs
-short. This pilot adds a second, clearly-labeled pool
+1. **Practice Mode** (`scripts/practice-engine.js`) — the original target. The
+   extended pool is blended with the hand-curated practice pool, filtered by
+   grade, topic, and (optionally) difficulty. This is described in detail below.
+2. **The Daily Quiz** (`scripts/gen_site.py`) — a curated GSM8K question is
+   swapped into the LLM-generated quiz for grades 4–7 every day (Phase 3).
+
+### Phase 3: Daily quiz distribution
+
+`gen_site.py` now rotates through the pool and injects one GSM8K word problem
+per day into each of grades 4–7, replacing an LLM-generated item of the same
+difficulty so each grade still has exactly 10 questions.
+
+- **Selection**: deterministic by date — `day_ordinal % grade_pool_size`. This
+  cycles through the entire grade pool before any question repeats.
+- **Matching difficulty**: the replaced LLM item is chosen to match the pool
+  question's `_difficulty` (Easy/Medium/Hard), preserving the quiz's
+  4-Easy / 4-Medium / 2-Hard ordering.
+- **Translation/title**: a single small LLM call per day translates the injected
+  questions into Canadian French and gives each a short title. If that call
+  fails, the question still injects but the FR line reads
+  "(French translation unavailable)" — the quiz remains valid and parseable.
+- **Kill switch**: set `GSM8K_DAILY_ENABLED=0` or `GSM8K_DAILY_PER_GRADE=0` to
+  disable daily injection without touching Practice Mode.
+
+**Practice Mode** remains the larger consumer: `data/practice-pool.json` is a
+static, curated JSON bank (grade/topic/question/choices/answer/hint/steps) that
+`generateQuiz()` uses 100% for the "Word Problems" topic and blends up to ~40%
+into other topics, with algorithmic-question fallback already built in when
+the pool runs short. This pilot adds a second, clearly-labeled pool
 (`data/practice-pool-extended.json`) alongside it, reusing that exact
 mechanism — no new architecture.
 
@@ -412,6 +432,10 @@ code — see "real approved-pool data integrity guarantees" in
   request) draws from the same pre-existing per-grade topic generators as
   before this pilot — it has no awareness of or dependency on the extended
   pool, so it can't leak unapproved content either.
+- In the **daily quiz**, injected GSM8K questions are limited to grades 4–7
+  (the only grades present in the pool), replace an LLM item of matching
+  difficulty, and never change the total count per grade. The injection is
+  deterministic by date and can be disabled with `GSM8K_DAILY_ENABLED=0`.
 
 ## Practice scoring trust boundary — now fixed for every question source
 
