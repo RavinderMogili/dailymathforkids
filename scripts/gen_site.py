@@ -15,6 +15,11 @@ try:
 except Exception:
     anthropic = None
 
+try:
+    from google import genai
+except Exception:
+    genai = None
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DAILY_DIR = ROOT / "daily"
 DAILY_DIR.mkdir(parents=True, exist_ok=True)
@@ -310,9 +315,9 @@ CURRENT SECTION(S) TO FIX:
 
 Output ONLY the corrected '## {{GRADE}}' section(s), nothing else — no explanations."""
 
-        fixed_text = call_llm(fix_prompt)
+        fixed_text = call_free_llm(fix_prompt)
         if not fixed_text:
-            print("WARN: Review pass — LLM returned no fix; keeping original.")
+            print("WARN: Review pass — free LLM returned no fix; keeping original.")
             return text
 
         fixed_text = auto_fix_answers(fixed_text)
@@ -388,7 +393,7 @@ def _gsm8k_translate_batch(picks):
         'in order: [{"fr": "...", "title": "..."}, ...]\n\n' + numbered
     )
     try:
-        raw = call_llm(prompt)
+        raw = call_free_llm(prompt)
         if not raw:
             return {}
         raw = re.sub(r"^```(?:json)?\s*", "", raw.strip())
@@ -569,6 +574,45 @@ def call_llm(prompt):
         return resp.choices[0].message.content.strip()
     else:
         return None
+
+
+def call_free_llm(prompt):
+    """Free/cheap LLM for secondary tasks: review, translation, titles.
+
+    Uses Gemini if GEMINI_API_KEY is set, otherwise falls back to call_llm().
+    This lets the main generation stay on Anthropic/OpenAI while the review
+    pass and GSM8K French translation run on Gemini's free tier."""
+    gemini_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    gemini_model = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash").strip() or "gemini-3.5-flash"
+    if genai and gemini_key:
+        try:
+            print(f"INFO: Using Gemini {gemini_model} for free LLM task (review/translation).")
+            client = genai.Client(api_key=gemini_key)
+            last_error = None
+            for attempt in range(1, 4):
+                try:
+                    resp = client.models.generate_content(
+                        model=gemini_model,
+                        contents=prompt,
+                    )
+                    text = (getattr(resp, "text", None) or "").strip()
+                    if text:
+                        return text
+                    print(f"WARN: Gemini returned empty text (attempt {attempt}).")
+                except Exception as e:
+                    last_error = e
+                    msg = str(e)
+                    if "UNAVAILABLE" in msg or "503" in msg:
+                        print(f"WARN: Gemini overloaded (attempt {attempt}) — retrying...")
+                        import time
+                        time.sleep(2 * attempt)
+                        continue
+                    raise
+            print(f"WARN: Gemini failed after retries ({last_error}) — falling back to paid LLM.")
+        except Exception as e:
+            print(f"WARN: Gemini call failed ({e}) — falling back to paid LLM.")
+    # Fallback to the paid provider if Gemini isn't configured or failed.
+    return call_llm(prompt)
 
 
 def _require_llm_available(context):

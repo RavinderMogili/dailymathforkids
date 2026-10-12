@@ -22,12 +22,13 @@ jobs:
       - name: Install deps
         run: |
           pip install --upgrade pip
-          pip install "openai==1.43.0" "anthropic>=0.30" "httpx>=0.25,<1" "httpcore>=0.17,<1" "anyio<4.15" markdown2
+          pip install "openai==1.43.0" "anthropic>=0.30" "google-genai>=1.0" "httpx>=0.25,<1" "httpcore>=0.17,<1" "anyio<4.15" markdown2
 
       - name: Generate today's page (and rebuild index+sitemap)
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
           SITE_TITLE: "Daily Math for Kids"
@@ -38,6 +39,7 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
         run: |
@@ -63,6 +65,7 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
           SITE_TITLE: "Daily Math for Kids"
