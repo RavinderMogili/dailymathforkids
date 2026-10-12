@@ -797,10 +797,10 @@ FINAL CHECK before outputting: Verify you have 12 grade sections (G1-G12), each 
                     print(f"INFO: All 12 grades now present after retry.")
 
         # Second AI review pass: fix any validation errors before publishing
+        text = review_and_fix_quiz(text)
+
         # Phase 3: swap in curated GSM8K questions for grades 4-7
         text = inject_gsm8k_daily_questions(text, today)
-
-        text = review_and_fix_quiz(text)
 
         md_path.write_text(text + "\n", encoding="utf-8")
 
