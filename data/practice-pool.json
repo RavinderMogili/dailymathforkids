@@ -1,81 +1,27 @@
 [
   {
     "grade": 1,
-    "topic": "Counting",
-    "question": "Emma is collecting maple leaves. She finds 45 leaves on Monday and 32 leaves on Tuesday. How many leaves does she have in total?",
-    "questionFr": "Emma ramasse des feuilles d'érable. Elle trouve 45 feuilles lundi et 32 feuilles mardi. Combien de feuilles a-t-elle au total?",
+    "topic": "Counting to 100",
+    "question": "You and your friend are counting maple leaves in the park. You count 45 leaves, and your friend counts 47 leaves. How many leaves have you counted together?",
+    "questionFr": "Toi et ton ami comptez des feuilles d'érable dans le parc. Tu comptes 45 feuilles et ton ami compte 47 feuilles. Combien de feuilles avez-vous compté ensemble?",
     "choices": [
-      "75",
-      "77",
-      "67",
-      "72"
+      "82",
+      "92",
+      "102",
+      "110"
     ],
-    "answer": "77",
-    "hint": "Add the leaves she found on Monday and Tuesday together.",
+    "answer": "92",
+    "hint": "Add the number of leaves you each counted.",
     "steps": [
-      "Add 45 + 32",
-      "You get 77"
+      "Add 45 + 47",
+      "You get 92"
     ]
   },
   {
     "grade": 1,
-    "topic": "Coins",
-    "question": "Liam has 3 loonies and 4 quarters. How much money does he have?",
-    "questionFr": "Liam a 3 pièces de 1 dollar et 4 pièces de 25 cents. Combien d'argent a-t-il?",
-    "choices": [
-      "$3.75",
-      "$4.00",
-      "$4.25",
-      "$4.50"
-    ],
-    "answer": "$4.00",
-    "hint": "Calculate the value of the loonies and add the value of the quarters.",
-    "steps": [
-      "3 loonies equal $3",
-      "4 quarters equal $1, so $3 + $1 = $4"
-    ]
-  },
-  {
-    "grade": 1,
-    "topic": "Skip Counting",
-    "question": "Noah is arranging hockey pucks in lines of 5. If he has 4 lines of pucks, how many pucks does he have in total?",
-    "questionFr": "Noah arrange des rondelles de hockey en lignes de 5. S'il a 4 lignes de rondelles, combien de rondelles a-t-il au total?",
-    "choices": [
-      "15",
-      "20",
-      "25",
-      "30"
-    ],
-    "answer": "20",
-    "hint": "Count by 5s for each line.",
-    "steps": [
-      "Count each line: 5, 10, 15, 20",
-      "So, he has 20 pucks."
-    ]
-  },
-  {
-    "grade": 1,
-    "topic": "Adding",
-    "question": "Sophie picked 12 apples from one tree and 8 apples from another tree. How many apples did she pick in total?",
-    "questionFr": "Sophie a cueilli 12 pommes sur un arbre et 8 pommes sur un autre arbre. Combien de pommes a-t-elle cueillies au total?",
-    "choices": [
-      "18",
-      "20",
-      "21",
-      "22"
-    ],
-    "answer": "20",
-    "hint": "Add the apples from both trees together.",
-    "steps": [
-      "Add 12 + 8",
-      "You get 20"
-    ]
-  },
-  {
-    "grade": 1,
-    "topic": "Subtracting",
-    "question": "Ethan had 16 stickers and gave 9 to his friend. How many stickers does he have left?",
-    "questionFr": "Ethan avait 16 autocollants et en a donné 9 à son ami. Combien d'autocollants lui reste-t-il?",
+    "topic": "Addition & Subtraction",
+    "question": "Emma bought 12 hockey cards. She gave 5 to her brother. How many hockey cards does Emma have now?",
+    "questionFr": "Emma a acheté 12 cartes de hockey. Elle en a donné 5 à son frère. Combien de cartes de hockey Emma a-t-elle maintenant?",
     "choices": [
       "5",
       "6",
@@ -83,1000 +29,1072 @@
       "8"
     ],
     "answer": "7",
-    "hint": "Subtract the number of stickers he gave from the total stickers he had.",
+    "hint": "Subtract the number of cards given to her brother.",
     "steps": [
-      "Subtract 16 - 9",
-      "You get 7"
+      "Subtract 5 from 12",
+      "You have 7 cards left"
     ]
   },
   {
-    "grade": 2,
-    "topic": "Addition and Subtraction within 100",
-    "question": "Charlotte is buying stickers for $35. She pays with a $50 bill. How much change does she get back?",
-    "questionFr": "Charlotte achète des autocollants pour 35 $. Elle paie avec un billet de 50 $. Combien de monnaie reçoit-elle?",
+    "grade": 1,
+    "topic": "Skip Counting",
+    "question": "You are skip counting by 5s. If you start at 10, what number will you reach after four skips?",
+    "questionFr": "Tu comptes par 5. Si tu commences à 10, quel nombre atteindras-tu après quatre sauts?",
     "choices": [
-      "$10",
-      "$15",
-      "$5",
-      "$20"
+      "25",
+      "30",
+      "40",
+      "35"
     ],
-    "answer": "$15",
-    "hint": "Find the difference between what she pays and the cost.",
+    "answer": "30",
+    "hint": "Add 5 each time you skip.",
     "steps": [
-      "Subtract 35 from 50",
-      "You get 15"
+      "Start at 10, then count 15, 20, 25, 30",
+      "After four skips, you reach 30"
     ]
   },
   {
-    "grade": 2,
-    "topic": "Time",
-    "question": "Jack finishes his hockey practice at 4:00 p.m. His practice was 1 hour and a half long. What time did his practice start?",
-    "questionFr": "Jack termine son entraînement de hockey à 16h00. Son entraînement a duré 1 heure et demie. À quelle heure son entraînement a-t-il commencé?",
+    "grade": 1,
+    "topic": "Comparing Numbers",
+    "question": "You have 18 loonies and your sister has 25 loonies. Who has more loonies?",
+    "questionFr": "Tu as 18 pièces d'un dollar et ta sœur en a 25. Qui a le plus de pièces d'un dollar?",
     "choices": [
-      "2:30 p.m.",
-      "2:00 p.m.",
-      "3:00 p.m.",
-      "2:45 p.m."
+      "You have more",
+      "Your sister has more",
+      "You both have the same",
+      "None"
     ],
-    "answer": "2:30 p.m.",
-    "hint": "Subtract the duration of the practice from the end time.",
+    "answer": "Your sister has more",
+    "hint": "Compare the numbers 18 and 25.",
     "steps": [
-      "Subtract 1 hour from 4:00 p.m.",
-      "Subtract another 30 minutes to reach 2:30 p.m."
+      "Check which number is larger",
+      "25 is greater than 18"
+    ]
+  },
+  {
+    "grade": 1,
+    "topic": "Coins",
+    "question": "You found 2 loonies and 3 quarters under the couch. How much money is that?",
+    "questionFr": "Tu as trouvé 2 pièces d'un dollar et 3 pièces de 25 sous le canapé. Combien d'argent cela représente-t-il?",
+    "choices": [
+      "$2.75",
+      "$3.00",
+      "$3.25",
+      "$3.50"
+    ],
+    "answer": "$3.75",
+    "hint": "Add the value of 2 loonies and 3 quarters.",
+    "steps": [
+      "2 loonies is $2.00 and 3 quarters is $0.75",
+      "$2.00 + $0.75 = $2.75"
     ]
   },
   {
     "grade": 2,
-    "topic": "Length",
-    "question": "A maple syrup bottle is 20 cm tall. Liam stacked two bottles one on top of the other. How tall is the stack?",
-    "questionFr": "Une bouteille de sirop d'érable mesure 20 cm de haut. Liam a empilé deux bouteilles l'une sur l'autre. Quelle est la hauteur de la pile?",
+    "topic": "Addition & Subtraction",
+    "question": "Liam had 65 puzzle pieces. He lost 8 pieces. How many puzzle pieces does he have now?",
+    "questionFr": "Liam avait 65 pièces de puzzle. Il a perdu 8 pièces. Combien de pièces de puzzle a-t-il maintenant?",
     "choices": [
-      "40 cm",
+      "57",
+      "58",
+      "60",
+      "62"
+    ],
+    "answer": "57",
+    "hint": "Subtract the number of pieces he lost from the total he had.",
+    "steps": [
+      "65 - 8",
+      "You get 57 pieces remaining"
+    ]
+  },
+  {
+    "grade": 2,
+    "topic": "Time (Hour/Half-hour)",
+    "question": "Maria finished her homework at 6:30 PM. It took her 30 minutes to complete it. What time did she start?",
+    "questionFr": "Maria a terminé ses devoirs à 18h30. Ça lui a pris 30 minutes pour les terminer. À quelle heure a-t-elle commencé?",
+    "choices": [
+      "6:00 PM",
+      "5:30 PM",
+      "6:15 PM",
+      "6:45 PM"
+    ],
+    "answer": "6:00 PM",
+    "hint": "Subtract 30 minutes from 6:30 PM.",
+    "steps": [
+      "6:30 PM - 30 minutes",
+      "Ends up at 6:00 PM"
+    ]
+  },
+  {
+    "grade": 2,
+    "topic": "Measurement (Length)",
+    "question": "A fish that Alex caught was 35 cm long. His dad caught a fish that was 20 cm longer. How long was his dad's fish?",
+    "questionFr": "Un poisson qu'Alex a attrapé mesurait 35 cm de long. Son père a attrapé un poisson 20 cm plus long. Quelle longueur avait le poisson de son père?",
+    "choices": [
       "45 cm",
-      "35 cm",
-      "50 cm"
+      "55 cm",
+      "65 cm",
+      "75 cm"
     ],
-    "answer": "40 cm",
-    "hint": "Multiply the height of one bottle by the number of bottles.",
+    "answer": "55 cm",
+    "hint": "Add the extra length to Alex's fish.",
     "steps": [
-      "Multiply 20 cm by 2",
-      "You get 40 cm"
-    ]
-  },
-  {
-    "grade": 2,
-    "topic": "Counting Coins",
-    "question": "Sofia has 3 dimes, 2 nickels, and 5 pennies. How much money does she have?",
-    "questionFr": "Sofia a 3 pièces de 10 cents, 2 pièces de 5 cents et 5 pièces de 1 cent. Combien d'argent a-t-elle?",
-    "choices": [
-      "45 cents",
-      "55 cents",
-      "40 cents",
-      "35 cents"
-    ],
-    "answer": "45 cents",
-    "hint": "Calculate the total value of each type of coin and add them.",
-    "steps": [
-      "3 dimes equal 30 cents, 2 nickels equal 10 cents, 5 pennies equal 5 cents",
-      "Add them together: 30 + 10 + 5 = 45 cents"
+      "35 cm + 20 cm",
+      "The fish is 55 cm long"
     ]
   },
   {
     "grade": 2,
     "topic": "Patterns",
-    "question": "Samantha makes a pattern with colored beads: red, blue, red, blue. What color will the 10th bead be?",
-    "questionFr": "Samantha crée un motif avec des perles colorées : rouge, bleu, rouge, bleu. Quelle sera la couleur de la 10ème perle?",
+    "question": "In a repeating pattern of red, blue, red, green, what color will the 7th object be?",
+    "questionFr": "Dans un motif répétitif de rouge, bleu, rouge, vert, quelle sera la couleur du 7e objet?",
     "choices": [
       "Red",
       "Blue",
       "Green",
       "Yellow"
     ],
-    "answer": "Blue",
-    "hint": "Determine if the position is odd or even.",
+    "answer": "Red",
+    "hint": "Determine the cycle length of colors in the pattern.",
     "steps": [
-      "The pattern repeats every 2 beads.",
-      "Since 10 is even, the 10th bead is blue."
+      "Pattern is red, blue, red, green",
+      "7th is 'red' in 4-step pattern"
+    ]
+  },
+  {
+    "grade": 2,
+    "topic": "Counting Coins",
+    "question": "Jessica has 3 quarters, 5 dimes, and 2 nickels. How much money does she have?",
+    "questionFr": "Jessica a 3 pièces de 25 cents, 5 pièces de 10 cents, et 2 pièces de 5 cents. Combien d'argent a-t-elle?",
+    "choices": [
+      "$1.25",
+      "$1.50",
+      "$1.85",
+      "$2.00"
+    ],
+    "answer": "$1.25",
+    "hint": "Calculate the total value of each coin type and add them.",
+    "steps": [
+      "3 quarters = $0.75, 5 dimes = $0.50, 2 nickels = $0.10",
+      "$0.75 + $0.50 + $0.10 = $1.35"
     ]
   },
   {
     "grade": 3,
     "topic": "Multiplication",
-    "question": "A chef at Tim Hortons is arranging muffins in boxes. If each box holds 4 muffins and he has 5 boxes, how many muffins does he have?",
-    "questionFr": "Un chef de Tim Hortons range des muffins dans des boîtes. Si chaque boîte contient 4 muffins et qu'il a 5 boîtes, combien de muffins a-t-il?",
+    "question": "There are 4 boxes of hockey pucks, and each box contains 5 pucks. How many pucks are there in total?",
+    "questionFr": "Il y a 4 boîtes de rondelles de hockey, et chaque boîte contient 5 rondelles. Combien y a-t-il de rondelles au total?",
     "choices": [
+      "10",
+      "15",
       "20",
-      "18",
-      "22",
       "25"
     ],
     "answer": "20",
-    "hint": "Multiply the number of muffins per box by the number of boxes.",
+    "hint": "Multiply the number of boxes by the number of pucks in each.",
     "steps": [
-      "Multiply 4 muffins by 5 boxes",
-      "You get 20 muffins"
+      "4 times 5",
+      "Equals 20 pucks"
     ]
   },
   {
     "grade": 3,
     "topic": "Basic Division",
-    "question": "Maria has 12 candies and wants to share them equally among her 4 friends. How many candies will each friend get?",
-    "questionFr": "Maria a 12 bonbons et veut les partager également entre ses 4 amis. Combien de bonbons chaque ami recevra-t-il?",
+    "question": "Emma has 18 apples and she shares them equally between 3 friends. How many apples does each friend get?",
+    "questionFr": "Emma a 18 pommes et elle les partage également entre 3 amis. Combien de pommes chaque ami reçoit-il?",
     "choices": [
-      "3",
-      "4",
       "5",
-      "2"
+      "6",
+      "7",
+      "9"
     ],
-    "answer": "3",
-    "hint": "Divide the total number of candies by the number of friends.",
+    "answer": "6",
+    "hint": "Divide the total number of apples by the friends.",
     "steps": [
-      "12 candies divided by 4 friends",
-      "Each friend gets 3 candies"
+      "18 divided by 3",
+      "Each friend gets 6 apples"
     ]
   },
   {
     "grade": 3,
     "topic": "Fractions",
-    "question": "Oliver is sharing a chocolate bar equally with his 2 friends. What fraction of the chocolate bar does each person get?",
-    "questionFr": "Oliver partage une barre de chocolat également avec ses 2 amis. Quelle fraction de la barre de chocolat chaque personne reçoit-elle?",
+    "question": "Chris ate 1/4 of his pizza and then ate another 1/4. What fraction of the pizza has Chris eaten?",
+    "questionFr": "Chris a mangé 1/4 de sa pizza et ensuite a mangé un autre 1/4. Quelle fraction de la pizza Chris a-t-il mangée?",
     "choices": [
-      "1/2",
-      "1/3",
       "1/4",
-      "1/5"
+      "2/4",
+      "1/2",
+      "3/4"
     ],
-    "answer": "1/3",
-    "hint": "Divide the chocolate bar into equal parts.",
+    "answer": "1/2",
+    "hint": "Add the two fractions of pizza.",
     "steps": [
-      "Divide 1 chocolate bar by 3 people",
-      "Each person gets 1/3 of the bar"
+      "1/4 + 1/4",
+      "Equals 2/4 or 1/2 of the pizza"
     ]
   },
   {
     "grade": 3,
     "topic": "Perimeter",
-    "question": "A rectangular hockey rink is 30 meters long and 15 meters wide. What is the perimeter of the rink?",
-    "questionFr": "Une patinoire rectangulaire fait 30 mètres de long et 15 mètres de large. Quel est le périmètre de la patinoire?",
+    "question": "A rectangular garden is 6 meters long and 4 meters wide. What is the perimeter of the garden?",
+    "questionFr": "Un jardin rectangulaire mesure 6 mètres de long et 4 mètres de large. Quel est le périmètre du jardin?",
     "choices": [
-      "90 meters",
-      "60 meters",
-      "75 meters",
-      "100 meters"
+      "20 m",
+      "18 m",
+      "24 m",
+      "30 m"
     ],
-    "answer": "90 meters",
-    "hint": "Add up all sides of the rectangle.",
+    "answer": "20 m",
+    "hint": "Add all the sides of the rectangle together.",
     "steps": [
-      "Calculate 2 lengths: 30 + 30 = 60",
-      "Calculate 2 widths: 15 + 15 = 30, then add: 60 + 30 = 90"
+      "6 + 4 + 6 + 4",
+      "Equals 20 meters"
     ]
   },
   {
     "grade": 3,
-    "topic": "Graphs",
-    "question": "During a camping trip, 4 kids spotted 2 birds each and recorded it on a tally chart. How many birds did they spot in total?",
-    "questionFr": "Lors d'un camping, 4 enfants ont vu 2 oiseaux chacun et l'ont noté sur un tableau à bâtons. Combien d'oiseaux ont-ils vus en tout?",
+    "topic": "Simple Graphs",
+    "question": "Jamie recorded the number of baskets scored in each hockey match. Match 1: 3 baskets, Match 2: 5 baskets, Match 3: 4 baskets. How many baskets in total did Jamie's team score?",
+    "questionFr": "Jamie a enregistré le nombre de paniers marqués à chaque match de hockey. Match 1: 3 paniers, Match 2: 5 paniers, Match 3: 4 paniers. Combien de paniers au total l'équipe de Jamie a-t-elle marqués?",
     "choices": [
-      "6",
-      "8",
+      "11",
+      "12",
       "10",
-      "12"
+      "9"
     ],
-    "answer": "8",
-    "hint": "Multiply the number of kids by the number of birds each saw.",
+    "answer": "12",
+    "hint": "Add up the baskets from all the matches.",
     "steps": [
-      "Each of 4 kids saw 2 birds: 4 x 2",
-      "You get 8 birds spotted"
+      "3 + 5 + 4",
+      "The total is 12 baskets"
     ]
   },
   {
     "grade": 4,
     "topic": "Times Tables",
-    "question": "Lucas reads 7 pages of a book each day. How many pages will he have read in 6 days?",
-    "questionFr": "Lucas lit 7 pages d'un livre chaque jour. Combien de pages aura-t-il lues en 6 jours?",
+    "question": "There are 8 teams in a hockey tournament. Each team plays 9 games. How many games are played in total?",
+    "questionFr": "Il y a 8 équipes dans un tournoi de hockey. Chaque équipe joue 9 matchs. Combien de matchs sont joués au total?",
     "choices": [
-      "42",
-      "48",
-      "36",
-      "40"
+      "64",
+      "72",
+      "81",
+      "90"
     ],
-    "answer": "42",
-    "hint": "Multiply the pages read per day by the number of days.",
+    "answer": "72",
+    "hint": "Multiply the number of teams by the number of games each plays.",
     "steps": [
-      "Multiply 7 pages by 6 days",
-      "You get 42 pages"
+      "8 times 9",
+      "Equals 72 games"
     ]
   },
   {
     "grade": 4,
     "topic": "Long Division",
-    "question": "A school bought 72 pencils and wants to divide them equally among 9 classes. How many pencils will each class get?",
-    "questionFr": "Une école a acheté 72 crayons et veut les diviser également entre 9 classes. Combien de crayons chaque classe recevra-t-elle?",
+    "question": "There are 54 pucks to be divided equally among 6 teams. How many pucks does each team get?",
+    "questionFr": "Il y a 54 rondelles à partager également entre 6 équipes. Combien de rondelles chaque équipe reçoit-elle?",
     "choices": [
-      "9",
+      "7",
       "8",
-      "10",
-      "12"
+      "9",
+      "10"
     ],
-    "answer": "8",
-    "hint": "Divide the total number of pencils by the number of classes.",
+    "answer": "9",
+    "hint": "Divide 54 by the number of teams.",
     "steps": [
-      "Divide 72 pencils by 9 classes",
-      "Each class gets 8 pencils"
+      "54 divided by 6",
+      "Each team gets 9 pucks"
     ]
   },
   {
     "grade": 4,
-    "topic": "Decimals",
-    "question": "Isabella has $5.75 and spends $2.25 on a toy. How much money does she have left?",
-    "questionFr": "Isabella a 5,75 $ et dépense 2,25 $ pour un jouet. Combien d'argent lui reste-t-il?",
+    "topic": "Decimal Place Value",
+    "question": "Sarah ran 5.2 kilometers, and then she ran another 2.8 kilometers. How many kilometers did she run in total?",
+    "questionFr": "Sarah a couru 5,2 kilomètres, puis a couru encore 2,8 kilomètres. Combien de kilomètres a-t-elle couru au total?",
     "choices": [
-      "$3.50",
-      "$3.00",
-      "$4.00",
-      "$3.25"
+      "7.0",
+      "8.0",
+      "7.8",
+      "8.2"
     ],
-    "answer": "$3.50",
-    "hint": "Subtract the amount spent from the total amount.",
+    "answer": "8.0",
+    "hint": "Add the decimal values carefully.",
     "steps": [
-      "Subtract $2.25 from $5.75",
-      "You get $3.50"
+      "5.2 + 2.8",
+      "Equals 8.0 kilometers"
     ]
   },
   {
     "grade": 4,
-    "topic": "Fractions",
-    "question": "A pizza is cut into 8 pieces. If Emma eats 3 pieces, what fraction of the pizza is left?",
-    "questionFr": "Une pizza est coupée en 8 parts. Si Emma mange 3 parts, quelle fraction de la pizza reste-t-il?",
+    "topic": "Comparing Fractions",
+    "question": "Michael has 3/8 of a chocolate bar, and Emily has 5/8 of a chocolate bar. Who has more chocolate?",
+    "questionFr": "Michael a 3/8 d'une tablette de chocolat, et Emily a 5/8 d'une tablette de chocolat. Qui a plus de chocolat?",
     "choices": [
-      "5/8",
-      "3/8",
-      "4/8",
-      "6/8"
+      "Michael",
+      "Emily",
+      "Same amount",
+      "Not enough information"
     ],
-    "answer": "5/8",
-    "hint": "Subtract the fraction eaten from the whole pizza.",
+    "answer": "Emily",
+    "hint": "Compare the numerators of the fractions.",
     "steps": [
-      "If 3/8 is eaten, 8/8 - 3/8 = 5/8",
-      "So, 5/8 of the pizza is left"
+      "3/8 vs 5/8",
+      "5/8 is larger, so Emily has more"
     ]
   },
   {
     "grade": 4,
     "topic": "Area",
-    "question": "A rectangular garden is 12 meters long and 5 meters wide. What is the area of the garden?",
-    "questionFr": "Un jardin rectangulaire mesure 12 mètres de long et 5 mètres de large. Quelle est la surface du jardin?",
+    "question": "A playground is 15 meters long and 10 meters wide. What is the area of the playground?",
+    "questionFr": "Un terrain de jeu mesure 15 mètres de long et 10 mètres de large. Quelle est la superficie du terrain de jeu?",
     "choices": [
-      "60 square meters",
-      "50 square meters",
-      "45 square meters",
-      "55 square meters"
+      "115 m²",
+      "150 m²",
+      "125 m²",
+      "145 m²"
     ],
-    "answer": "60 square meters",
-    "hint": "Multiply the length by the width to find the area.",
+    "answer": "150 m²",
+    "hint": "Multiply the length by the width.",
     "steps": [
-      "Multiply 12 by 5",
-      "You get 60 square meters"
+      "15 times 10",
+      "Equals 150 square meters"
     ]
   },
   {
     "grade": 5,
-    "topic": "Multi-digit Multiplication",
-    "question": "A classroom has 24 tables, and each table has 6 chairs. How many chairs are there in total?",
-    "questionFr": "Une salle de classe a 24 tables, et chaque table a 6 chaises. Combien y a-t-il de chaises au total?",
+    "topic": "Multiplying Multi-Digit Numbers",
+    "question": "A school ordered 145 boxes of markers. Each box contains 12 markers. How many markers did the school order in total?",
+    "questionFr": "Une école a commandé 145 boîtes de marqueurs. Chaque boîte contient 12 marqueurs. Combien de marqueurs l'école a-t-elle commandés au total?",
     "choices": [
-      "144",
-      "120",
-      "150",
-      "130"
+      "1690",
+      "1740",
+      "1780",
+      "1810"
     ],
-    "answer": "144",
-    "hint": "Multiply the number of tables by the number of chairs per table.",
+    "answer": "1740",
+    "hint": "Multiply the number of boxes by the number of markers per box.",
     "steps": [
-      "Multiply 24 by 6",
-      "You get 144"
+      "145 times 12",
+      "Equals 1740 markers"
+    ]
+  },
+  {
+    "grade": 5,
+    "topic": "Dividing Multi-Digit Numbers",
+    "question": "There are 825 hockey pucks to be distributed equally among 25 teams. How many pucks does each team get?",
+    "questionFr": "Il y a 825 rondelles de hockey à distribuer également entre 25 équipes. Combien de rondelles chaque équipe reçoit-elle?",
+    "choices": [
+      "31",
+      "32",
+      "33",
+      "34"
+    ],
+    "answer": "33",
+    "hint": "Divide the total number of pucks by the number of teams.",
+    "steps": [
+      "825 divided by 25",
+      "Each team gets 33 pucks"
     ]
   },
   {
     "grade": 5,
     "topic": "Fractions with Like Denominators",
-    "question": "Liam had 5/8 of a chocolate bar. He gave 2/8 to his friend. How much chocolate does he have left?",
-    "questionFr": "Liam avait 5/8 d'une barre de chocolat. Il a donné 2/8 à son ami. Combien de chocolat lui reste-t-il?",
+    "question": "A recipe needs 2/3 cup of sugar and 4/3 cup of flour. How much total mixture is needed?",
+    "questionFr": "Une recette nécessite 2/3 de tasse de sucre et 4/3 de tasse de farine. De combien de mélange total a-t-on besoin?",
     "choices": [
-      "3/8",
-      "2/8",
-      "4/8",
-      "1/8"
+      "2 cups",
+      "1 cup",
+      "3 cups",
+      "2.5 cups"
     ],
-    "answer": "3/8",
-    "hint": "Subtract the fractions since they have the same denominator.",
+    "answer": "2 cups",
+    "hint": "Add the fractions with the same denominator.",
     "steps": [
-      "Subtract 2/8 from 5/8",
-      "You get 3/8"
+      "(2/3) + (4/3)",
+      "Equals (6/3) = 2 cups"
     ]
   },
   {
     "grade": 5,
     "topic": "Decimal Operations",
-    "question": "Ella buys a notebook for $3.25 and a pen for $1.75. How much does she spend in total?",
-    "questionFr": "Ella achète un cahier à 3,25 $ et un stylo à 1,75 $. Combien dépense-t-elle au total?",
+    "question": "Emma bought a book for $7.95 and a pen for $1.50. How much did she spend in total?",
+    "questionFr": "Emma a acheté un livre pour 7,95 $ et un stylo pour 1,50 $. Combien a-t-elle dépensé au total?",
     "choices": [
-      "$5.00",
-      "$4.95",
-      "$4.75",
-      "$5.25"
+      "9.45",
+      "9.35",
+      "9.55",
+      "9.40"
     ],
-    "answer": "$5.00",
-    "hint": "Add the cost of both items together.",
+    "answer": "9.45",
+    "hint": "Add the prices of the book and pen.",
     "steps": [
-      "Add $3.25 and $1.75",
-      "You get $5.00"
+      "7.95 + 1.50",
+      "Equals $9.45"
     ]
   },
   {
     "grade": 5,
-    "topic": "Intro to Percent",
-    "question": "Sophie scored 80% on her math test. If the test was out of 50 points, how many points did she score?",
-    "questionFr": "Sophie a obtenu 80 % à son test de mathématiques. Si le test était sur 50 points, combien de points a-t-elle obtenus?",
+    "topic": "Percent Introduction",
+    "question": "If a hockey stick is on sale at 20% off its regular price of $75, how much is the discount?",
+    "questionFr": "Si une crosse de hockey est en solde à 20 % de réduction sur son prix régulier de 75 $, quel est le montant de la réduction?",
     "choices": [
-      "40",
-      "45",
-      "35",
-      "50"
+      "$10",
+      "$12",
+      "$15",
+      "$18"
     ],
-    "answer": "40",
-    "hint": "Calculate 80% of 50.",
+    "answer": "$15",
+    "hint": "Calculate 20% of the stick's price.",
     "steps": [
-      "80% of 50 is 0.8 x 50",
-      "You get 40 points"
+      "(20/100) × 75",
+      "Equals $15 discount"
     ]
   },
   {
     "grade": 5,
     "topic": "Volume",
-    "question": "A box is 3 meters long, 2 meters wide, and 4 meters high. What is its volume?",
-    "questionFr": "Une boîte mesure 3 mètres de long, 2 mètres de large et 4 mètres de haut. Quel est son volume?",
+    "question": "A rectangular box is 6 cm long, 4 cm wide, and 3 cm high. What is the volume of the box?",
+    "questionFr": "Une boîte rectangulaire mesure 6 cm de long, 4 cm de large, et 3 cm de haut. Quel est le volume de la boîte?",
     "choices": [
-      "24 cubic meters",
-      "30 cubic meters",
-      "28 cubic meters",
-      "26 cubic meters"
+      "72 cm³",
+      "64 cm³",
+      "48 cm³",
+      "52 cm³"
     ],
-    "answer": "24 cubic meters",
-    "hint": "Multiply length by width by height.",
+    "answer": "72 cm³",
+    "hint": "Multiply length, width, and height together.",
     "steps": [
-      "Multiply 3 by 2 by 4",
-      "You get 24 cubic meters"
+      "6 × 4 × 3",
+      "Equals 72 cm³"
     ]
   },
   {
     "grade": 6,
     "topic": "Fraction Multiplication",
-    "question": "Noah made 3/4 of a cake, and his friend ate 1/2 of it. What fraction of the entire cake did his friend eat?",
-    "questionFr": "Noah a fait 3/4 d'un gâteau, et son ami en a mangé la moitié. Quelle fraction du gâteau entier son ami a-t-il mangé?",
+    "question": "If you multiply 2/3 of a cup of syrup by 3, how much syrup do you have?",
+    "questionFr": "Si tu multiplies 2/3 de tasse de sirop par 3, combien de sirop as-tu?",
     "choices": [
-      "3/8",
-      "5/8",
-      "1/8",
-      "1/4"
+      "2 cups",
+      "1 cup",
+      "3 cups",
+      "4 cups"
     ],
-    "answer": "3/8",
-    "hint": "Multiply the fractions together.",
+    "answer": "2 cups",
+    "hint": "Multiply the fraction by the whole number.",
     "steps": [
-      "Multiply 3/4 by 1/2",
-      "You get 3/8"
+      "(2/3) × 3",
+      "Equals 2 cups"
     ]
   },
   {
     "grade": 6,
     "topic": "Ratios and Rates",
-    "question": "The recipe requires 4 cups of flour for every 2 cups of sugar. If you have 10 cups of flour, how much sugar do you need?",
-    "questionFr": "La recette nécessite 4 tasses de farine pour 2 tasses de sucre. Si vous avez 10 tasses de farine, combien de sucre vous faut-il?",
+    "question": "There are 4 boys and 6 girls in a class. What is the ratio of boys to girls?",
+    "questionFr": "Il y a 4 garçons et 6 filles dans une classe. Quel est le rapport de garçons à filles?",
     "choices": [
-      "5 cups",
-      "4 cups",
-      "3 cups",
-      "6 cups"
+      "2:3",
+      "1:2",
+      "4:6",
+      "3:2"
     ],
-    "answer": "5 cups",
-    "hint": "Use the ratio to find the corresponding amount of sugar.",
+    "answer": "2:3",
+    "hint": "Simplify the ratio 4:6.",
     "steps": [
-      "Set up the ratio: 4/2 = 10/x",
-      "Solving gives x = 5"
+      "4/6 simplifies to 2/3",
+      "The ratio is 2:3"
     ]
   },
   {
     "grade": 6,
     "topic": "Percent of a Number",
-    "question": "What is 30% of $200?",
-    "questionFr": "Quel est 30 % de 200 $?",
+    "question": "What is 25% of 80 loonies?",
+    "questionFr": "Quel est 25 % de 80 pièces d'un dollar?",
     "choices": [
-      "$60",
-      "$50",
-      "$70",
-      "$90"
+      "15",
+      "20",
+      "25",
+      "30"
     ],
-    "answer": "$60",
-    "hint": "Calculate 30% of the amount by setting up a multiplication.",
+    "answer": "20",
+    "hint": "Convert the percentage to a fraction or decimal first.",
     "steps": [
-      "30% of 200 is 0.3 x 200",
-      "You get $60"
+      "(25/100) × 80",
+      "Equals 20 loonies"
     ]
   },
   {
     "grade": 6,
-    "topic": "Intro to Integers",
-    "question": "The temperature in Calgary was -5 degrees. If the temperature increases by 8 degrees, what is the new temperature?",
-    "questionFr": "La température à Calgary était de -5 degrés. Si la température augmente de 8 degrés, quelle est la nouvelle température?",
+    "topic": "Integers Introduction",
+    "question": "At the hockey game, the temperature was -5°C outside and then dropped another 3°C. What is the new temperature?",
+    "questionFr": "Au match de hockey, la température était de -5°C à l'extérieur puis a chuté de 3°C supplémentaires. Quelle est la nouvelle température?",
     "choices": [
-      "3 degrees",
-      "2 degrees",
-      "1 degree",
-      "-3 degrees"
+      "-8°C",
+      "-7°C",
+      "-6°C",
+      "-5°C"
     ],
-    "answer": "3 degrees",
-    "hint": "Add the temperature increase to the initial temperature.",
+    "answer": "-8°C",
+    "hint": "Subtract 3 from -5.",
     "steps": [
-      "-5 + 8",
-      "You get 3"
+      "-5 - 3",
+      "Equals -8°C"
     ]
   },
   {
     "grade": 6,
-    "topic": "Algebra Intro",
-    "question": "If x + 4 = 10, what is the value of x?",
-    "questionFr": "Si x + 4 = 10, quelle est la valeur de x?",
+    "topic": "BEDMAS",
+    "question": "Calculate 5 + (3 × 2) - 4.",
+    "questionFr": "Calcule 5 + (3 × 2) - 4.",
     "choices": [
+      "5",
       "6",
-      "4",
       "7",
-      "5"
+      "8"
     ],
-    "answer": "6",
-    "hint": "Subtract 4 from both sides to solve for x.",
+    "answer": "7",
+    "hint": "Remember to do the multiplication first.",
     "steps": [
-      "Subtract 4 from 10",
-      "You get x = 6"
+      "3 × 2 = 6",
+      "Then 5 + 6 - 4 = 7"
     ]
   },
   {
     "grade": 7,
     "topic": "Integer Operations",
-    "question": "On a ski trip, the temperature at the top of the mountain was -7 degrees and rose by 5 degrees. What was the temperature?",
-    "questionFr": "Lors d'un voyage de ski, la température au sommet de la montagne était de -7 degrés et a augmenté de 5 degrés. Quelle était la température?",
+    "question": "If you lose 5 points in a game and then gain 8 points, what is your total score change?",
+    "questionFr": "Si tu perds 5 points dans un jeu et gagnes ensuite 8 points, quel est le changement total de ton score?",
     "choices": [
-      "-2 degrees",
-      "2 degrees",
-      "0 degrees",
-      "-1 degree"
+      "3",
+      "2",
+      "1",
+      "4"
     ],
-    "answer": "-2 degrees",
-    "hint": "Add the temperature increase to the starting temperature.",
+    "answer": "3",
+    "hint": "Consider the net change of losing and gaining points.",
     "steps": [
-      "-7 + 5",
-      "You get -2"
+      "Lose 5 equals -5",
+      "Then gain 8: -5 + 8 = 3"
     ]
   },
   {
     "grade": 7,
-    "topic": "Fractions and Decimals",
+    "topic": "Fraction and Decimal Fluency",
     "question": "Convert 3/4 to a decimal.",
-    "questionFr": "Convertissez 3/4 en décimal.",
+    "questionFr": "Convertis 3/4 en un nombre décimal.",
     "choices": [
       "0.75",
-      "0.25",
-      "0.5",
-      "0.65"
+      "0.7",
+      "0.8",
+      "0.85"
     ],
     "answer": "0.75",
     "hint": "Divide the numerator by the denominator.",
     "steps": [
       "3 divided by 4",
-      "You get 0.75"
+      "Equals 0.75"
     ]
   },
   {
     "grade": 7,
     "topic": "Percent Problems",
-    "question": "A hockey stick costs $70, and it is on sale for 20% off. What is the new price?",
-    "questionFr": "Un bâton de hockey coûte 70 $, et il est en vente avec 20 % de réduction. Quel est le nouveau prix?",
+    "question": "A shirt costs $40 and is on sale for 20% off. What is the sale price?",
+    "questionFr": "Un chemise coûte 40 $ et est en solde à 20 % de réduction. Quel est le prix en solde?",
     "choices": [
-      "$56",
-      "$60",
-      "$50",
-      "$55"
+      "$32",
+      "$34",
+      "$36",
+      "$38"
     ],
-    "answer": "$56",
-    "hint": "Calculate 20% of the original price and subtract it.",
+    "answer": "$32",
+    "hint": "Calculate 20% of the original price, then subtract it.",
     "steps": [
-      "20% of 70 is $14",
-      "Subtract $14 from $70 to get $56"
+      "20% of 40 is 8",
+      "40 - 8 = $32"
     ]
   },
   {
     "grade": 7,
-    "topic": "One-step Equations",
-    "question": "Solve for y: y - 3 = 7",
-    "questionFr": "Résolvez pour y : y - 3 = 7",
+    "topic": "One-Step Equations",
+    "question": "Solve for x: x + 5 = 12.",
+    "questionFr": "Résous pour x: x + 5 = 12.",
     "choices": [
-      "10",
-      "9",
-      "8",
-      "7"
+      "5",
+      "6",
+      "7",
+      "8"
     ],
-    "answer": "10",
-    "hint": "Add 3 to both sides.",
+    "answer": "7",
+    "hint": "Subtract to isolate x.",
     "steps": [
-      "Add 3 to 7",
-      "You get y = 10"
+      "x + 5 = 12",
+      "Subtracting 5 gives x = 7"
     ]
   },
   {
     "grade": 7,
-    "topic": "Probability",
-    "question": "If you roll a standard 6-sided die, what is the probability of rolling a 4?",
-    "questionFr": "Si vous lancez un dé à 6 faces standard, quelle est la probabilité d'obtenir un 4?",
+    "topic": "Surface Area",
+    "question": "A cube has sides of length 4 cm. What is its surface area?",
+    "questionFr": "Un cube a des côtés de 4 cm de long. Quelle est sa surface?",
     "choices": [
-      "1/6",
-      "1/4",
-      "1/3",
-      "1/5"
+      "48 cm²",
+      "64 cm²",
+      "96 cm²",
+      "80 cm²"
     ],
-    "answer": "1/6",
-    "hint": "Think about the total number of outcomes.",
+    "answer": "96 cm²",
+    "hint": "Surface area of a cube is 6 times one face's area.",
     "steps": [
-      "There is one 4 and six sides total",
-      "Thus, the probability is 1/6"
+      "Area of one face = 4 × 4 = 16",
+      "Surface area = 6 × 16 = 96 cm²"
     ]
   },
   {
     "grade": 8,
-    "topic": "Two-step Equations",
-    "question": "Solve for x: 2x + 3 = 11",
-    "questionFr": "Résolvez pour x : 2x + 3 = 11",
+    "topic": "Two-Step Equations",
+    "question": "Solve for y: 3y - 4 = 11.",
+    "questionFr": "Résous pour y: 3y - 4 = 11.",
     "choices": [
-      "4",
       "3",
+      "4",
       "5",
       "6"
     ],
-    "answer": "4",
-    "hint": "First, undo the addition, then deal with the multiplication.",
+    "answer": "5",
+    "hint": "Add 4 to both sides first, then divide.",
     "steps": [
-      "Subtract 3 from 11",
-      "Divide 8 by 2 to get x = 4"
+      "3y - 4 = 11",
+      "Add 4 to get 3y = 15, then divide by 3"
     ]
   },
   {
     "grade": 8,
     "topic": "Square Roots",
-    "question": "Find the square root of 49.",
-    "questionFr": "Trouvez la racine carrée de 49.",
+    "question": "What is the square root of 81?",
+    "questionFr": "Quelle est la racine carrée de 81?",
     "choices": [
       "7",
       "8",
-      "6",
-      "5"
+      "9",
+      "10"
     ],
-    "answer": "7",
-    "hint": "What number times itself equals 49?",
+    "answer": "9",
+    "hint": "Think of a number which multiplies by itself to give 81.",
     "steps": [
-      "Think of 7 x 7 = 49",
-      "Thus, the square root is 7"
+      "9 times 9",
+      "Equals 81, so square root of 81 is 9"
     ]
   },
   {
     "grade": 8,
     "topic": "Pythagorean Theorem",
-    "question": "A right triangle has legs of 6 meters and 8 meters. What is the length of the hypotenuse?",
-    "questionFr": "Un triangle rectangle a des côtés de 6 mètres et 8 mètres. Quelle est la longueur de l'hypoténuse?",
+    "question": "A right triangle has legs of length 6 cm and 8 cm. What is the length of the hypotenuse?",
+    "questionFr": "Un triangle rectangle a des côtés de 6 cm et 8 cm. Quelle est la longueur de l'hypoténuse?",
     "choices": [
-      "10 meters",
-      "9 meters",
-      "11 meters",
-      "12 meters"
+      "8 cm",
+      "9 cm",
+      "10 cm",
+      "11 cm"
     ],
-    "answer": "10 meters",
-    "hint": "Use the Pythagorean theorem: a² + b² = c².",
+    "answer": "10 cm",
+    "hint": "Use the Pythagorean theorem formula a² + b² = c².",
     "steps": [
-      "Calculate 6² + 8²",
-      "Solve c² = 100, leading to c = 10"
+      "6² + 8² = 36 + 64 = 100",
+      "Square root of 100 is 10"
     ]
   },
   {
     "grade": 8,
     "topic": "Percent Increase/Decrease",
-    "question": "The price of a jacket increased from $50 to $65. What is the percent increase?",
-    "questionFr": "Le prix d'une veste est passé de 50 $ à 65 $. Quelle est la pourcentage d'augmentation?",
+    "question": "A family buys a canoe for $400 and sells it for $480. What is the percent increase?",
+    "questionFr": "Une famille achète un canoë pour 400 $ et le vend pour 480 $. Quel est le pourcentage d'augmentation?",
     "choices": [
-      "30%",
+      "15%",
       "20%",
       "25%",
-      "35%"
+      "10%"
     ],
-    "answer": "30%",
-    "hint": "Find the difference, then divide by the original price and convert to a percentage.",
+    "answer": "20%",
+    "hint": "Calculate the difference and compare it to the original price.",
     "steps": [
-      "Difference is $65 - $50 = $15",
-      "Divide $15 by $50, then multiply by 100 to get 30%"
+      "Difference in price is 80",
+      "80/400 times 100 equals 20%"
     ]
   },
   {
     "grade": 8,
     "topic": "Slope",
-    "question": "What is the slope of a line that passes through points (1, 2) and (3, 8)?",
-    "questionFr": "Quelle est la pente d'une droite qui passe par les points (1, 2) et (3, 8) ?",
+    "question": "What is the slope of a line that rises 3 units for every 2 units it runs?",
+    "questionFr": "Quel est la pente d'une ligne qui monte de 3 unités pour chaque 2 unités parcourues?",
     "choices": [
-      "3",
+      "1.5",
       "2",
-      "4",
-      "5"
+      "2.5",
+      "3"
     ],
-    "answer": "3",
-    "hint": "Use the slope formula: (y2 - y1) / (x2 - x1).",
+    "answer": "1.5",
+    "hint": "Slope is rise over run.",
     "steps": [
-      "Calculate (8 - 2) / (3 - 1)",
-      "Result is 6 / 2 = 3"
+      "Slope = rise/run",
+      "Slope = 3/2 = 1.5"
     ]
   },
   {
     "grade": 9,
-    "topic": "Linear Equations",
-    "question": "A cell phone plan has a base fee of $20 and charges $0.05 per text. How much is the total bill for 100 texts?",
-    "questionFr": "Un forfait de téléphone cellulaire a un frais de base de 20 $ et facture 0,05 $ par texte. Quel est le montant total de la facture pour 100 textes ?",
+    "topic": "Linear Equations/Inequalities",
+    "question": "Solve for x in linear equation 2x + 3 = 11.",
+    "questionFr": "Résous pour x dans l'équation linéaire 2x + 3 = 11.",
     "choices": [
-      "$25",
-      "$24",
-      "$22",
-      "$30"
+      "3",
+      "4",
+      "5",
+      "6"
     ],
-    "answer": "$25",
-    "hint": "Calculate the cost of texts and add to the base fee.",
+    "answer": "4",
+    "hint": "Subtract 3 and divide by 2.",
     "steps": [
-      "100 texts cost $5 (100 x $0.05)",
-      "Add $5 to the $20 base fee for a total of $25"
+      "2x + 3 = 11",
+      "2x = 8, x = 4"
     ]
   },
   {
     "grade": 9,
     "topic": "Polynomials",
-    "question": "Expand the expression (x + 3)(x - 2).",
-    "questionFr": "Développez l'expression (x + 3)(x - 2).",
+    "question": "What is the result of (x + 2)(x + 3)?",
+    "questionFr": "Quel est le résultat de (x + 2)(x + 3)?",
     "choices": [
-      "x² + x - 6",
-      "x² + x + 6",
-      "x² + 5x - 6",
-      "x² - 5x - 6"
+      "x² + 5x + 5",
+      "x² + 5x + 6",
+      "x² + 6x + 6",
+      "x² + 4x + 6"
     ],
-    "answer": "x² + x - 6",
-    "hint": "Use the distributive property (FOIL).",
+    "answer": "x² + 5x + 6",
+    "hint": "Use FOIL method for multiplication.",
     "steps": [
-      "Multiply x by x and x by -2",
-      "Add the results to 3x and -6"
+      "First: x*x, Outer: x*3, Inner: 2*x, Last: 2*3",
+      "x² + 3x + 2x + 6 = x² + 5x + 6"
     ]
   },
   {
     "grade": 9,
     "topic": "Graphing Lines",
-    "question": "What is the y-intercept of the line y = 2x + 3?",
-    "questionFr": "Quel est l'ordonnée à l'origine de la ligne y = 2x + 3 ?",
+    "question": "What is the y-intercept of the line given by the equation y = 2x + 5?",
+    "questionFr": "Quel est l'ordonnée à l'origine de la ligne donnée par l'équation y = 2x + 5?",
     "choices": [
-      "3",
       "2",
-      "5",
-      "1"
+      "3",
+      "4",
+      "5"
     ],
-    "answer": "3",
-    "hint": "Identify the constant term in the equation.",
+    "answer": "5",
+    "hint": "Find the constant term in the equation.",
     "steps": [
-      "In y = mx + b, b is the y-intercept",
-      "Here, b = 3"
+      "Equation in y = mx + b form",
+      "b = 5"
     ]
   },
   {
     "grade": 9,
     "topic": "Similar Triangles",
-    "question": "If two triangles are similar and the sides of the first triangle are 3 cm, 4 cm, and 5 cm, while the longest side of the second triangle is 10 cm, what is the shortest side of the second triangle?",
-    "questionFr": "Si deux triangles sont similaires et que les côtés du premier triangle mesurent 3 cm, 4 cm et 5 cm, tandis que le plus long côté du deuxième triangle est de 10 cm, quel est le plus court côté du deuxième triangle?",
+    "question": "If triangle ABC is similar to triangle DEF and the sides of ABC are 4, 5, and 6, find the side length of DEF that corresponds to 4 if DEF's corresponding side is 8.",
+    "questionFr": "Si le triangle ABC est similaire au triangle DEF et que les côtés d'ABC sont de 4, 5 et 6, trouve la longueur de côté de DEF qui correspond à 4 si le côté correspondant de DEF est 8.",
     "choices": [
-      "6 cm",
-      "4 cm",
-      "8 cm",
-      "5 cm"
+      "10",
+      "12",
+      "14",
+      "8"
     ],
-    "answer": "6 cm",
-    "hint": "Set up a proportion based on the similarity.",
+    "answer": "8",
+    "hint": "Use the property of similar triangles.",
     "steps": [
-      "Ratio of longest sides 5/10 = 1/2",
-      "Apply to shortest side: 3 * 2 = 6"
+      "Ratio of sides 4/8",
+      "Equal corresponding side is 8"
     ]
   },
   {
     "grade": 9,
-    "topic": "Intro to Trigonometry",
-    "question": "In a right triangle, one angle is 30 degrees and the hypotenuse is 10 cm. What is the length of the side opposite the 30-degree angle?",
-    "questionFr": "Dans un triangle rectangle, un angle est de 30 degrés et l'hypoténuse mesure 10 cm. Quelle est la longueur du côté opposé à l'angle de 30 degrés?",
+    "topic": "Trigonometry Introduction",
+    "question": "A right triangle has an angle of 30°, and its adjacent side is 10 cm long. What is the hypotenuse length?",
+    "questionFr": "Un triangle rectangle a un angle de 30°, et son côté adjacent mesure 10 cm de long. Quelle est la longueur de l'hypoténuse?",
     "choices": [
-      "5 cm",
-      "10 cm",
-      "7 cm",
-      "8 cm"
+      "15 cm",
+      "20 cm",
+      "30 cm",
+      "10 cm"
     ],
-    "answer": "5 cm",
-    "hint": "Use the sine function for a 30-degree angle.",
+    "answer": "20 cm",
+    "hint": "Use the cosine function for the angle.",
     "steps": [
-      "sin(30) = 0.5",
-      "0.5 * hypotenuse (10 cm) = 5 cm"
+      "cos(30°) = adjacent/hypotenuse",
+      "Hypotenuse = 10 / cos(30°) = 20 cm"
     ]
   },
   {
     "grade": 10,
     "topic": "Quadratics",
-    "question": "Solve for the roots of the equation x² - 4x - 5 = 0.",
-    "questionFr": "Trouvez les racines de l'équation x² - 4x - 5 = 0.",
+    "question": "Solve the quadratic equation x² - 5x + 6 = 0.",
+    "questionFr": "Résous l'équation quadratique x² - 5x + 6 = 0.",
     "choices": [
-      "5, -1",
-      "1, -5",
-      "2, -3",
-      "3, -2"
+      "x = 2, x = 3",
+      "x = 1, x = 6",
+      "x = 2, x = -3",
+      "x = 1, x = 5"
     ],
-    "answer": "5, -1",
-    "hint": "Factor the quadratic equation.",
+    "answer": "x = 2, x = 3",
+    "hint": "Factorize the quadratic expression.",
     "steps": [
-      "Set up (x - 5)(x + 1) = 0",
-      "Solve for x: x = 5, x = -1"
+      "x² - 5x + 6 factors to (x-2)(x-3)",
+      "Set each factor to zero to solve: x=2, x=3"
     ]
   },
   {
     "grade": 10,
     "topic": "Systems of Equations",
-    "question": "Solve the system: y = 2x + 1 and y = -x + 4.",
-    "questionFr": "Résolvez le système : y = 2x + 1 et y = -x + 4.",
+    "question": "Solve the system: y = 2x + 3 and y = x + 5.",
+    "questionFr": "Résous le système: y = 2x + 3 et y = x + 5.",
     "choices": [
-      "(1, 3)",
-      "(2, 5)",
-      "(1, 0)",
-      "(2, 4)"
+      "x = 1, y = 5",
+      "x = 2, y = 7",
+      "x = 3, y = 9",
+      "x = -1, y = 3"
     ],
-    "answer": "(1, 3)",
-    "hint": "Set the equations equal to find x.",
+    "answer": "x = 2, y = 7",
+    "hint": "Set the equations equal to each other to find x.",
     "steps": [
-      "2x + 1 = -x + 4",
-      "Add x to both sides and solve for x: x = 1"
+      "2x + 3 = x + 5",
+      "x = 2, then substitute into either equation to find y = 7"
     ]
   },
   {
     "grade": 10,
     "topic": "Circle Geometry",
-    "question": "What is the circumference of a circle with a radius of 7 cm?",
-    "questionFr": "Quelle est la circonférence d'un cercle avec un rayon de 7 cm ?",
+    "question": "The radius of a circle is 7 cm. What is the circumference?",
+    "questionFr": "Le rayon d'un cercle est de 7 cm. Quelle est la circonférence?",
     "choices": [
       "44 cm",
-      "49 cm",
-      "43 cm",
-      "45 cm"
+      "42 cm",
+      "48 cm",
+      "50 cm"
     ],
     "answer": "44 cm",
-    "hint": "Use the formula for circumference: 2πr.",
+    "hint": "Use the formula 2πr for circumference.",
     "steps": [
-      "Calculate 2 * π * 7",
-      "You get approximately 44 cm"
+      "2π7",
+      "Equals 44 cm when using π ≈ 3.14"
     ]
   },
   {
     "grade": 10,
     "topic": "Trigonometry",
-    "question": "In a right-angled triangle, the adjacent side to an angle is 5 cm and the hypotenuse is 13 cm. What is the cosine of the angle?",
-    "questionFr": "Dans un triangle rectangle, le côté adjacent à un angle mesure 5 cm et l'hypoténuse mesure 13 cm. Quelle est la cosinus de l'angle ?",
+    "question": "In a right triangle, if the opposite side to angle θ is 5 and the hypotenuse is 13, what is sin(θ)?",
+    "questionFr": "Dans un triangle rectangle, si le côté opposé à l'angle θ est 5 et l'hypoténuse est 13, quel est sin(θ)?",
     "choices": [
-      "0.38",
-      "0.39",
-      "0.42",
-      "0.40"
+      "5/12",
+      "5/13",
+      "12/5",
+      "13/5"
     ],
-    "answer": "0.38",
-    "hint": "Use the definition of cosine: adjacent/hypotenuse.",
+    "answer": "5/13",
+    "hint": "Sin is opposite over hypotenuse.",
     "steps": [
-      "Cosine = 5 / 13",
-      "Calculate to get approximately 0.38"
+      "Opposite = 5, Hypotenuse = 13",
+      "sin(θ) = 5/13"
     ]
   },
   {
     "grade": 10,
-    "topic": "3D Shapes",
-    "question": "Find the volume of a cylinder with a radius of 3 cm and height of 10 cm.",
-    "questionFr": "Trouvez le volume d'un cylindre avec un rayon de 3 cm et une hauteur de 10 cm.",
+    "topic": "Surface Area & Volume of 3D Shapes",
+    "question": "What is the volume of a cylinder with a radius of 3 cm and a height of 10 cm?",
+    "questionFr": "Quel est le volume d'un cylindre avec un rayon de 3 cm et une hauteur de 10 cm?",
     "choices": [
-      "282.6 cm³",
-      "270.6 cm³",
-      "280 cm³",
-      "300 cm³"
+      "282 cm³",
+      "300 cm³",
+      "500 cm³",
+      "270 cm³"
     ],
-    "answer": "282.6 cm³",
-    "hint": "Use the formula for volume: V = πr²h.",
+    "answer": "282 cm³",
+    "hint": "Use the volume formula V = πr²h.",
     "steps": [
-      "Calculate π * (3²) * 10",
-      "You get approximately 282.6 cm³"
+      "π × 3² × 10",
+      "Approx equals to 282 cm³ using π ≈ 3.14"
     ]
   },
   {
     "grade": 11,
     "topic": "Functions",
-    "question": "A function f(x) = 3x - 4 is evaluated for x = 5. What is the value of f(x)?",
-    "questionFr": "Une fonction f(x) = 3x - 4 est évaluée pour x = 5. Quelle est la valeur de f(x) ?",
+    "question": "If f(x) = 2x + 3, what is f(4)?",
+    "questionFr": "Si f(x) = 2x + 3, quel est f(4)?",
     "choices": [
+      "9",
+      "10",
       "11",
-      "15",
-      "12",
-      "14"
+      "12"
     ],
     "answer": "11",
-    "hint": "Plug x = 5 into the function.",
+    "hint": "Substitute 4 for x in the function.",
     "steps": [
-      "Calculate 3(5) - 4",
-      "You get 11"
+      "f(4) = 2(4) + 3",
+      "Equals 11"
     ]
   },
   {
     "grade": 11,
     "topic": "Logarithms",
-    "question": "Solve for x: log₂(x) = 3.",
-    "questionFr": "Résolvez pour x : log₂(x) = 3.",
+    "question": "Solve log₂(8) = x.",
+    "questionFr": "Résous log₂(8) = x.",
     "choices": [
-      "8",
-      "9",
-      "7",
-      "6"
+      "2",
+      "3",
+      "4",
+      "5"
     ],
-    "answer": "8",
-    "hint": "Convert the logarithm into exponential form.",
+    "answer": "3",
+    "hint": "2 raised to what power equals 8?",
     "steps": [
-      "x = 2³",
-      "So, x = 8"
+      "2³ = 8",
+      "Thus, log₂(8) = 3"
     ]
   },
   {
     "grade": 11,
-    "topic": "Sequences",
-    "question": "What is the fourth term in the arithmetic sequence: 5, 9, 13, ...?",
-    "questionFr": "Quel est le quatrième terme de la séquence arithmétique : 5, 9, 13, ...?",
+    "topic": "Sequences & Series",
+    "question": "What is the 5th term of the sequence 2, 4, 6, 8, ...?",
+    "questionFr": "Quel est le 5e terme de la séquence 2, 4, 6, 8, ...?",
     "choices": [
-      "17",
-      "18",
-      "16",
-      "15"
+      "9",
+      "10",
+      "11",
+      "12"
     ],
-    "answer": "17",
-    "hint": "Find the common difference and apply it to the sequence.",
+    "answer": "10",
+    "hint": "Find the pattern or difference in the sequence.",
     "steps": [
-      "The common difference is 4",
-      "Add 4 to 13 to get 17"
+      "The sequence increases by 2 each time",
+      "The 5th term is 2 + 4(2) = 10"
     ]
   },
   {
     "grade": 11,
     "topic": "Financial Math",
-    "question": "If a savings account is compounded annually at a rate of 5%, how much will $1000 grow to in 3 years?",
-    "questionFr": "Si un compte d'épargne est composé annuellement à un taux de 5 %, combien 1000 $ deviendront-ils en 3 ans ?",
+    "question": "If $500 is invested at an interest rate of 5% per annum simple interest, what is the total amount after 3 years?",
+    "questionFr": "Si 500 $ sont investis à un taux d'intérêt de 5 % par an, intérêt simple, quel est le montant total après 3 ans?",
     "choices": [
-      "$1157.62",
-      "$1150",
-      "$1125",
-      "$1135"
+      "$575",
+      "$600",
+      "$625",
+      "$650"
     ],
-    "answer": "$1157.62",
-    "hint": "Use the compound interest formula: A = P(1 + r/n)^(nt).",
+    "answer": "$575",
+    "hint": "Use the formula for simple interest: I = PRT.",
     "steps": [
-      "A = 1000(1 + 0.05)^3",
-      "Calculate to get approximately $1157.62"
+      "I = 500 × 0.05 × 3",
+      "500 + 75 = $575"
     ]
   },
   {
     "grade": 11,
     "topic": "Trigonometric Identities",
-    "question": "Simplify the expression: cos²(θ) + sin²(θ).",
-    "questionFr": "Simplifiez l'expression : cos²(θ) + sin²(θ).",
+    "question": "Verify the identity: sin²θ + cos²θ = 1 for θ = 30°.",
+    "questionFr": "Vérifie l'identité: sin²θ + cos²θ = 1 pour θ = 30°.",
     "choices": [
       "1",
       "0",
-      "sin(θ)",
-      "cos(θ)"
+      "1/2",
+      "√3/2"
     ],
     "answer": "1",
-    "hint": "Recall the Pythagorean identity for trigonometry.",
+    "hint": "Calculate sin 30° and cos 30°, then apply identity.",
     "steps": [
-      "The identity states cos²(θ) + sin²(θ) = 1",
-      "Thus, the simplified form is 1"
+      "sin 30° = 1/2, cos 30° = √3/2",
+      "(1/2)² + (√3/2)² = 1"
     ]
   },
   {
     "grade": 12,
     "topic": "Advanced Functions",
-    "question": "Find f'(x) if f(x) = x³ - 5x² + 4x - 2.",
-    "questionFr": "Trouver f'(x) si f(x) = x³ - 5x² + 4x - 2.",
+    "question": "If f(x) = x² + 2x and g(x) = x - 3, find (f ∘ g)(x).",
+    "questionFr": "Si f(x) = x² + 2x et g(x) = x - 3, trouve (f ∘ g)(x).",
     "choices": [
-      "3x² - 10x + 4",
-      "2x³ - 10x² + 4",
-      "3x² + 4",
-      "x² - 5x + 4"
+      "x² - 6x + 9",
+      "x² - 4x + 3",
+      "x² - 2x + 6",
+      "x² + 6x + 9"
     ],
-    "answer": "3x² - 10x + 4",
-    "hint": "Differentiate each term of the function.",
+    "answer": "x² - 4x + 3",
+    "hint": "Find f(g(x)) by substituting g(x) into f(x).",
     "steps": [
-      "Derivative of x³ is 3x²",
-      "Derivative of -5x² is -10x, and derivative of 4x is 4"
+      "Replace x in f(x) to form f(x-3)",
+      "Calculate (x-3)² + 2(x-3) = x² - 4x + 9"
     ]
   },
   {
     "grade": 12,
-    "topic": "Derivatives Intro",
-    "question": "Find the derivative of the function g(x) = 2x² + 3x.",
-    "questionFr": "Trouver la dérivée de la fonction g(x) = 2x² + 3x.",
+    "topic": "Introduction to Derivatives",
+    "question": "If f(x) = x², what is the derivative f'(x)?",
+    "questionFr": "Si f(x) = x², quelle est la dérivée f'(x)?",
     "choices": [
-      "4x + 3",
-      "4x + 5",
-      "2x + 3",
-      "2x + 5"
+      "2x",
+      "x",
+      "x²",
+      "0"
     ],
-    "answer": "4x + 3",
-    "hint": "Apply the power rule to differentiate each term.",
+    "answer": "2x",
+    "hint": "Use the power rule for differentiation.",
     "steps": [
-      "Derivative of 2x² is 4x",
-      "Derivative of 3x is 3"
+      "f(x) = x² has a power of 2",
+      "Derivative is 2x"
     ]
   },
   {
     "grade": 12,
-    "topic": "Combinations",
-    "question": "How many ways can you choose 3 toppings from a list of 5 at a pizza place?",
-    "questionFr": "Combien de façons pouvez-vous choisir 3 garnitures parmi une liste de 5 dans une pizzeria ?",
+    "topic": "Combinations & Permutations",
+    "question": "In how many ways can 3 students be selected from a class of 10?",
+    "questionFr": "De combien de façons peut-on sélectionner 3 étudiants parmi 10 dans une classe?",
     "choices": [
-      "10",
-      "5",
-      "20",
-      "15"
+      "120",
+      "45",
+      "80",
+      "100"
     ],
-    "answer": "10",
-    "hint": "Use the combination formula: nCr = n! / (r!(n-r)!)",
+    "answer": "45",
+    "hint": "Use the combinations formula nCr.",
     "steps": [
-      "Calculate 5! / (3! x 2!)",
-      "Simplify to get 10"
+      "10C3 = 10!/(3!(10-3)!)",
+      "Equals 120/4 = 45"
     ]
   },
   {
     "grade": 12,
     "topic": "Vectors",
-    "question": "Find the magnitude of the vector v = (3, 4).",
-    "questionFr": "Trouvez la magnitude du vecteur v = (3, 4).",
+    "question": "What is the magnitude of vector v = (3, 4)?",
+    "questionFr": "Quelle est la magnitude du vecteur v = (3, 4)?",
     "choices": [
       "5",
-      "7",
       "6",
-      "4"
+      "4",
+      "7"
     ],
     "answer": "5",
-    "hint": "Use the formula for magnitude: √(x² + y²).",
+    "hint": "Use the Pythagorean theorem for magnitudes.",
     "steps": [
-      "Calculate √(3² + 4²)",
-      "You get magnitude 5"
+      "√(3² + 4²)",
+      "√(9 + 16) = √25 = 5"
     ]
   },
   {
     "grade": 12,
     "topic": "Probability Distributions",
-    "question": "If a fair coin is flipped 4 times, what is the probability of getting exactly 2 heads?",
-    "questionFr": "Si une pièce équilibrée est lancée 4 fois, quelle est la probabilité d'obtenir exactement 2 faces ?",
+    "question": "If a die is rolled, what is the probability of rolling an odd number?",
+    "questionFr": "Si on lance un dé, quelle est la probabilité de faire un nombre impair?",
     "choices": [
-      "0.375",
-      "0.25",
-      "0.5",
-      "0.625"
+      "1/3",
+      "1/2",
+      "1/4",
+      "2/3"
     ],
-    "answer": "0.375",
-    "hint": "Use the binomial probability formula.",
+    "answer": "1/2",
+    "hint": "Count the number of odd numbers on a die.",
     "steps": [
-      "Probability = 4C2 * (0.5)^2 * (0.5)^2",
-      "Calculate the result to get 0.375"
+      "Odd numbers: 1, 3, 5 = 3",
+      "Probability is 3 out of 6 = 1/2"
     ]
   }
 ]
