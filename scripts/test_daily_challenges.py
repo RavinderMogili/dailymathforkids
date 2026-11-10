@@ -81,11 +81,13 @@ class DailyChallengesTest(unittest.TestCase):
 
         with unittest.mock.patch.object(gen_site, 'OpenAI', FailingOpenAI), \
              unittest.mock.patch.dict('os.environ', {'OPENAI_API_KEY': 'key'}), \
+             unittest.mock.patch.object(gen_site, '_local_llm_reachable', return_value=False), \
              unittest.mock.patch.object(gen_site, 'call_gemini_llm', return_value='generated'):
             self.assertEqual(gen_site.call_llm('prompt'), 'generated')
 
     def test_gemini_can_generate_when_openai_is_absent(self):
         with unittest.mock.patch.dict('os.environ', {'OPENAI_API_KEY': '', 'GEMINI_API_KEY': 'key'}), \
+             unittest.mock.patch.object(gen_site, '_local_llm_reachable', return_value=False), \
              unittest.mock.patch.object(gen_site, 'call_gemini_llm', return_value='generated'):
             self.assertEqual(gen_site.call_llm('prompt'), 'generated')
 
