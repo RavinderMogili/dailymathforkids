@@ -1,7 +1,10 @@
 name: Daily Math
 on:
-  schedule:
-    - cron: "0 8 * * *"    # 08:00 UTC = 5:00 AM Moncton (ADT, summer)
+  # Schedule disabled 2026-11-10: daily quizzes are generated locally with
+  # Qwen (free) and pushed by the laptop's Task Scheduler job instead of
+  # paid OpenAI/Gemini calls. Re-enable the cron lines to restore API runs.
+  # schedule:
+  #   - cron: "0 8 * * *"    # 08:00 UTC = 5:00 AM Moncton (ADT, summer)
   workflow_dispatch: {}
 
 jobs:
