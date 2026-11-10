@@ -30,7 +30,7 @@ def parse_questions_from_md(md_text):
     """Parse questions from the raw markdown text."""
     questions = []
     # Split by grade sections
-    grade_pattern = re.compile(r'## (G\d+)\n(.*?)(?=\n## |\Z)', re.DOTALL)
+    grade_pattern = re.compile(r'## (G\d+)[^\S\n]*\n(.*?)(?=\n## |\Z)', re.DOTALL)
 
     for match in grade_pattern.finditer(md_text):
         grade = match.group(1)

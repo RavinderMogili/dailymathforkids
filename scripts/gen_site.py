@@ -1,4 +1,5 @@
 import os, pathlib, datetime, sys, re, json
+from daily_challenges import inject_daily_challenges, render_challenge_diagrams
 
 try:
     import markdown2
@@ -21,6 +22,11 @@ DAILY_DIR.mkdir(parents=True, exist_ok=True)
 
 TITLE       = os.getenv("SITE_TITLE", "Daily Math for Kids")
 PUBLIC_API  = os.getenv("PUBLIC_API_BASE", "https://dailymathforkids-api.vercel.app").rstrip("/")
+
+# Local llama.cpp server (free generation — see D:\LocalAI\llama\Start-Qwen.bat).
+# Preferred over paid providers whenever it is reachable; set LOCAL_LLM=0 to disable.
+LOCAL_LLM_URL   = os.getenv("LOCAL_LLM_URL", "http://127.0.0.1:8080/v1").rstrip("/")
+LOCAL_LLM_MODEL = os.getenv("LOCAL_LLM_MODEL", "Qwen3-8B-Q4_K_M").strip()
 GRADE_CODES = ["G1","G2","G3","G4","G5","G6","G7","G8","G9","G10","G11","G12"]
 
 # Phase 3 — mix curated GSM8K pool questions into the daily quiz.
@@ -35,6 +41,8 @@ HELPERS_JS = r"""
 <script>
 (function enhanceProblems() {
   document.querySelectorAll('.problems-list > li').forEach(li => {
+    const diagram = li.querySelector('svg.challenge-diagram');
+    if (diagram) diagram.remove();
     const text = li.innerText;
     const en      = (text.match(/EN:\s*([\s\S]*?)(?=\n\s*FR:)/i)       || [])[1]?.trim() || '';
     const fr      = (text.match(/FR:\s*([\s\S]*?)(?=\n\s*Choices:)/i)  || [])[1]?.trim() || '';
@@ -100,6 +108,8 @@ HELPERS_JS = r"""
 
     const ptsLabel = difficulty === 'hard' ? '3 pts' : difficulty === 'medium' ? '2 pts' : '1 pt';
     li.innerHTML = titleHtml + ' <span style="font-size:.75rem;color:var(--muted)">' + ptsLabel + '</span>' + '<p style="margin:6px 0 4px">' + (en || '') + '</p>' + choicesHtml;
+
+    if (diagram) li.insertBefore(diagram, li.querySelector('.mc-options'));
 
     li.querySelectorAll('.mc-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -262,7 +272,7 @@ def auto_fix_answers(text):
 
 def replace_grade_section(text, code, new_content):
     """Replace the content of a single '## {code}' section in the full markdown text."""
-    pattern = rf'(## {re.escape(code)}\n).*?(?=\n## |\Z)'
+    pattern = rf'(## {re.escape(code)}[^\S\n]*\n).*?(?=\n## |\Z)'
     cleaned = new_content.strip() + '\n'
     new_text, n = re.subn(pattern, lambda m: m.group(1) + cleaned, text, count=1, flags=re.DOTALL)
     return new_text if n else text
@@ -292,6 +302,43 @@ def review_and_fix_quiz(text, max_rounds=1):
         print(f"INFO: Review pass round {round_num} — found {len(errors)} error(s) in grades {affected_grades}. Requesting fixes...")
 
         grade_sections = parse_grade_sections(text)
+
+        if _local_llm_reachable():
+            # The local context window can't hold all 12 sections — fix one grade per call.
+            fixed_any = False
+            for g in affected_grades:
+                g_issues = "\n".join(f"- {i.grade} Q{i.qnum}: {i.msg}" for i in errors if i.grade == g)
+                g_prompt = f"""You previously generated math problems for a kids' quiz site. A validator found
+mistakes in the {g} section below. Fix ONLY the problems mentioned in the issues; keep everything else
+(format, other problems) unchanged. Output EXACTLY the same markdown format: the '## {g}' header,
+same number of problems, each keeping its [Easy]/[Medium]/[Hard] tag, EN/FR lines, Choices
+(two-space separated, e.g. "A) 5  B) 6"), Hint, Steps, and exactly ONE Answer line whose value is
+the verbatim text of the correct choice (never include the choice letter).
+
+ISSUES FOUND:
+{g_issues}
+
+CURRENT SECTION TO FIX:
+## {g}
+{grade_sections.get(g, '')}
+
+Output ONLY the corrected '## {g}' section, nothing else — no explanations."""
+
+                fixed = call_local_llm(g_prompt)
+                if not fixed:
+                    print(f"WARN: Review pass — local LLM returned no fix for {g}.")
+                    continue
+                fixed = _normalize_llm_markdown(auto_fix_answers(fixed))
+                sec = parse_grade_sections(fixed).get(g, "")
+                if sec:
+                    text = replace_grade_section(text, g, sec)
+                    fixed_any = True
+                else:
+                    print(f"WARN: Review pass — could not parse fixed section for {g}.")
+            if not fixed_any:
+                return text
+            continue
+
         issue_lines = "\n".join(f"- {i.grade} Q{i.qnum}: {i.msg}" for i in errors[:30])
         sections_text = "\n\n".join(f"## {g}\n{grade_sections.get(g, '')}" for g in affected_grades)
 
@@ -341,7 +388,7 @@ Output ONLY the corrected '## {{GRADE}}' section(s), nothing else — no explana
 def parse_grade_sections(text):
     sections = {}
     for code in GRADE_CODES:
-        m = re.search(rf'## {re.escape(code)}\n(.*?)(?=\n## |\Z)', text, re.DOTALL)
+        m = re.search(rf'## {re.escape(code)}[^\S\n]*\n(.*?)(?=\n## |\Z)', text, re.DOTALL)
         if m:
             sections[code] = m.group(1).strip()
     return sections
@@ -543,77 +590,238 @@ def upsert_quiz_to_supabase(quiz_id, questions, answers):
         print(f"WARN: Could not save quiz {quiz_id}: {e}")
 
 
-def call_llm(prompt):
-    """Call OpenAI gpt-4o for main generation."""
+def _local_llm_reachable(timeout=2):
+    """Fast TCP probe so paid providers are skipped only when the local server is up."""
+    if os.getenv("LOCAL_LLM", "1").strip().lower() in ("0", "false", "off"):
+        return False
+    try:
+        import socket, urllib.parse
+        u = urllib.parse.urlparse(LOCAL_LLM_URL)
+        with socket.create_connection((u.hostname or "127.0.0.1", u.port or 80), timeout=timeout):
+            return True
+    except Exception:
+        return False
+
+
+def call_local_llm(prompt):
+    """Call the local llama.cpp OpenAI-compatible server for free generation."""
+    if not (OpenAI and _local_llm_reachable()):
+        return None
+    try:
+        print(f"INFO: Using local LLM {LOCAL_LLM_MODEL} at {LOCAL_LLM_URL}.")
+        client = OpenAI(base_url=LOCAL_LLM_URL, api_key="local", timeout=600, max_retries=1)
+        resp = client.chat.completions.create(
+            model=LOCAL_LLM_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=8192,
+        )
+        text = (resp.choices[0].message.content or "").strip()
+        if text:
+            return text
+        print("WARN: Local LLM returned empty text.")
+    except Exception as e:
+        print(f"WARN: Local LLM call failed ({e}).")
+    return None
+
+
+def call_gemini_llm(prompt):
+    """Call Gemini for generation or lower-cost secondary tasks."""
+    gemini_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    gemini_model = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash").strip() or "gemini-3.5-flash"
+    if not (genai and gemini_key):
+        return None
+    try:
+        print(f"INFO: Using Gemini {gemini_model} for LLM generation.")
+        client = genai.Client(api_key=gemini_key)
+        last_error = None
+        for attempt in range(1, 4):
+            try:
+                resp = client.models.generate_content(
+                    model=gemini_model,
+                    contents=prompt,
+                )
+                text = (getattr(resp, "text", None) or "").strip()
+                if text:
+                    return text
+                print(f"WARN: Gemini returned empty text (attempt {attempt}).")
+            except Exception as e:
+                last_error = e
+                msg = str(e)
+                if "UNAVAILABLE" in msg or "503" in msg:
+                    print(f"WARN: Gemini overloaded (attempt {attempt}) — retrying...")
+                    import time
+                    time.sleep(2 * attempt)
+                    continue
+                raise
+        print(f"WARN: Gemini failed after retries ({last_error}).")
+    except Exception as e:
+        print(f"WARN: Gemini call failed ({e}).")
+    return None
+
+
+def call_llm(prompt, allow_gemini_fallback=True):
+    """Call the local LLM if reachable, else OpenAI gpt-4o with Gemini as backup."""
+    text = call_local_llm(prompt)
+    if text:
+        return text
     openai_key = os.environ.get("OPENAI_API_KEY", "").strip()
 
     if OpenAI and openai_key:
-        print("INFO: Using OpenAI gpt-4o for generation.")
-        os.environ["OPENAI_API_KEY"] = openai_key
-        client = OpenAI(timeout=600, max_retries=2)
-        resp = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=16384,
-        )
-        return resp.choices[0].message.content.strip()
-    else:
-        return None
+        try:
+            print("INFO: Using OpenAI gpt-4o for generation.")
+            os.environ["OPENAI_API_KEY"] = openai_key
+            client = OpenAI(timeout=600, max_retries=2)
+            resp = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=16384,
+            )
+            return resp.choices[0].message.content.strip()
+        except Exception as e:
+            msg = str(e)
+            recoverable = "insufficient_quota" in msg or "credit_balance_exhausted" in msg or getattr(e, "status_code", None) == 429
+            if not (allow_gemini_fallback and recoverable):
+                raise
+            print(f"WARN: OpenAI generation unavailable ({e}) — trying Gemini.")
+            return call_gemini_llm(prompt)
+    if allow_gemini_fallback:
+        return call_gemini_llm(prompt)
+    return None
 
 
 def call_free_llm(prompt):
-    """Free/cheap LLM for secondary tasks: review, translation, titles.
-
-    Uses Gemini if GEMINI_API_KEY is set, otherwise falls back to call_llm().
-    This lets the main generation stay on OpenAI while the review
-    pass and GSM8K French translation run on Gemini's free tier."""
-    gemini_key = os.environ.get("GEMINI_API_KEY", "").strip()
-    gemini_model = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash").strip() or "gemini-3.5-flash"
-    if genai and gemini_key:
-        try:
-            print(f"INFO: Using Gemini {gemini_model} for free LLM task (review/translation).")
-            client = genai.Client(api_key=gemini_key)
-            last_error = None
-            for attempt in range(1, 4):
-                try:
-                    resp = client.models.generate_content(
-                        model=gemini_model,
-                        contents=prompt,
-                    )
-                    text = (getattr(resp, "text", None) or "").strip()
-                    if text:
-                        return text
-                    print(f"WARN: Gemini returned empty text (attempt {attempt}).")
-                except Exception as e:
-                    last_error = e
-                    msg = str(e)
-                    if "UNAVAILABLE" in msg or "503" in msg:
-                        print(f"WARN: Gemini overloaded (attempt {attempt}) — retrying...")
-                        import time
-                        time.sleep(2 * attempt)
-                        continue
-                    raise
-            print(f"WARN: Gemini failed after retries ({last_error}) — falling back to paid LLM.")
-        except Exception as e:
-            print(f"WARN: Gemini call failed ({e}) — falling back to paid LLM.")
-    # Fallback to the paid provider if Gemini isn't configured or failed.
-    return call_llm(prompt)
+    """Free/cheap LLM for secondary tasks: review, translation, titles."""
+    text = call_local_llm(prompt) or call_gemini_llm(prompt)
+    return text if text else call_llm(prompt)
 
 
 def _require_llm_available(context):
-    """Confirm the OpenAI SDK imported successfully AND has a key.
-    Exits loudly (non-zero) instead of returning silently, so a broken
-    dependency or missing secret shows up as a failed CI run, not a quiet
-    no-op that looks identical to a normal day."""
+    """Confirm at least one configured LLM provider can generate the quiz."""
     openai_key = os.environ.get("OPENAI_API_KEY", "").strip()
-    if OpenAI and openai_key:
-        return openai_key
+    gemini_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    if _local_llm_reachable():
+        return "local"
+    if (OpenAI and openai_key) or (genai and gemini_key):
+        return openai_key or gemini_key
     if openai_key and not OpenAI:
         print(f"ERROR: {context}: OPENAI_API_KEY is set but the openai SDK failed to import "
               f"(likely a dependency version conflict, e.g. httpx/anyio).", file=sys.stderr)
+    elif gemini_key and not genai:
+        print(f"ERROR: {context}: GEMINI_API_KEY is set but the google-genai SDK failed to import.", file=sys.stderr)
     else:
-        print(f"ERROR: {context}: OPENAI_API_KEY is required for generation.", file=sys.stderr)
+        print(f"ERROR: {context}: no LLM available — start the local server "
+              f"(Start-Qwen.bat) or set OPENAI_API_KEY / GEMINI_API_KEY.", file=sys.stderr)
     sys.exit(1)
+
+
+def _normalize_llm_markdown(text):
+    """Repair systematic local-model deviations that don't need an LLM pass:
+    'Answer: B) 12' -> 'Answer: 12', comma-separated choices -> two-space separated,
+    trailing line whitespace -> stripped."""
+    text = re.sub(r'(-\s*Answer:\s*)[A-D]\)\s*', r'\1', text, flags=re.IGNORECASE)
+    text = re.sub(
+        r'(-\s*Choices:)([^\n]+)',
+        lambda m: m.group(1) + re.sub(r',\s*(?=[A-D]\))', '  ', m.group(2)),
+        text, flags=re.IGNORECASE)
+    return re.sub(r'[^\S\n]+\n', '\n', text)
+
+
+def _extract_grade_section(text, code):
+    """Pull a single '## Gx' block out of LLM output, tolerating stray text."""
+    m = re.search(rf'## {re.escape(code)}[^\S\n]*\n(.*?)(?=\n## |\Z)', text, re.DOTALL)
+    return m.group(0).strip() if m else ""
+
+
+def generate_daily_text_chunked(grade_curriculum, today, enc_theme, story_setting):
+    """Local-LLM path: generate one grade per call so output fits the context
+    window, then stitch sections into the same markdown the paid path produces.
+    Returns the assembled markdown text, or None if nothing generated."""
+    if not _local_llm_reachable():
+        return None
+
+    rules = """CRITICAL RULES — violations will break the quiz:
+
+1. ANSWER FORMATTING:
+   - The Answer field must be the EXACT FULL TEXT of the correct choice. Copy it verbatim.
+   - NEVER include the choice letter in Answer: write "Answer: 12", NOT "Answer: B) 12".
+   - NEVER strip units, abbreviate, or add trailing periods.
+   - The Answer line appears EXACTLY ONCE per problem, as its LAST line.
+   - NEVER write "Answer:" inside the Steps list.
+   - Choices line: separate options with TWO spaces (A) x  B) y) — never commas.
+
+2. MATH ACCURACY:
+   - Solve each problem yourself before writing the answer. Double-check the arithmetic.
+   - The correct answer MUST appear as exactly one of the four choices.
+   - All four choices must be plausible; no two choices start with the same number.
+   - Division problems must have whole-number results only.
+
+3. CONTENT:
+   - Match the curriculum for this grade. No topics above grade level.
+   - Canadian contexts: loonies/toonies, hockey, Tim Hortons, snowfall (cm), school supplies in CAD.
+   - Short, friendly, age-appropriate language. Both English and French.
+   - Hint: teach the METHOD using DIFFERENT numbers (never the problem's own numbers).
+   - Steps: worked example with DIFFERENT numbers — never solve the actual problem.
+   - Every EN/FR line must be a COMPLETE question ending with "?" or ".".
+
+OUTPUT RULES:
+- Output ONLY the '## {CODE}' section — no '# Daily Math' title, no other grades,
+  no preamble, no closing remarks, no markdown code fences.
+- Write each '## ' header with nothing after the grade code on the same line."""
+
+    fmt = """FORMAT (follow exactly):
+
+## {CODE}
+1. **[Easy] Title**
+   - EN: problem in English
+   - FR: same problem in French
+   - Choices: A) ...  B) ...  C) ...  D) ...
+   - Hint: one-line hint using different numbers
+   - Steps:
+     - step 1
+     - step 2
+   - Answer: [COPY exact text of correct choice]
+[...problems 2-10, same format]"""
+
+    sections = []
+    for code in GRADE_CODES:
+        prompt = f"""Create daily math problems for Canadian students, {code} only.
+Generate EXACTLY 10 problems for {code} (4 Easy, 4 Medium, 2 Hard), in that order.
+{grade_curriculum}
+
+{rules.format(CODE=code)}
+
+{fmt.format(CODE=code)}
+"""
+        block = ""
+        for attempt in range(1, 3):
+            raw = call_local_llm(prompt)
+            if raw:
+                block = _extract_grade_section(raw, code)
+            if block:
+                break
+            print(f"WARN: {code} attempt {attempt} produced no parseable section — retrying.")
+        if block:
+            sections.append(block)
+        else:
+            print(f"WARN: {code} could not be generated after retries.")
+
+    extra = call_local_llm(
+        "Write two short blocks for a kids' math site. Output EXACTLY this format, nothing else:\n\n"
+        "## Today's Encouragement\n"
+        "One cheerful sentence (10-16 words, English only). No emojis.\n"
+        f"Theme: {enc_theme}. Do NOT start with \"Every problem you...\".\n\n"
+        "## Mini Story of Kindness\n"
+        "A 3-4 sentence story about a child helping someone in Canada "
+        f"(English, Grade 3 reading level). Setting: {story_setting}."
+    )
+    if extra:
+        sections.append(extra.strip())
+
+    if not sections:
+        return None
+    text = f"# Daily Math - {today}\n\n" + "\n\n".join(sections)
+    # Normalize line endings: trailing spaces break section/answer parsing.
+    return re.sub(r'[^\S\n]+\n', '\n', text)
 
 
 def safe_generate_today():
@@ -796,10 +1004,17 @@ FINAL CHECK before outputting: Verify you have 12 grade sections (G1-G12), each 
 """
 
     try:
-        text = call_llm(prompt)
+        chunked = (_local_llm_reachable()
+                   and os.getenv("LOCAL_LLM_CHUNKED", "1").strip().lower() not in ("0", "false", "off"))
+        if chunked:
+            print("INFO: Local LLM detected — generating one grade per call to fit the context window.")
+            text = generate_daily_text_chunked(grade_curriculum, today, enc_theme, story_setting)
+        else:
+            text = call_llm(prompt)
         if not text:
             print("WARN: LLM returned empty text; skipping page write.")
             return
+        text = _normalize_llm_markdown(text)
 
         # Auto-fix common LLM answer issues before saving
         text = auto_fix_answers(text)
@@ -829,6 +1044,7 @@ FINAL CHECK before outputting: Verify you have 12 grade sections (G1-G12), each 
 
         # Phase 3: swap in curated GSM8K questions for grades 4-7
         text = inject_gsm8k_daily_questions(text, today)
+        text = inject_daily_challenges(text, today, _replace_item)
 
         md_path.write_text(text + "\n", encoding="utf-8")
 
@@ -865,6 +1081,7 @@ def generate_html_from_text(text, today):
         if not content:
             continue
         sec_html = markdown2.markdown(content, extras=["tables", "fenced-code-blocks"])
+        sec_html = render_challenge_diagrams(sec_html, int(code[1:]), today)
         sec_html = sec_html.replace('<ol>\n<li>', '<ol class="problems-list">\n<li>', 1)
         grade_num = code[1:]
         all_sections_html += (
@@ -1203,6 +1420,65 @@ RULES:
 - Make stories fun and relatable for Canadian kids
 - For grades 9-12, include real-world application problems (budgeting, sports stats, construction, cooking)
 """
+
+    def _pool_item_ok(q, grade):
+        return (isinstance(q, dict)
+                and str(q.get("answer")) in [str(c) for c in q.get("choices", [])]
+                and len(set(map(str, q.get("choices", [])))) == 4)
+
+    def _pool_grade_prompt(g):
+        return f"""Generate practice math questions for Canadian students — Grade {g} ONLY.
+{grade_curriculum}
+
+Generate exactly 5 questions for grade {g}. These must be:
+- WORD PROBLEMS with real-life Canadian contexts (hockey, maple syrup, loonies/toonies, Tim Hortons, camping, school)
+- Story-based and engaging for kids
+- Include both English question and French translation
+- Each question must have 4 unique multiple-choice answers
+- Include a hint (don't give away answer) and 2 solution steps
+
+Output a valid JSON array only (no markdown fences, no extra text). Format:
+[{{"grade": {g}, "topic": "...", "question": "...", "questionFr": "...",
+  "choices": ["3", "5", "7", "8"], "answer": "5",
+  "hint": "...", "steps": ["...", "..."]}}]
+
+RULES: "answer" must be the verbatim text of one choice (never the choice letter);
+different topics per question; age-appropriate language."""
+
+    chunked = (_local_llm_reachable()
+               and os.getenv("LOCAL_LLM_CHUNKED", "1").strip().lower() not in ("0", "false", "off"))
+    if chunked:
+        print("INFO: Local LLM detected — generating practice pool one grade per call.")
+        questions = []
+        for g in range(1, 13):
+            batch = None
+            for attempt in range(1, 3):
+                raw = call_local_llm(_pool_grade_prompt(g))
+                if not raw:
+                    continue
+                raw = re.sub(r'^```(?:json)?\s*', '', raw.strip())
+                raw = re.sub(r'\s*```$', '', raw)
+                try:
+                    parsed = json.loads(raw)
+                    if isinstance(parsed, list) and parsed:
+                        batch = parsed
+                        break
+                except json.JSONDecodeError:
+                    continue
+            if not batch:
+                print(f"WARN: practice pool — grade {g} produced no valid JSON after retries.")
+                continue
+            good = [q for q in batch if _pool_item_ok(q, g)]
+            dropped = len(batch) - len(good)
+            if dropped:
+                print(f"WARN: practice pool — dropped {dropped} invalid question(s) for grade {g}.")
+            questions.extend(good)
+        if questions:
+            pool_path.write_text(json.dumps(questions, indent=2, ensure_ascii=False), encoding="utf-8")
+            print(f"INFO: Generated practice pool with {len(questions)} questions → {pool_path}")
+        else:
+            print("WARN: Local practice pool generation produced nothing; keeping existing pool.")
+        return
 
     try:
         raw = call_llm(prompt)
