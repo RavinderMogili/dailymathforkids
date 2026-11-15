@@ -793,13 +793,15 @@ Generate EXACTLY 10 problems for {code} (4 Easy, 4 Medium, 2 Hard), in that orde
 {fmt.format(CODE=code)}
 """
         block = ""
-        for attempt in range(1, 3):
+        for attempt in range(1, 4):
             raw = call_local_llm(prompt)
-            if raw:
-                block = _extract_grade_section(raw, code)
-            if block:
+            cand = _extract_grade_section(raw, code) if raw else ""
+            n = len(re.findall(r'^\s*\d+\.', cand, re.M))
+            if n > len(re.findall(r'^\s*\d+\.', block, re.M)):
+                block = cand
+            if n >= 10:
                 break
-            print(f"WARN: {code} attempt {attempt} produced no parseable section — retrying.")
+            print(f"WARN: {code} attempt {attempt} produced {n}/10 questions — retrying.")
         if block:
             sections.append(block)
         else:
