@@ -31,6 +31,23 @@ def _choice_values(answer, rng):
         while len(values) < 4:
             values.add(value + len(values) + 2)
         choices = [str(v) for v in values]
+    elif re.fullmatch(r'\d+/\d+', answer):
+        num, den = (int(x) for x in answer.split('/'))
+        cands = [f'{den - num}/{den}' if den - num else None,
+                 f'{num}/{num}' if num != den else None,
+                 f'{den}/{num}',
+                 f'{max(1, num - 1)}/{den}' if num != 1 else f'{num}/{den + 1}',
+                 f'{num + 1}/{den}']
+        choices = [answer]
+        for c in cands:
+            if c and c != answer and len(choices) < 4:
+                choices.append(c)
+        extra = 1
+        while len(choices) < 4:
+            c = f'{num + extra}/{den + extra}'
+            if c != answer:
+                choices.append(c)
+            extra += 1
     else:
         choices = [answer]
         pool = ['Yes / oui', 'No / non', 'Left / gauche', 'Right / droite', 'A', 'B', 'C']
