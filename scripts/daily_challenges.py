@@ -121,6 +121,70 @@ def _bar_graph(items, label, ymax=None):
     return _svg(label, x + 10, base + 24, ''.join(parts))
 
 
+def _wheel(shaded, total, label):
+    """Single spinner: circle split into `total` equal sectors, first `shaded` grey."""
+    cx, cy, r = 70, 68, 48
+    parts = []
+    for i in range(total):
+        a0 = -math.pi / 2 + 2 * math.pi * i / total
+        a1 = a0 + 2 * math.pi / total
+        x0, y0 = cx + r * math.cos(a0), cy + r * math.sin(a0)
+        x1, y1 = cx + r * math.cos(a1), cy + r * math.sin(a1)
+        fill = '#94a3b8' if i < shaded else '#ffffff'
+        parts.append(f'<path d="M {cx},{cy} L {x0:.1f},{y0:.1f} A {r},{r} 0 0 1 {x1:.1f},{y1:.1f} Z" '
+                     f'fill="{fill}" stroke="#334155" stroke-width="1.4"/>')
+    parts.append(f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="#334155" stroke-width="2"/>')
+    parts.append(f'<polygon points="{cx},{cy - r - 2} {cx - 7},{cy - r - 16} {cx + 7},{cy - r - 16}" fill="#e11d48"/>')
+    return _svg(label, 2 * cx, 2 * cy + 12, ''.join(parts))
+
+
+def _wheels(specs, label):
+    """Row of small wheels labeled A, B, C, ... ; specs = [(shaded, total), ...]."""
+    r, cy = 34, 52
+    parts = []
+    for i, (sh, tot) in enumerate(specs):
+        cx = 50 + i * 110
+        for k in range(tot):
+            a0 = -math.pi / 2 + 2 * math.pi * k / tot
+            a1 = a0 + 2 * math.pi / tot
+            x0, y0 = cx + r * math.cos(a0), cy + r * math.sin(a0)
+            x1, y1 = cx + r * math.cos(a1), cy + r * math.sin(a1)
+            fill = '#94a3b8' if k < sh else '#ffffff'
+            parts.append(f'<path d="M {cx},{cy} L {x0:.1f},{y0:.1f} A {r},{r} 0 0 1 {x1:.1f},{y1:.1f} Z" '
+                         f'fill="{fill}" stroke="#334155" stroke-width="1.2"/>')
+        parts.append(f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="#334155" stroke-width="2"/>')
+        parts.append(f'<text x="{cx}" y="{cy + r + 20}" font-size="14" font-weight="bold" fill="#334155" '
+                     f'text-anchor="middle">{chr(65 + i)}</text>')
+    return _svg(label, 50 + (len(specs) - 1) * 110 + 50, cy + r + 30, ''.join(parts))
+
+
+def _hexagon(shaded, label):
+    """Regular hexagon split into 6 triangles through the centre; first `shaded` grey."""
+    cx, cy, r = 75, 64, 52
+    verts = [(cx + r * math.cos(-math.pi / 2 + math.pi * i / 3),
+              cy + r * math.sin(-math.pi / 2 + math.pi * i / 3)) for i in range(6)]
+    parts = []
+    for i in range(6):
+        x0, y0 = verts[i]
+        x1, y1 = verts[(i + 1) % 6]
+        fill = '#94a3b8' if i < shaded else '#ffffff'
+        parts.append(f'<polygon points="{cx},{cy} {x0:.1f},{y0:.1f} {x1:.1f},{y1:.1f}" '
+                     f'fill="{fill}" stroke="#334155" stroke-width="1.5"/>')
+    parts.append('<polygon points="' + ' '.join(f'{x:.1f},{y:.1f}' for x, y in verts)
+                 + '" fill="none" stroke="#334155" stroke-width="2"/>')
+    return _svg(label, 150, 130, ''.join(parts))
+
+
+def _yarn_balls(d1, d2, label):
+    """Two circles side by side labeled by diameter (yarn ball before/after)."""
+    r1, r2 = 42, 21
+    parts = [f'<circle cx="56" cy="62" r="{r1}" fill="#e2e8f0" stroke="#334155" stroke-width="2"/>',
+             f'<text x="56" y="{62 + r1 + 18}" font-size="13" fill="#334155" text-anchor="middle">{d1} cm</text>',
+             f'<circle cx="176" cy="{62 + r1 - r2}" r="{r2}" fill="#e2e8f0" stroke="#334155" stroke-width="2"/>',
+             f'<text x="176" y="{62 + r1 + 18}" font-size="13" fill="#334155" text-anchor="middle">{d2} cm</text>']
+    return _svg(label, 240, 132, ''.join(parts))
+
+
 def _choice_values(answer, rng):
     answer = str(answer)
     if answer.isdigit():
@@ -412,39 +476,127 @@ def make_challenge(grade, day, slot=0):
                 diagram = _data_table(['Month', 'Visitors'], [['June', f'{vals[0]:,}'], ['July', f'{vals[1]:,}'], ['August', f'{vals[2]:,}']], en)
     elif grade <= 10:
         if slot == 0:
-            seats = grade - 2
-            en = f'The row shows {seats} seats. In how many ways can you choose three seats so that no two chosen seats share a side?'
-            fr = f'La rangée montre {seats} places. De combien de façons peut-on en choisir trois sans que deux places choisies soient voisines ?'
-            answer = math.comb(seats - 2, 3)
-            hint = 'Reserve one empty seat in each required gap between chosen seats.'
-            steps = [f'After reserving the two gaps, choose 3 positions among {seats - 2}.', f'C({seats - 2}, 3) = {answer}.']
-            diagram = _grid(1, seats, en)
+            variant = rng.randint(0, 2)
+            if variant == 0:
+                seats = grade - 2
+                en = f'The row shows {seats} seats. In how many ways can you choose three seats so that no two chosen seats share a side?'
+                fr = f'La rangée montre {seats} places. De combien de façons peut-on en choisir trois sans que deux places choisies soient voisines ?'
+                answer = math.comb(seats - 2, 3)
+                hint = 'Reserve one empty seat in each required gap between chosen seats.'
+                steps = [f'After reserving the two gaps, choose 3 positions among {seats - 2}.', f'C({seats - 2}, 3) = {answer}.']
+                diagram = _grid(1, seats, en)
+            elif variant == 1:
+                radicand, div = rng.choice([(11, 3), (7, 2), (19, 2), (29, 3), (5, 2), (23, 4), (13, 3), (17, 2), (31, 5)])
+                v = math.sqrt(radicand) / div
+                lo = int(v)
+                en = f'The arrow marks the value of √{radicand} ÷ {div} on the number line. Between which two consecutive whole numbers does it lie?'
+                fr = f'La flèche marque la valeur de √{radicand} ÷ {div} sur la droite numérique. Entre quels deux nombres entiers consécutifs se situe-t-elle ?'
+                answer = f'{lo} and {lo + 1}'
+                pool = [f'{i} and {i + 1}' for i in range(4)]
+                choices = _text_choices(answer, pool, rng)
+                hint = 'Estimate the square root first, then divide.'
+                steps = [f'√{radicand} ≈ {math.sqrt(radicand):.2f}.',
+                         f'{math.sqrt(radicand):.2f} ÷ {div} ≈ {v:.2f}.',
+                         f'So the value lies between {lo} and {lo + 1}.']
+                hi_line = lo + 2
+                diagram = _number_line(0, hi_line, hi_line, v, en, tick_labels=set(range(hi_line + 1)))
+            else:
+                total = rng.choice([6, 8, 10, 12])
+                shaded = rng.randint(2, total - 2)
+                g = math.gcd(shaded, total)
+                en = 'The spinner is split into equal sectors. What is the probability it lands on a shaded sector? Give the simplest fraction.'
+                fr = 'La roue est divisée en secteurs égaux. Quelle est la probabilité qu’elle s’arrête sur un secteur gris ? Donne la fraction la plus simple.'
+                answer = f'{shaded // g}/{total // g}'
+                hint = 'Count shaded sectors out of all sectors, then simplify.'
+                steps = [f'There are {shaded} shaded sectors out of {total}.', f'{shaded}/{total} simplifies to {answer}.']
+                diagram = _wheel(shaded, total, en)
         else:
-            size = grade - 7
-            en = f'How many shortest routes go from bottom-left to top-right on this {size} by {size} grid using only right and up moves?'
-            fr = f'Combien de trajets les plus courts vont du coin inférieur gauche au coin supérieur droit sur cette grille de {size} sur {size}, seulement vers la droite ou vers le haut ?'
-            answer = math.comb(2 * size, size)
-            hint = 'Choose the positions of the up moves within the full route.'
-            steps = [f'Every route has {2 * size} moves and {size} of them are up.', f'C({2 * size}, {size}) = {answer}.']
-            diagram = _grid(size, size, en)
+            variant = rng.randint(0, 2)
+            if variant == 0:
+                size = grade - 7
+                en = f'How many shortest routes go from bottom-left to top-right on this {size} by {size} grid using only right and up moves?'
+                fr = f'Combien de trajets les plus courts vont du coin inférieur gauche au coin supérieur droit sur cette grille de {size} sur {size}, seulement vers la droite ou vers le haut ?'
+                answer = math.comb(2 * size, size)
+                hint = 'Choose the positions of the up moves within the full route.'
+                steps = [f'Every route has {2 * size} moves and {size} of them are up.', f'C({2 * size}, {size}) = {answer}.']
+                diagram = _grid(size, size, en)
+            elif variant == 1:
+                shaded = rng.randint(2, 5)
+                g = math.gcd(shaded, 6)
+                en = 'The regular hexagon is split into 6 equal triangles. What fraction of it is shaded? Give the simplest fraction.'
+                fr = 'L’hexagone régulier est divisé en 6 triangles égaux. Quelle fraction est grisée ? Donne la fraction la plus simple.'
+                answer = f'{shaded // g}/{6 // g}'
+                hint = 'All six triangles have the same area.'
+                steps = [f'There are {shaded} shaded triangles out of 6.', f'{shaded}/6 simplifies to {answer}.']
+                diagram = _hexagon(shaded, en)
+            else:
+                vals = sorted(rng.randint(1, 9) for _ in range(5))
+                mean_num = rng.randint(4, 7)
+                vals[-1] = mean_num * 5 - sum(vals[:4])
+                while vals[-1] <= 0 or vals[-1] > 12:
+                    vals = sorted(rng.randint(1, 9) for _ in range(5))
+                    vals[-1] = mean_num * 5 - sum(vals[:4])
+                vals = sorted(vals)
+                en = 'Using the table, what is the mean number of goals scored per game?'
+                fr = 'En utilisant le tableau, quelle est la moyenne de buts marqués par match ?'
+                answer = mean_num
+                hint = 'Add all five values, then divide by 5.'
+                steps = [f'Total: {" + ".join(str(v) for v in vals)} = {sum(vals)}.', f'Mean: {sum(vals)} ÷ 5 = {answer}.']
+                diagram = _data_table(['Game', 'Goals'], [[f'Game {i + 1}', v] for i, v in enumerate(vals)], en)
     else:
         if slot == 0:
-            size = grade - 8
-            en = f'On this {size} by {size} grid, how many right/up routes from bottom-left to top-right never rise above the dashed diagonal?'
-            fr = f'Sur cette grille de {size} sur {size}, combien de trajets vers la droite ou le haut vont du coin inférieur gauche au coin supérieur droit sans passer au-dessus de la diagonale pointillée ?'
-            answer = math.comb(2 * size, size) // (size + 1)
-            hint = 'Count unrestricted routes, then subtract routes that first cross the diagonal.'
-            steps = [f'There are C({2 * size}, {size}) unrestricted routes.', f'Reflection gives C({2 * size}, {size - 1}) routes that cross.', f'The difference is {answer}.']
-            diagram = _grid(size, size, en).replace('</svg>', f'<line x1="10" y1="{10 + size * 32}" x2="{10 + size * 32}" y2="10" stroke="#334155" stroke-dasharray="5 4"/></svg>')
+            variant = rng.randint(0, 1)
+            if variant == 0:
+                size = grade - 8
+                en = f'On this {size} by {size} grid, how many right/up routes from bottom-left to top-right never rise above the dashed diagonal?'
+                fr = f'Sur cette grille de {size} sur {size}, combien de trajets vers la droite ou le haut vont du coin inférieur gauche au coin supérieur droit sans passer au-dessus de la diagonale pointillée ?'
+                answer = math.comb(2 * size, size) // (size + 1)
+                hint = 'Count unrestricted routes, then subtract routes that first cross the diagonal.'
+                steps = [f'There are C({2 * size}, {size}) unrestricted routes.', f'Reflection gives C({2 * size}, {size - 1}) routes that cross.', f'The difference is {answer}.']
+                diagram = _grid(size, size, en).replace('</svg>', f'<line x1="10" y1="{10 + size * 32}" x2="{10 + size * 32}" y2="10" stroke="#334155" stroke-dasharray="5 4"/></svg>')
+            else:
+                specs = []
+                seen = set()
+                while len(specs) < 4:
+                    tot = rng.choice([4, 5, 6, 8])
+                    sh = rng.randint(1, tot - 1)
+                    if sh / tot in seen or (sh, tot) in specs:
+                        continue
+                    seen.add(sh / tot)
+                    specs.append((sh, tot))
+                probs = [s / t for s, t in specs]
+                best = probs.index(max(probs))
+                en = 'Each wheel is split into equal sectors; grey sectors win. Which wheel gives the best chance of winning?'
+                fr = 'Chaque roue est divisée en secteurs égaux ; les secteurs gris gagnent. Quelle roue donne la meilleure chance de gagner ?'
+                answer = f'Wheel {chr(65 + best)}'
+                pool = [f'Wheel {chr(65 + i)}' for i in range(4)]
+                choices = _text_choices(answer, pool, rng)
+                hint = 'Compare each grey fraction using a common denominator or decimals.'
+                steps = [f'Wheel {chr(65 + i)}: {s}/{t} = {s / t:.3f}' for i, (s, t) in enumerate(specs)] + [f'The largest probability is {probs[best]:.3f}, so {answer}.']
+                diagram = _wheels(specs, en)
         else:
-            size = grade - 8
-            en = f'On this {size} by {size} grid, how many right/up routes from bottom-left to top-right pass through the centre lattice point?'
-            fr = f'Sur cette grille de {size} sur {size}, combien de trajets vers la droite ou le haut passent par le point central en allant du coin inférieur gauche au coin supérieur droit ?'
-            answer = math.comb(size, size // 2) ** 2
-            hint = 'Multiply the number of ways to reach the centre by the ways to leave it.'
-            steps = [f'To reach the centre, arrange {size // 2} up moves among {size}: {math.comb(size, size // 2)} ways.', f'The second half also has {math.comb(size, size // 2)} ways.', f'Multiply to get {answer}.']
-            center = 10 + size * 16
-            diagram = _grid(size, size, en).replace('</svg>', f'<circle cx="{center}" cy="{center}" r="6" fill="#334155"/></svg>')
+            variant = rng.randint(0, 1)
+            if variant == 0:
+                size = grade - 8
+                en = f'On this {size} by {size} grid, how many right/up routes from bottom-left to top-right pass through the centre lattice point?'
+                fr = f'Sur cette grille de {size} sur {size}, combien de trajets vers la droite ou le haut passent par le point central en allant du coin inférieur gauche au coin supérieur droit ?'
+                answer = math.comb(size, size // 2) ** 2
+                hint = 'Multiply the number of ways to reach the centre by the ways to leave it.'
+                steps = [f'To reach the centre, arrange {size // 2} up moves among {size}: {math.comb(size, size // 2)} ways.', f'The second half also has {math.comb(size, size // 2)} ways.', f'Multiply to get {answer}.']
+                center = 10 + size * 16
+                diagram = _grid(size, size, en).replace('</svg>', f'<circle cx="{center}" cy="{center}" r="6" fill="#334155"/></svg>')
+            else:
+                made = rng.choice([56, 63, 70, 77])
+                d1 = rng.choice([24, 30, 36])
+                d2 = d1 // 2
+                answer = made // 7
+                en = f'A ball of yarn {d1} cm wide made exactly {made} identical socks. The ball that remains is {d2} cm wide. How many more socks can it make?'
+                fr = f'Une pelote de laine de {d1} cm de large a permis de tricoter exactement {made} chaussettes identiques. La pelote restante fait {d2} cm. Combien de chaussettes peut-elle encore produire ?'
+                hint = 'Yarn amount scales with volume, and volume scales with the cube of the diameter.'
+                steps = [f'The diameter halved, so the remaining volume is (1/2)³ = 1/8 of the original.',
+                         f'The {made} socks used 7/8 of the yarn.',
+                         f'Each 1/8 makes {made} ÷ 7 = {answer} socks.']
+                diagram = _yarn_balls(d1, d2, en)
 
     answer = str(answer)
     return dict(question=en, fr=fr, answer=answer, choices=choices if choices is not None else _choice_values(answer, rng), hint=hint, steps=steps,

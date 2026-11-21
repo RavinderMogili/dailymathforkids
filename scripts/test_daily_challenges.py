@@ -59,17 +59,29 @@ class DailyChallengesTest(unittest.TestCase):
         self.assertIn('Curated GSM8K', inject_daily_challenges(section, '2026-11-02'))
 
     def test_visual_combinatorics_by_enumeration(self):
-        day = '2026-11-02'
-        for grade in (9, 10):
-            seats = grade - 2
-            ways = sum(all(b - a > 1 for a, b in zip(chosen, chosen[1:]))
-                       for chosen in itertools.combinations(range(seats), 3))
-            self.assertEqual(int(make_challenge(grade, day, 0)['answer']), ways)
-        for grade in (11, 12):
-            size = grade - 8
-            ways = sum(not any(sum(1 if pos in up else -1 for pos in range(k)) > 0 for k in range(1, 2 * size + 1))
-                       for up in itertools.combinations(range(2 * size), size))
-            self.assertEqual(int(make_challenge(grade, day, 0)['answer']), ways)
+        days = [datetime.date(2026, 11, 1) + datetime.timedelta(days=i) for i in range(30)]
+        seats_checked = catalan_checked = 0
+        for day in days:
+            for grade in (9, 10):
+                q = make_challenge(grade, day, 0)
+                if 'seats' not in q['question']:
+                    continue
+                seats = grade - 2
+                ways = sum(all(b - a > 1 for a, b in zip(chosen, chosen[1:]))
+                           for chosen in itertools.combinations(range(seats), 3))
+                self.assertEqual(int(q['answer']), ways)
+                seats_checked += 1
+            for grade in (11, 12):
+                q = make_challenge(grade, day, 0)
+                if 'dashed diagonal' not in q['question']:
+                    continue
+                size = grade - 8
+                ways = sum(not any(sum(1 if pos in up else -1 for pos in range(k)) > 0 for k in range(1, 2 * size + 1))
+                           for up in itertools.combinations(range(2 * size), size))
+                self.assertEqual(int(q['answer']), ways)
+                catalan_checked += 1
+        self.assertGreater(seats_checked, 0)
+        self.assertGreater(catalan_checked, 0)
 
     def test_openai_quota_error_falls_back_to_gemini(self):
         class QuotaError(Exception):
