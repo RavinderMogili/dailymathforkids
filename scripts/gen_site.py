@@ -330,9 +330,13 @@ Output ONLY the corrected '## {g}' section, nothing else — no explanations."""
                     continue
                 fixed = _normalize_llm_markdown(auto_fix_answers(fixed))
                 sec = parse_grade_sections(fixed).get(g, "")
-                if sec:
+                orig_n = len(re.findall(r'^\s*\d+\.', grade_sections.get(g, ""), re.M))
+                new_n = len(re.findall(r'^\s*\d+\.', sec, re.M)) if sec else 0
+                if sec and new_n >= orig_n:
                     text = replace_grade_section(text, g, sec)
                     fixed_any = True
+                elif sec:
+                    print(f"WARN: Review pass — {g} fix dropped questions ({orig_n} -> {new_n}); ignoring.")
                 else:
                     print(f"WARN: Review pass — could not parse fixed section for {g}.")
             if not fixed_any:
