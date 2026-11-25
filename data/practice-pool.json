@@ -1,9 +1,9 @@
 [
   {
     "grade": 1,
-    "topic": "Addition",
-    "question": "During a hockey game, Sam scored 3 goals in the first period and 5 goals in the second period. How many goals did Sam score in total? ",
-    "questionFr": "Pendant un match de hockey, Sam a marqué 3 buts en première période et 5 buts en deuxième période. Combien de buts Sam a-t-il marqué au total?",
+    "topic": "Addition within 20",
+    "question": "At a hockey game, 4 goals were scored in the first period and 6 in the second. How many goals were scored in total?",
+    "questionFr": "À un match de hockey, 4 buts ont été marqués dans la première période et 6 dans la deuxième. Combien de buts ont été marqués au total?",
     "choices": [
       "3",
       "5",
@@ -11,305 +11,17 @@
       "8"
     ],
     "answer": "8",
-    "hint": "Add the number of goals scored in each period.",
+    "hint": "Add the number of goals from both periods.",
     "steps": [
-      "Add 3 (first period) + 5 (second period)",
-      "3 + 5 = 8"
-    ]
-  },
-  {
-    "grade": 1,
-    "topic": "Skip Counting",
-    "question": "A maple syrup farmer fills 10 bottles, each containing 5 liters. How many liters of syrup does he have in total? ",
-    "questionFr": "Un fermier de sirop d'érable remplit 10 bouteilles, chacune contenant 5 litres. Combien de litres de sirop a-t-il en total?",
-    "choices": [
-      "25",
-      "35",
-      "45",
-      "50"
-    ],
-    "answer": "50",
-    "hint": "Count by 5s: 5, 10, 15...",
-    "steps": [
-      "Multiply the number of bottles (10) by liters per bottle (5)",
-      "10 × 5 = 50"
-    ]
-  },
-  {
-    "grade": 1,
-    "topic": "Counting Coins",
-    "question": "At Tim Hortons, a toonie is $2. If you have 3 toonies, how much money do you have? ",
-    "questionFr": "À Tim Hortons, un toonie vaut 2 dollars. Si vous avez 3 toonies, combien d'argent avez-vous?",
-    "choices": [
-      "$4",
-      "$5",
-      "$6",
-      "$7"
-    ],
-    "answer": "$6",
-    "hint": "Multiply the number of toonies by 2.",
-    "steps": [
-      "Calculate 3 toonies × $2 each",
-      "3 × 2 = $6"
+      "Add 4 and 6",
+      "4 + 6 = 8"
     ]
   },
   {
     "grade": 1,
     "topic": "Comparing Numbers",
-    "question": "A camping trip has 12 tents. If 6 tents are used, how many tents are left? ",
-    "questionFr": "Un voyage de camping a 12 tentes. Si 6 tentes sont utilisées, combien de tentes restent-ils?",
-    "choices": [
-      "4",
-      "6",
-      "8",
-      "10"
-    ],
-    "answer": "6",
-    "hint": "Subtract the number of used tents from total.",
-    "steps": [
-      "Subtract 6 (used) from 12 (total)",
-      "12 - 6 = 6"
-    ]
-  },
-  {
-    "grade": 1,
-    "topic": "Subtraction",
-    "question": "Lily has 10 candies. She shares 4 with her friend. How many candies does Lily have left? ",
-    "questionFr": "Lily a 10 bonbons. Elle partage 4 avec son amie. Combien de bonbons Lily a-t-elle restants?",
-    "choices": [
-      "3",
-      "5",
-      "7",
-      "9"
-    ],
-    "answer": "5",
-    "hint": "Subtract the number of candies given away from total.",
-    "steps": [
-      "Calculate 10 (total) - 4 (given away)",
-      "10 - 4 = 5"
-    ]
-  },
-  {
-    "grade": 2,
-    "topic": "counting coins",
-    "question": "Mia has 2 dimes and 3 nickels. How much money does she have?",
-    "questionFr": "Mia a 2 dimes et 3 nickels. Combien d'argent a-t-elle?",
-    "choices": [
-      "25 cents",
-      "30 cents",
-      "35 cents",
-      "40 cents"
-    ],
-    "answer": "35 cents",
-    "hint": "Add the value of each coin.",
-    "steps": [
-      "Calculate 2 dimes (2 × 10 = 20 cents).",
-      "Add 3 nickels (3 × 5 = 15 cents)."
-    ]
-  },
-  {
-    "grade": 2,
-    "topic": "time",
-    "question": "A hockey game starts at 3:00 PM. It is currently 2:30 PM. How many minutes until the game starts?",
-    "questionFr": "Un match de hockey commence à 15h00. Il est maintenant 14h30. Combien de minutes avant que le match ne commence?",
-    "choices": [
-      "20 minutes",
-      "30 minutes",
-      "40 minutes",
-      "50 minutes"
-    ],
-    "answer": "30 minutes",
-    "hint": "Subtract the current time from the start time.",
-    "steps": [
-      "Convert times to minutes: 15:00 = 900 minutes, 14:30 = 870 minutes.",
-      "Subtract 870 from 900 (900 - 870 = 30)."
-    ]
-  },
-  {
-    "grade": 2,
-    "topic": "length",
-    "question": "One tree is 15 cm long. Another tree is 20 cm long. How much longer is the second tree?",
-    "questionFr": "Un arbre mesure 15 cm et un autre mesure 20 cm. De combien l'arbre est-il plus long?",
-    "choices": [
-      "3 cm",
-      "5 cm",
-      "7 cm",
-      "8 cm"
-    ],
-    "answer": "5 cm",
-    "hint": "Subtract the shorter length from the longer one.",
-    "steps": [
-      "Write both lengths: 20 cm and 15 cm.",
-      "Subtract 15 from 20 (20 - 15 = 5)."
-    ]
-  },
-  {
-    "grade": 2,
-    "topic": "patterns",
-    "question": "The pattern of hockey jersey numbers is 10, 12, 14, 16... What is the next number?",
-    "questionFr": "Le motif des numéros de maillots de hockey est 10, 12, 14, 16... Quel est le prochain nombre?",
-    "choices": [
-      "15",
-      "17",
-      "18",
-      "20"
-    ],
-    "answer": "18",
-    "hint": "Look for the difference between each number.",
-    "steps": [
-      "Identify the pattern (adding 2 each time).",
-      "Add 2 to the last number (16 + 2 = 18)."
-    ]
-  },
-  {
-    "grade": 2,
-    "topic": "addition",
-    "question": "A camping group collected 45 cans of soup and 25 cans of vegetables. How many cans did they collect in total?",
-    "questionFr": "Un groupe a collecté 45 bocaux de soupe et 25 bocaux de légumes. Combien de bocaux ont-ils collectés au total?",
-    "choices": [
-      "60",
-      "70",
-      "80",
-      "90"
-    ],
-    "answer": "70",
-    "hint": "Add the two numbers together.",
-    "steps": [
-      "Add the tens: 40 + 20 = 60.",
-      "Add the ones: 5 + 5 = 10. Total: 60 + 10 = 70."
-    ]
-  },
-  {
-    "grade": 3,
-    "topic": "Multiplication",
-    "question": "At a hockey game, a player scores 2 goals in each of 5 games. How many goals did they score in total?",
-    "questionFr": "À un match de hockey, un joueur marque 2 buts dans chacun des 5 matchs. Combien de buts a-t-il marqué au total?",
-    "choices": [
-      "10",
-      "7",
-      "8",
-      "9"
-    ],
-    "answer": "10",
-    "hint": "Multiply the number of goals per game by the number of games.",
-    "steps": [
-      "2 goals/game × 5 games = 10 goals",
-      "Total goals scored = 10"
-    ]
-  },
-  {
-    "grade": 3,
-    "topic": "Division",
-    "question": "A farmer has 12 liters of maple syrup to pour into 3 containers. How many liters go into each container?",
-    "questionFr": "Un agriculteur a 12 litres de sirop d'érable à verser dans 3 contenants. Combien de litres vont dans chaque contenant?",
-    "choices": [
-      "3",
-      "4",
-      "5",
-      "6"
-    ],
-    "answer": "4",
-    "hint": "Divide the total liters by the number of containers.",
-    "steps": [
-      "12 ÷ 3 = 4 liters",
-      "Each container holds 4 liters"
-    ]
-  },
-  {
-    "grade": 3,
-    "topic": "Fractions",
-    "question": "If a Tim Hortons muffin is divided into 4 equal parts and you take 1 part, what fraction did you take?",
-    "questionFr": "Si un muffin de Tim Hortons est divisé en 4 parties égales et que vous prenez 1 partie, quelle fraction avez-vous prise?",
-    "choices": [
-      "1/2",
-      "1/3",
-      "1/4",
-      "1/5"
-    ],
-    "answer": "1/4",
-    "hint": "The fraction is the number of parts taken divided by the total parts.",
-    "steps": [
-      "1 part ÷ 4 parts = 1/4",
-      "Fraction taken = 1/4"
-    ]
-  },
-  {
-    "grade": 3,
-    "topic": "Perimeter",
-    "question": "A hockey rink is 10 meters long and 5 meters wide. What is its perimeter?",
-    "questionFr": "Un terrain de hockey mesure 10 mètres de longueur et 5 mètres de largeur. Quel est son périmètre?",
-    "choices": [
-      "20",
-      "25",
-      "30",
-      "35"
-    ],
-    "answer": "30",
-    "hint": "Add all sides and multiply by 2 for a rectangle.",
-    "steps": [
-      "10 + 5 + 10 + 5 = 30 meters",
-      "Perimeter = 30 meters"
-    ]
-  },
-  {
-    "grade": 3,
-    "topic": "Simple Graphs",
-    "question": "A store sells 5 bottles of Grade A and 3 bottles of Grade B maple syrup. How many bottles in total?",
-    "questionFr": "Un magasin vend 5 bouteilles de Grade A et 3 bouteilles de Grade B de sirop d'érable. Combien de bouteilles au total?",
-    "choices": [
-      "5",
-      "6",
-      "7",
-      "8"
-    ],
-    "answer": "8",
-    "hint": "Add the number of Grade A and Grade B bottles.",
-    "steps": [
-      "5 + 3 = 8 bottles",
-      "Total bottles sold = 8"
-    ]
-  },
-  {
-    "grade": 4,
-    "topic": "Area",
-    "question": "A hockey rink is 60 meters long and 30 meters wide. What is its area?",
-    "questionFr": "Un terrain de hockey mesure 60 mètres de long et 30 mètres de large. Quelle est son aire?",
-    "choices": [
-      "1800",
-      "1200",
-      "900",
-      "1500"
-    ],
-    "answer": "1800",
-    "hint": "Multiply the length by the width.",
-    "steps": [
-      "Identify the formula for area (length × width).",
-      "Calculate 60 × 30 = 1800 m²."
-    ]
-  },
-  {
-    "grade": 4,
-    "topic": "Decimal Addition",
-    "question": "At Tim Hortons, a coffee costs $2.50 and a muffin is $1.25. How much do they cost together?",
-    "questionFr": "À Tim Hortons, un café coûte $2,50 et un muffin est à $1,25. Combien coûtent-ils ensemble?",
-    "choices": [
-      "$3.75",
-      "$4.25",
-      "$3.50",
-      "$4.75"
-    ],
-    "answer": "$3.75",
-    "hint": "Add the dollars and cents separately.",
-    "steps": [
-      "Add the dollar amounts: $2 + $1 = $3.",
-      "Add the cents: 50¢ + 25¢ = 75¢. Total: $3.75."
-    ]
-  },
-  {
-    "grade": 4,
-    "topic": "Elapsed Time",
-    "question": "A family camps from 10:00 AM to 3:00 PM. How many hours is that?",
-    "questionFr": "Une famille camp de 10:00 AM à 3:00 PM. Combien de heures dure cela?",
+    "question": "A maple syrup farmer has 3 jars. He adds 2 more jars. How many jars does he have now?",
+    "questionFr": "Un fermier de sirop d'érable a 3 pots. Il ajoute 2 pots supplémentaires. Combien de pots a-t-il maintenant?",
     "choices": [
       "4",
       "5",
@@ -317,145 +29,343 @@
       "7"
     ],
     "answer": "5",
-    "hint": "Subtract the start time from the end time.",
+    "hint": "Combine the jars he already has with the new ones.",
     "steps": [
-      "Convert to 24-hour time: 10:00 AM to 15:00.",
-      "Calculate 15 - 10 = 5 hours."
+      "3 + 2 = 5",
+      "Total jars = 5"
+    ]
+  },
+  {
+    "grade": 1,
+    "topic": "Coins",
+    "question": "At Tim Hortons, a doughnut costs $1 and a coffee costs $2. How much does it cost to buy both?",
+    "questionFr": "À Tim Hortons, un pain au chocolat coûte $1 et un café coûte $2. Combien coûte-t-il d'acheter les deux?",
+    "choices": [
+      "$2",
+      "$3",
+      "$4",
+      "$5"
+    ],
+    "answer": "$3",
+    "hint": "Add the prices of the items.",
+    "steps": [
+      "$1 + $2 = $3",
+      "Total cost is $3"
+    ]
+  },
+  {
+    "grade": 1,
+    "topic": "Subtraction within 20",
+    "question": "There are 5 camping tents in a park. 2 tents are taken by families. How many tents are left?",
+    "questionFr": "Il y a 5 tentes de camping dans un parc. 2 tentes sont prises par les familles. Combien de tentes restent-elles?",
+    "choices": [
+      "3",
+      "4",
+      "5",
+      "6"
+    ],
+    "answer": "3",
+    "hint": "Subtract the number of tents taken from the total.",
+    "steps": [
+      "5 - 2 = 3",
+      "Remaining tents = 3"
+    ]
+  },
+  {
+    "grade": 1,
+    "topic": "Skip Counting",
+    "question": "A student has 7 pencils. She gives 2 pencils to her friend. How many pencils does she have left?",
+    "questionFr": "Un étudiant a 7 crayons. Il donne 2 crayons à son ami. Combien de crayons lui reste-t-il?",
+    "choices": [
+      "4",
+      "5",
+      "6",
+      "7"
+    ],
+    "answer": "5",
+    "hint": "Take away the pencils she gave away.",
+    "steps": [
+      "7 - 2 = 5",
+      "Remaining pencils = 5"
+    ]
+  },
+  {
+    "grade": 2,
+    "topic": "Time",
+    "question": "A hockey game starts at 10:30 AM and lasts 2 hours. What time does it end? ",
+    "questionFr": "Un match de hockey commence à 10h30 et dure 2 heures. À quelle heure finit-il? ",
+    "choices": [
+      "12:30",
+      "1:00",
+      "12:00",
+      "1:30"
+    ],
+    "answer": "12:30",
+    "hint": "Add 2 hours to the start time. Remember to keep the minutes the same.",
+    "steps": [
+      "Add 2 hours to 10:30 AM.",
+      "10:30 + 2 hours = 12:30 PM."
+    ]
+  },
+  {
+    "grade": 2,
+    "topic": "Length",
+    "question": "A path in a park is 15 meters long. If a child walks 5 meters, how much more to go? ",
+    "questionFr": "Un sentier dans un parc mesure 15 mètres. Si un enfant marche 5 mètres, combien de mètres reste-t-il à parcourir? ",
+    "choices": [
+      "10",
+      "5",
+      "15",
+      "20"
+    ],
+    "answer": "10",
+    "hint": "Subtract the distance walked from the total length.",
+    "steps": [
+      "Calculate 15 meters minus 5 meters.",
+      "15 - 5 = 10 meters."
+    ]
+  },
+  {
+    "grade": 2,
+    "topic": "Coins",
+    "question": "Tim has 3 nickels and 2 pennies. How much money does he have? ",
+    "questionFr": "Tim a 3 sous et 2 centimes. Combien d'argent a-t-il? ",
+    "choices": [
+      "17",
+      "15",
+      "12",
+      "20"
+    ],
+    "answer": "17",
+    "hint": "Count the value of each coin type separately.",
+    "steps": [
+      "3 nickels = 3 × 5 = 15 cents.",
+      "2 pennies = 2 × 1 = 2 cents.",
+      "15 + 2 = 17 cents."
+    ]
+  },
+  {
+    "grade": 2,
+    "topic": "Patterns",
+    "question": "A pattern of maple leaves is red, yellow, red, yellow... What is the next color? ",
+    "questionFr": "Un motif de feuilles de syringa est rouge, jaune, rouge, jaune... Quelle est la prochaine couleur? ",
+    "choices": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue"
+    ],
+    "answer": "Red",
+    "hint": "Look for the repeating sequence.",
+    "steps": [
+      "Identify the pattern: red, yellow repeats.",
+      "The next color is red."
+    ]
+  },
+  {
+    "grade": 2,
+    "topic": "Addition",
+    "question": "A school collects 34 bottles from Grade 1 and 45 from Grade 2. How many bottles in total? ",
+    "questionFr": "Une école collecte 34 bouteilles de la 1re année et 45 de la 2e année. Combien de bouteilles au total? ",
+    "choices": [
+      "79",
+      "80",
+      "78",
+      "85"
+    ],
+    "answer": "79",
+    "hint": "Add the tens first, then the ones.",
+    "steps": [
+      "Add 30 + 40 = 70.",
+      "Add 4 + 5 = 9.",
+      "70 + 9 = 79."
+    ]
+  },
+  {
+    "grade": 3,
+    "topic": "Multiplication",
+    "question": "A hockey team has 5 jars of maple syrup. Each jar has 3 loonies. How many loonies are there in total?",
+    "questionFr": "Une équipe de hockey a 5 bocaux de sirop d'érable. Chaque bocal contient 3 pièces de un dollar. Combien de pièces de un dollar y a-t-il au total?",
+    "choices": [
+      "10",
+      "12",
+      "15",
+      "18"
+    ],
+    "answer": "15",
+    "hint": "Multiply the number of jars by the number of loonies in each jar.",
+    "steps": [
+      "Identify the number of jars (5).",
+      "Multiply by the number of loonies per jar (3)."
+    ]
+  },
+  {
+    "grade": 3,
+    "topic": "Division",
+    "question": "12 bottles of maple syrup are shared equally among 4 friends. How many bottles does each friend get?",
+    "questionFr": "12 bouteilles de sirop d'érable sont partagées équitablement entre 4 amis. Combien de bouteilles chaque ami obtient-il?",
+    "choices": [
+      "4",
+      "5",
+      "3",
+      "6"
+    ],
+    "answer": "3",
+    "hint": "Divide the total number of bottles by the number of friends.",
+    "steps": [
+      "Divide 12 by 4.",
+      "Each friend gets 3 bottles."
+    ]
+  },
+  {
+    "grade": 3,
+    "topic": "Fractions",
+    "question": "A recipe uses 1/2 cup of maple syrup. If the recipe is made twice, how much syrup is needed in total?",
+    "questionFr": "Une recette utilise 1/2 tasse de sirop d'érable. Si la recette est faite 2 fois, combien de tasses de sirop d'érable utilisera-t-on au total?",
+    "choices": [
+      "1",
+      "1/2",
+      "2",
+      "3/4"
+    ],
+    "answer": "1",
+    "hint": "Multiply the fraction by the number of times the recipe is made.",
+    "steps": [
+      "Multiply 1/2 by 2.",
+      "Total is 1 cup."
+    ]
+  },
+  {
+    "grade": 3,
+    "topic": "Perimeter",
+    "question": "A camping tent is a rectangle with a length of 5 meters and a width of 3 meters. What is the perimeter?",
+    "questionFr": "Un abri de camping est un rectangle avec une longueur de 5 mètres et une largeur de 3 mètres. Quel est le périmètre?",
+    "choices": [
+      "8",
+      "12",
+      "14",
+      "16"
+    ],
+    "answer": "16",
+    "hint": "Add all sides and double the result.",
+    "steps": [
+      "Add length and width: 5 + 3 = 8.",
+      "Double the sum: 8 x 2 = 16 meters."
+    ]
+  },
+  {
+    "grade": 3,
+    "topic": "Graphs",
+    "question": "A graph shows 3 loonies and 4 toonies collected at a school event. What is the total amount in dollars?",
+    "questionFr": "Un graphique montre que 3 pièces de un dollar et 4 pièces de deux dollars ont été collectées. Quel est le montant total en dollars?",
+    "choices": [
+      "10",
+      "11",
+      "12",
+      "13"
+    ],
+    "answer": "11",
+    "hint": "Calculate the value of each coin type and add them.",
+    "steps": [
+      "Multiply loonies by 1: 3 x 1 = 3.",
+      "Multiply toonies by 2: 4 x 2 = 8. Add 3 + 8 = 11."
+    ]
+  },
+  {
+    "grade": 4,
+    "topic": "Area",
+    "question": "A classroom rug is 6 meters long and 4 meters wide. What is the area of the rug? (Area = length × width)",
+    "questionFr": "Un tapis de classe mesure 6 mètres de long et 4 mètres de large. Quelle est l'aire du tapis ? (Aire = longueur × largeur)",
+    "choices": [
+      "10 m²",
+      "20 m²",
+      "24 m²",
+      "28 m²"
+    ],
+    "answer": "24 m²",
+    "hint": "Multiply the length by the width to find the area.",
+    "steps": [
+      "Calculate 6 × 4.",
+      "The product is the area in square meters."
+    ]
+  },
+  {
+    "grade": 4,
+    "topic": "Elapsed Time",
+    "question": "A hockey game starts at 3:15 PM and ends at 5:45 PM. How long is the game? (Subtract start time from end time)",
+    "questionFr": "Un match de hockey commence à 15h15 et finit à 17h45. Combien de temps dure le match ? (Soustrayez l'heure de début de l'heure de fin)",
+    "choices": [
+      "2 hours 15 minutes",
+      "2 hours 30 minutes",
+      "2 hours 45 minutes",
+      "3 hours 30 minutes"
+    ],
+    "answer": "2 hours 30 minutes",
+    "hint": "Subtract hours and minutes separately.",
+    "steps": [
+      "Subtract 3:15 from 5:45.",
+      "Calculate 2 hours and 30 minutes."
     ]
   },
   {
     "grade": 4,
     "topic": "Comparing Fractions",
-    "question": "A recipe uses 1/2 cup of maple syrup and 1/3 cup of another ingredient. Which is more?",
-    "questionFr": "Une recette utilise 1/2 tasse de sirop d'érable et 1/3 tasse d'un autre ingrédient. Lequel est le plus grand?",
+    "question": "A maple syrup container is 1/2 full. Another container is 1/3 full. Which has more syrup?",
+    "questionFr": "Un contenant de sirop d'érable est 1/2 plein. Un autre contenant est 1/3 plein. Lequel contient plus de sirop ?",
     "choices": [
       "1/2",
       "1/3",
-      "Same",
-      "None"
+      "Both are equal",
+      "Cannot compare"
     ],
     "answer": "1/2",
-    "hint": "Find a common denominator to compare.",
+    "hint": "Find a common denominator to compare the fractions.",
     "steps": [
-      "Convert to common denominators: 1/2 = 3/6, 1/3 = 2/6.",
-      "Compare numerators: 3/6 > 2/6."
+      "Convert 1/2 to 3/6 and 1/3 to 2/6.",
+      "Compare the numerators."
     ]
   },
   {
     "grade": 4,
-    "topic": "Division",
-    "question": "A group of 6 friends shares 48 loonies. How many does each get?",
-    "questionFr": "Un groupe de 6 amis partage 48 loonies. Combien chacun obtient-il?",
+    "topic": "Decimal Place Value",
+    "question": "A Tim Hortons coffee costs $2.50. If you buy 4 coffees, how much do you pay in total?",
+    "questionFr": "Un café Tim Hortons coûte 2,50 $ Canadien. Si vous achetez 4 cafés, combien coûte-t-il au total ?",
     "choices": [
+      "$6.00",
+      "$8.00",
+      "$9.00",
+      "$10.00"
+    ],
+    "answer": "$10.00",
+    "hint": "Multiply the decimal amount by the quantity.",
+    "steps": [
+      "Calculate 2.50 × 4.",
+      "Add the decimal parts first (0.50 × 4 = 2.00)."
+    ]
+  },
+  {
+    "grade": 4,
+    "topic": "Long Division",
+    "question": "A camping group has 27 cans of soda. They share them equally among 3 friends. How many cans does each friend get?",
+    "questionFr": "Un groupe de camping a 27 bouteilles de soda. Ils les partagent équitablement entre 3 amis. Combien de bouteilles chaque ami obtient-il ?",
+    "choices": [
+      "6",
       "8",
-      "7",
       "9",
       "10"
     ],
-    "answer": "8",
-    "hint": "Divide the total by the number of friends.",
+    "answer": "9",
+    "hint": "Divide the total cans by the number of friends.",
     "steps": [
-      "Divide 48 by 6: 48 ÷ 6 = 8.",
-      "Verify by multiplying 8 × 6 = 48."
+      "Divide 27 ÷ 3.",
+      "Check if 3 × 9 = 27."
     ]
   },
   {
     "grade": 5,
-    "topic": "Volume",
-    "question": "A camping tent is a rectangular prism with length 2 m, width 1.5 m, and height 1 m. What is its volume? (Hint: Multiply length × width × height)",
-    "questionFr": "Un abri de camping est un prisme rectangle avec une longueur de 2 m, une largeur de 1,5 m et une hauteur de 1 m. Quel est son volume ? (indice : multiplier la longueur × largeur × hauteur)",
-    "choices": [
-      "3 m³",
-      "4 m³",
-      "5 m³",
-      "6 m³"
-    ],
-    "answer": "3 m³",
-    "hint": "Calculate the product of all three dimensions.",
-    "steps": [
-      "Multiply length (2) × width (1.5) = 3",
-      "Multiply result × height (1) = 3 m³"
-    ]
-  },
-  {
-    "grade": 5,
-    "topic": "Fractions",
-    "question": "A group of 3 friends shares 3/4 L of maple syrup equally. How much does each get? (Hint: Divide the fraction by the number of friends)",
-    "questionFr": "Un groupe de 3 amis partage 3/4 L de sirop d'érable équitablement. Combien chaque personne obtient-elle ? (indice : diviser la fraction par le nombre d'amis)",
-    "choices": [
-      "1/3 L",
-      "1/4 L",
-      "1/5 L",
-      "1/6 L"
-    ],
-    "answer": "1/4 L",
-    "hint": "Split the amount into equal parts using division.",
-    "steps": [
-      "Write as (3/4) ÷ 3 = 3/4 × 1/3",
-      "Simplify to 1/4 L"
-    ]
-  },
-  {
-    "grade": 5,
-    "topic": "Decimals",
-    "question": "At Tim Hortons, a coffee costs $2.50 and a donut $1.25. What is the total for 2 coffees and 3 donuts? (Hint: Add individual totals)",
-    "questionFr": "À Tim Hortons, un café coûte 2,50 $ et un donut 1,25 $. Quel est le total pour 2 cafés et 3 donuts ? (indice : ajouter les totaux individuels)",
-    "choices": [
-      "$8.75",
-      "$8.50",
-      "$9.00",
-      "$9.25"
-    ],
-    "answer": "$8.75",
-    "hint": "Calculate costs for each item separately.",
-    "steps": [
-      "Calculate 2 × 2.50 = 5.00",
-      "Calculate 3 × 1.25 = 3.75",
-      "Add 5.00 + 3.75 = 8.75"
-    ]
-  },
-  {
-    "grade": 5,
-    "topic": "Percent",
-    "question": "A hockey player made 18 out of 20 shots. What percentage of shots did they make? (Hint: Divide made shots by total shots)",
-    "questionFr": "Un joueur de hockey a réussi 18 sur 20 tirs. Quel pourcentage de tirs a-t-il réussis ? (indice : diviser le nombre de tirs réussis par le total)",
-    "choices": [
-      "85%",
-      "90%",
-      "95%",
-      "100%"
-    ],
-    "answer": "90%",
-    "hint": "Convert the fraction to a percentage.",
-    "steps": [
-      "Divide 18 ÷ 20 = 0.9",
-      "Multiply by 100 to get 90%"
-    ]
-  },
-  {
-    "grade": 5,
-    "topic": "Multi-digit Multiplication",
-    "question": "A school sold 125 tickets at $4 each. How much money did they raise? (Hint: Multiply tickets × price per ticket)",
-    "questionFr": "Une école a vendu 125 billets à 4 $ pièce. Combien d'argent ont-ils récolté ? (indice : multiplier le nombre de billets par le prix unitaire)",
-    "choices": [
-      "$500",
-      "$525",
-      "$550",
-      "$575"
-    ],
-    "answer": "$500",
-    "hint": "Break down the multiplication for easier calculation.",
-    "steps": [
-      "Calculate 100 × 4 = 400",
-      "Calculate 25 × 4 = 100",
-      "Add 400 + 100 = 500"
-    ]
-  },
-  {
-    "grade": 6,
-    "topic": "Ratios/Rates",
-    "question": "During a hockey game, a player scores 3 goals in 5 games. How many goals would they score in 20 games if the rate stays the same? ",
-    "questionFr": "Pendant un match de hockey, un joueur marque 3 buts en 5 parties. Combien de buts marquerait-il en 20 parties si le taux reste le même? ",
+    "topic": "Division",
+    "question": "A hockey team scored 120 goals in a season. If there are 24 games, how many goals did they score per game?",
+    "questionFr": "Une équipe de hockey a marqué 120 buts dans une saison. S'il y a 24 matchs, combien de buts ont-ils marqué par match?",
     "choices": [
       "3",
       "5",
@@ -463,625 +373,696 @@
       "8"
     ],
     "answer": "5",
-    "hint": "Find the number of goals per game first.",
+    "hint": "Divisez le nombre total de buts par le nombre de matchs.",
     "steps": [
-      "Calculate goals per game: 3 ÷ 5 = 0.6 goals/game",
-      "Multiply by 20 games: 0.6 × 20 = 12 goals"
+      "Identifiez le nombre total de buts et le nombre de matchs.",
+      "Effectuez la division pour trouver les buts par match."
+    ]
+  },
+  {
+    "grade": 5,
+    "topic": "Fractions",
+    "question": "A baker uses 2/5 liters of maple syrup and another 3/5 liters for a recipe. How much syrup is needed in total?",
+    "questionFr": "Un boulanger utilise 2/5 litres de sirop d'érable et 3/5 litres pour une recette. Combien de sirop d'érable est-il nécessaire en totalité?",
+    "choices": [
+      "1/2",
+      "1",
+      "1 1/2",
+      "2"
+    ],
+    "answer": "1",
+    "hint": "Ajoutez les fractions pour trouver le total.",
+    "steps": [
+      "Identifiez les fractions utilisées.",
+      "Ajoutez les fractions pour trouver le total."
+    ]
+  },
+  {
+    "grade": 5,
+    "topic": "Decimals",
+    "question": "A coffee costs $2.50 and a donut is $1.25. If you buy 3 coffees and 4 donuts, what is the total cost?",
+    "questionFr": "Un café coûte 2,50 $ et un donut 1,25 $. Si vous achetez 3 cafés et 4 donuts, quel est le coût total?",
+    "choices": [
+      "10.50",
+      "12.50",
+      "14.50",
+      "16.50"
+    ],
+    "answer": "12.50",
+    "hint": "Calculez le coût des cafés et des donuts séparément, puis additionnez-les.",
+    "steps": [
+      "Multipliez le prix du café par le nombre de cafés.",
+      "Multipliez le prix du donut par le nombre de donuts.",
+      "Ajoutez les deux montants pour trouver le coût total."
+    ]
+  },
+  {
+    "grade": 5,
+    "topic": "Volume",
+    "question": "A camping tent is 2.5 meters long. If each sleeping bag takes 0.5 meters, how many can fit?",
+    "questionFr": "Une tente de camping a une longueur de 2,5 mètres. Si chaque sac de couchage prend 0,5 mètre, combien peuvent-ils s'installer?",
+    "choices": [
+      "3",
+      "5",
+      "7",
+      "8"
+    ],
+    "answer": "5",
+    "hint": "Divisez la longueur totale par la longueur occupée par un sac de couchage.",
+    "steps": [
+      "Identifiez la longueur totale et la longueur par sac de couchage.",
+      "Effectuez la division pour trouver le nombre de sacs."
+    ]
+  },
+  {
+    "grade": 5,
+    "topic": "Percent",
+    "question": "A store offers 20% off on a $50 item. What is the new price?",
+    "questionFr": "Un magasin propose 20 % de réduction sur un article de 50 $. Quel est le nouveau prix?",
+    "choices": [
+      "40",
+      "45",
+      "50",
+      "55"
+    ],
+    "answer": "40",
+    "hint": "Calculez 20 % de 50 $, puis soustrayez-le du prix initial.",
+    "steps": [
+      "Trouvez 20 % de 50 $.",
+      "Soustrayez cette valeur du prix original pour trouver le prix réduit."
     ]
   },
   {
     "grade": 6,
-    "topic": "Percent of Number",
-    "question": "At a Tim Hortons sale, a maple syrup bottle is 25% off. If the original price is $12, what is the discount amount? ",
-    "questionFr": "Lors d'une vente à Tim Hortons, une bouteille de sirop d'érable est à 25% de remise. Si le prix original est de 12 $, quel est le montant de la remise? ",
+    "topic": "Ratios",
+    "question": "A hockey player scores 3 goals for every 2 assists. If he has a total of 40 points (goals + assists), how many assists does he have?",
+    "questionFr": "Un joueur de hockey marque 3 buts pour chaque 2 assists. S'il a un total de 40 points (buts + assists), combien d'assists a-t-il?",
     "choices": [
-      "$3.00",
-      "$4.00",
-      "$5.00",
-      "$6.00"
+      "12",
+      "16",
+      "20",
+      "24"
     ],
-    "answer": "$3.00",
-    "hint": "Convert the percentage to a decimal first.",
+    "answer": "16",
+    "hint": "Set up an equation using the ratio and solve for the number of assists.",
     "steps": [
-      "Convert 25% to 0.25",
-      "Multiply by original price: 0.25 × 12 = 3 $"
+      "Let goals = 3x and assists = 2x. Total points = 3x + 2x = 5x.",
+      "Solve 5x = 40 to find x = 8, so assists = 2x = 16."
+    ]
+  },
+  {
+    "grade": 6,
+    "topic": "Percentages",
+    "question": "A maple syrup bottle contains 1.2 liters. If 0.3 liters are poured out, what percentage of the syrup remains?",
+    "questionFr": "Une bouteille de sirop d'érable contient 1,2 litre. Si 0,3 litre sont versés, quel pourcentage de sirop reste-t-il?",
+    "choices": [
+      "25%",
+      "50%",
+      "75%",
+      "80%"
+    ],
+    "answer": "75%",
+    "hint": "Calculate the remaining volume and divide by the original amount.",
+    "steps": [
+      "Subtract poured amount from total: 1.2 - 0.3 = 0.9 liters.",
+      "Calculate percentage: (0.9 / 1.2) * 100 = 75%."
+    ]
+  },
+  {
+    "grade": 6,
+    "topic": "Decimals and Tax",
+    "question": "At Tim Hortons, a coffee costs $2.50 and a bagel $1.20. With a 13% tax, what is the total cost of these items?",
+    "questionFr": "À Tim Hortons, un café coûte 2,50 $ et un bagel 1,20 $. Avec une taxe de 13 %, quel est le coût total de ces articles?",
+    "choices": [
+      "$3.70",
+      "$3.80",
+      "$4.18",
+      "$4.20"
+    ],
+    "answer": "$4.18",
+    "hint": "Add the item prices and calculate the tax amount.",
+    "steps": [
+      "Total pre-tax: $2.50 + $1.20 = $3.70.",
+      "Tax: 13% of $3.70 = $0.481; Total = $3.70 + $0.481 = $4.18."
+    ]
+  },
+  {
+    "grade": 6,
+    "topic": "Rate and Time",
+    "question": "A family hikes 2.5 hours at 60 km/h, then 1.5 hours at 80 km/h. What is the total distance covered?",
+    "questionFr": "Une famille marche 2,5 heures à 60 km/h, puis 1,5 heure à 80 km/h. Quelle est la distance totale parcourue?",
+    "choices": [
+      "200 km",
+      "270 km",
+      "300 km",
+      "350 km"
+    ],
+    "answer": "270 km",
+    "hint": "Multiply time by speed for each segment and add the distances.",
+    "steps": [
+      "Distance first part: 2.5 * 60 = 150 km.",
+      "Distance second part: 1.5 * 80 = 120 km. Total = 150 + 120 = 270 km."
     ]
   },
   {
     "grade": 6,
     "topic": "Integers",
-    "question": "The temperature drops from -5°C to -13°C during a camping trip. What is the total temperature change? ",
-    "questionFr": "La température baisse de -5°C à -13°C lors d'une randonnée de camping. Quel est le changement total de température? ",
+    "question": "The temperature starts at -2°C. It drops by 8°C and then rises by 5°C. What is the final temperature?",
+    "questionFr": "La température commence à -2°C. Elle baisse de 8°C puis monte de 5°C. Quelle est la température finale?",
     "choices": [
-      "-8°C",
-      "-13°C",
-      "-18°C",
-      "-23°C"
+      "-5°C",
+      "-3°C",
+      "-10°C",
+      "0°C"
     ],
-    "answer": "-8°C",
-    "hint": "Subtract the starting temperature from the ending temperature.",
+    "answer": "-5°C",
+    "hint": "Add the changes to the initial temperature step by step.",
     "steps": [
-      "Calculate difference: -13 - (-5) = -13 + 5 = -8°C",
-      "The temperature dropped by 8°C"
-    ]
-  },
-  {
-    "grade": 6,
-    "topic": "Algebraic Expressions",
-    "question": "A school sells tickets for a play at $7 each. If they sell 150 tickets, what is the total revenue? ",
-    "questionFr": "Une école vend des billets pour une pièce au prix de 7 $ pièce. Si ils vendent 150 billets, quel est le revenu total? ",
-    "choices": [
-      "$750",
-      "$1050",
-      "$1200",
-      "$1400"
-    ],
-    "answer": "$1050",
-    "hint": "Multiply the price per ticket by the number sold.",
-    "steps": [
-      "Identify variables: price = $7, quantity = 150",
-      "Calculate: 7 × 150 = 1050 $"
-    ]
-  },
-  {
-    "grade": 6,
-    "topic": "Proportions",
-    "question": "A recipe uses 2 cups of flour for 4 pancakes. How many cups are needed for 12 pancakes? ",
-    "questionFr": "Une recette utilise 2 tasses de farine pour 4 crêpes. Combien de tasses sont nécessaires pour 12 crêpes? ",
-    "choices": [
-      "3",
-      "5",
-      "6",
-      "8"
-    ],
-    "answer": "6",
-    "hint": "Set up a proportion and solve for the unknown.",
-    "steps": [
-      "Write ratio: 2 cups / 4 pancakes = x cups / 12 pancakes",
-      "Cross-multiply and solve: 4x = 24 → x = 6 cups"
-    ]
-  },
-  {
-    "grade": 7,
-    "topic": "Surface Area",
-    "question": "A camping tent is shaped like a rectangular prism with a length of 2.5 m, width of 1.5 m, and height of 1 m. How much fabric is needed to cover the tent (excluding the base)?",
-    "questionFr": "Un abri de camping a la forme d'un prisme rectangulaire avec une longueur de 2,5 m, une largeur de 1,5 m et une hauteur de 1 m. Combien de tissu est nécessaire pour recouvrir l'abri (sans la base) ?",
-    "choices": [
-      "5.5 m²",
-      "6.5 m²",
-      "7.5 m²",
-      "8.5 m²"
-    ],
-    "answer": "7.5 m²",
-    "hint": "Calculate the area of the four sides and the top, then sum them.",
-    "steps": [
-      "Find the area of the two ends: 2 × (1.5 × 1) = 3 m²",
-      "Find the area of the two sides: 2 × (2.5 × 1) = 5 m²",
-      "Add the top area: 2.5 × 1.5 = 3.75 m²",
-      "Total surface area: 3 + 5 + 3.75 = 11.75 m² (excluding base)"
+      "After dropping: -2 + (-8) = -10°C.",
+      "After rising: -10 + 5 = -5°C."
     ]
   },
   {
     "grade": 7,
     "topic": "Percent Problems",
-    "question": "At Tim Hortons, a coffee costs $2.50. If it's 20% off, how much does it cost now?",
-    "questionFr": "À Tim Hortons, un café coûte 2,50 $.\nSi c'est 20 % de réduction, combien coûte-t-il maintenant ?",
+    "question": "Team A scored 15 goals in a hockey game. Team B scored 2/3 of that amount. How many goals did Team B score?",
+    "questionFr": "L'équipe A a marqué 15 buts lors d'un match de hockey. L'équipe B a marqué 2/3 de cette quantité. Combien de buts l'équipe B a-t-elle marqués?",
     "choices": [
-      "$2.00",
-      "$2.10",
-      "$2.20",
-      "$2.50"
+      "10",
+      "12",
+      "15",
+      "18"
     ],
-    "answer": "$2.00",
-    "hint": "Calculate 20% of the original price and subtract it.",
+    "answer": "10",
+    "hint": "Multiply the total goals by the fraction of goals scored by Team B.",
     "steps": [
-      "Find 20% of $2.50: 0.2 × 2.50 = 0.50 $",
-      "Subtract from original: 2.50 - 0.50 = 2.00 $"
+      "Calculate 2/3 of 15 by multiplying 15 × 2 = 30, then divide by 3.",
+      "Confirm 30 ÷ 3 = 10."
     ]
   },
   {
     "grade": 7,
-    "topic": "One-Step Equations",
-    "question": "A hockey team scored 24 points in a game. If each player scored the same number of points and there are 6 players, how many points did each player score?",
-    "questionFr": "Une équipe de hockey a marqué 24 points dans un match.\nSi chaque joueur a marqué le même nombre de points et qu'il y a 6 joueurs, combien de points chaque joueur a-t-il marqué ?",
+    "topic": "Decimal Operations",
+    "question": "A maple syrup producer sells 1.5 liters of syrup. Each jar holds 750 mL. How many jars did they sell?",
+    "questionFr": "Un producteur de sirop d'érable vend 1,5 litre de sirop. Chaque bouteille contient 750 mL. Combien de bouteilles ont-ils vendues?",
     "choices": [
-      "4 points",
-      "6 points",
-      "8 points",
-      "12 points"
+      "1",
+      "2",
+      "3",
+      "4"
     ],
-    "answer": "4 points",
-    "hint": "Divide the total points by the number of players.",
+    "answer": "2",
+    "hint": "Convert liters to milliliters before dividing by jar size.",
     "steps": [
-      "Write the equation: 6x = 24",
-      "Solve for x: x = 24 ÷ 6 = 4"
+      "Convert 1.5 liters to 1500 mL using 1 L = 1000 mL.",
+      "Divide 1500 ÷ 750 = 2 jars."
     ]
   },
   {
     "grade": 7,
     "topic": "Integer Operations",
-    "question": "During a snowstorm, the temperature drops from -5°C to -12°C. What is the total temperature change?",
-    "questionFr": "Pendant une tempête de neige, la température baisse de -5°C à -12°C.\nQuelle est la variation totale de température ?",
+    "question": "At Tim Hortons, a customer buys a coffee for $3.50 and a donut for $1.25. If they pay with a $5 bill, how much change do they receive?",
+    "questionFr": "À Tim Hortons, un client achète un café pour 3,50 $ et un doigt de pain pour 1,25 $. S'il paie avec un billet de 5 $, combien d'argent lui reste-t-il?",
     "choices": [
-      "-7°C",
-      "7°C",
-      "-17°C",
-      "17°C"
+      "$0.25",
+      "$0.50",
+      "$0.75",
+      "$1.00"
     ],
-    "answer": "7°C",
-    "hint": "Subtract the initial temperature from the final temperature.",
+    "answer": "$0.25",
+    "hint": "Add the total cost and subtract from the amount paid.",
     "steps": [
-      "Calculate the difference: -12°C - (-5°C) = -12 + 5 = -7°C",
-      "The absolute value is 7°C (drop)"
+      "Calculate 3.50 + 1.25 = 4.75 $.",
+      "Subtract 4.75 from 5.00 to get 0.25 $."
+    ]
+  },
+  {
+    "grade": 7,
+    "topic": "Surface Area",
+    "question": "A camping tent is a rectangular prism with length 2 m, width 1.5 m, and height 1 m. What is its surface area?",
+    "questionFr": "Une tente de camping est un prisme rectangulaire avec une longueur de 2 m, une largeur de 1,5 m et une hauteur de 1 m. Quelle est sa surface totale?",
+    "choices": [
+      "10",
+      "12",
+      "13",
+      "15"
+    ],
+    "answer": "13",
+    "hint": "Use the formula for surface area of a rectangular prism.",
+    "steps": [
+      "Calculate 2 × (lw + lh + wh) = 2 × (3 + 2 + 1.5).",
+      "Simplify to 2 × 6.5 = 13 m²."
     ]
   },
   {
     "grade": 7,
     "topic": "Probability",
-    "question": "In a maple syrup farm, 3 out of 10 trees produce syrup. What is the probability of randomly selecting a tree that produces syrup?",
-    "questionFr": "Dans une ferme de sirop d'érable, 3 sur 10 arbres produisent du sirop.\nQuelle est la probabilité de sélectionner au hasard un arbre qui produit du sirop ?",
+    "question": "A spinner has 8 equal sections: 2 red, 3 blue, 1 green, and 2 yellow. What is the probability of landing on red?",
+    "questionFr": "Une roue à dés a 8 sections égales : 2 rouges, 3 bleues, 1 verte et 2 jaunes. Quelle est la probabilité de tomber sur rouge?",
     "choices": [
-      "3/10",
-      "1/3",
-      "3/7",
-      "1/10"
+      "1/2",
+      "1/4",
+      "1/8",
+      "3/8"
     ],
-    "answer": "3/10",
-    "hint": "Divide the number of favorable outcomes by the total number of outcomes.",
+    "answer": "1/4",
+    "hint": "Divide the number of red sections by the total number of sections.",
     "steps": [
-      "Favorable outcomes: 3 trees",
-      "Total outcomes: 10 trees",
-      "Probability: 3/10"
+      "Count red sections: 2 out of 8 total.",
+      "Simplify 2/8 to 1/4."
     ]
   },
   {
     "grade": 8,
     "topic": "Pythagorean Theorem",
-    "question": "During a hockey game, a player skates diagonally from one corner of the rink to the opposite corner. If the rink is 24 meters long and 18 meters wide, how far does the player skate? (Round to the nearest meter.)",
-    "questionFr": "Pendant un match de hockey, un joueur glisse diagonalement d'un coin de la patinoire à l'autre. Si la patinoire mesure 24 mètres de long et 18 mètres de large, combien de mètres le joueur glisse-t-il? (Arrondissez à l'entier le plus proche.)",
+    "question": "A hockey player is 8 meters away from the goal line and 6 meters from the side of the net. How far is the player from the top corner of the net?",
+    "questionFr": "Un joueur de hockey est à 8 mètres de la ligne de but et à 6 mètres du côté du filet. À quelle distance le joueur est-il du coin supérieur du filet?",
     "choices": [
-      "24",
-      "30",
-      "36",
-      "40"
+      "5",
+      "10",
+      "15",
+      "20"
     ],
-    "answer": "30",
-    "hint": "Use the Pythagorean theorem to find the hypotenuse of a right triangle.",
+    "answer": "10",
+    "hint": "Use the Pythagorean theorem to find the hypotenuse of a right triangle with legs 8 meters and 6 meters.",
     "steps": [
-      "Draw a right triangle with legs 24m and 18m.",
-      "Calculate sqrt(24² + 18²) = sqrt(900) = 30m."
+      "Calculate 8² + 6² = 64 + 36 = 100",
+      "Take the square root of 100 to find the hypotenuse: √100 = 10"
     ]
   },
   {
     "grade": 8,
     "topic": "Percent Increase",
-    "question": "Tim Hortons increased the price of its coffee from $2.50 to $3.00. By what percentage did the price increase?",
-    "questionFr": "Tim Hortons a augmenté le prix de son café de 2,50 $ à 3,00 $. De quel pourcentage a augmenté le prix?",
+    "question": "A Tim Hortons coffee was originally $2.50 and increased by 10%. What is the new price?",
+    "questionFr": "Un café Tim Hortons coûtait initialement 2,50 $ et a augmenté de 10 %. Quel est le nouveau prix?",
     "choices": [
-      "15%",
-      "20%",
-      "25%",
-      "30%"
+      "$2.50",
+      "$2.75",
+      "$3.00",
+      "$3.25"
     ],
-    "answer": "20%",
-    "hint": "Calculate the difference and divide by the original price.",
+    "answer": "$2.75",
+    "hint": "Calculate 10% of $2.50 and add it to the original price.",
     "steps": [
-      "Find the difference: $3.00 - $2.50 = $0.50.",
-      "Divide $0.50 by $2.50 to get 0.20 (20%)."
+      "Find 10% of $2.50: 2.50 × 0.10 = 0.25",
+      "Add to original price: 2.50 + 0.25 = 2.75"
     ]
   },
   {
     "grade": 8,
     "topic": "Slope",
-    "question": "While camping, a group hikes up a hill with a vertical rise of 15 meters over a horizontal distance of 30 meters. What is the slope of the hill?",
-    "questionFr": "Tandis qu'ils campent, un groupe marche vers une colline avec une montée verticale de 15 mètres sur une distance horizontale de 30 mètres. Quelle est la pente de la colline?",
+    "question": "A skateboard ramp has a vertical height of 2 meters and a horizontal length of 10 meters. What is the slope of the ramp?",
+    "questionFr": "Un plan incliné de skateboard a une hauteur verticale de 2 mètres et une longueur horizontale de 10 mètres. Quelle est la pente du plan incliné?",
     "choices": [
-      "1/2",
-      "1/3",
-      "2/3",
-      "3/4"
+      "2%",
+      "10%",
+      "20%",
+      "50%"
     ],
-    "answer": "1/2",
-    "hint": "Slope is calculated as vertical change divided by horizontal change.",
+    "answer": "20%",
+    "hint": "Divide the vertical rise by the horizontal run and convert to a percentage.",
     "steps": [
-      "Divide vertical rise (15m) by horizontal distance (30m).",
-      "Simplify 15/30 = 1/2."
+      "Calculate slope as 2/10 = 0.2",
+      "Convert to percentage: 0.2 × 100 = 20%"
     ]
   },
   {
     "grade": 8,
     "topic": "Two-Step Equations",
-    "question": "A school fundraiser sells 15 posters at $3 each and 20 stickers at $1 each. If the total amount raised is $65, how many posters were sold?",
-    "questionFr": "Un rassemblement scolaire vend 15 affiches à 3 $ chacune et 20 autocollants à 1 $ chacun. Si le montant total récolté est de 65 $, combien d'affiches ont été vendues?",
+    "question": "In a hockey game, a team scored 3 more goals than their opponent. If the total goals scored by both teams were 15, how many goals did the team score?",
+    "questionFr": "Dans un match de hockey, une équipe a marqué 3 buts de plus que leur adversaire. Si le total des buts marqués par les deux équipes était de 15, combien de buts l’équipe a-t-elle marqués?",
     "choices": [
-      "15",
-      "18",
-      "20",
-      "22"
+      "6",
+      "9",
+      "12",
+      "15"
     ],
-    "answer": "15",
-    "hint": "Subtract the known amount from the total first.",
+    "answer": "9",
+    "hint": "Let x be the opponent's goals; the team's goals are x + 3. Set up an equation for the total.",
     "steps": [
-      "Set up equation: 3x + 20 = 65.",
-      "Subtract 20: 3x = 45, then divide by 3: x = 15."
+      "Let x = opponent's goals, then x + (x + 3) = 15",
+      "Solve: 2x + 3 = 15 → 2x = 12 → x = 6; team's goals = 6 + 3 = 9"
     ]
   },
   {
     "grade": 8,
     "topic": "Statistics",
-    "question": "A school collected data on the number of cans recycled by students. The mean number of cans per student is 45, and the total is 450 cans. How many students participated?",
-    "questionFr": "Une école a recueilli des données sur le nombre de bouteilles recyclées par les élèves. La moyenne est de 45 bouteilles par élève, et le total est de 450 bouteilles. Combien d'élèves ont participé?",
+    "question": "A school survey found 40% prefer chocolate chip cookies, 25% prefer oatmeal, 20% prefer fruit, and the rest prefer other snacks. If 100 students were surveyed, how many prefer other snacks?",
+    "questionFr": "Un sondage scolaire a révélé que 40 % préfèrent les cookies au chocolat, 25 % les céréales, 20 % les fruits, et le reste préfère d'autres collations. Si 100 élèves ont été sondés, combien préfèrent d'autres collations?",
     "choices": [
-      "9",
       "10",
-      "11",
-      "12"
+      "15",
+      "20",
+      "25"
     ],
-    "answer": "10",
-    "hint": "Use the formula: Total = Mean × Number of students.",
+    "answer": "15",
+    "hint": "Subtract the sum of the known percentages from 100% to find the remaining percentage.",
     "steps": [
-      "Divide total cans (450) by mean per student (45).",
-      "450 ÷ 45 = 10 students."
-    ]
-  },
-  {
-    "grade": 9,
-    "topic": "Similar Triangles",
-    "question": "During a hockey game, a player's shadow is 3 meters long when the goalpost is 2.5 meters tall. If the sun casts a shadow of the goalpost that is 5 meters long, how tall is the player? (Assume the sun's rays are parallel.)",
-    "questionFr": "Pendant un match de hockey, l'ombre d'un joueur mesure 3 mètres lorsqu'un poteau de but mesure 2,5 mètres de haut. Si le soleil projette une ombre du poteau de but de 5 mètres de long, combien mesure le joueur ? (Supposez que les rayons du soleil sont parallèles.)",
-    "choices": [
-      "4.5 m",
-      "5.5 m",
-      "6.0 m",
-      "6.5 m"
-    ],
-    "answer": "6.0 m",
-    "hint": "Use proportions based on similar triangles.",
-    "steps": [
-      "Set up ratio: player height / 3 = 2.5 / 5",
-      "Cross-multiply and solve for player height"
-    ]
-  },
-  {
-    "grade": 9,
-    "topic": "Percent Applications",
-    "question": "At Tim Hortons, a large coffee costs $3.50. With a 15% discount for students, how much does a student pay for 2 coffees? (Round to nearest cent.)",
-    "questionFr": "À Tim Hortons, un café grand mesure $3,50. Avec une réduction de 15 % pour les étudiants, combien un étudiant paie-t-il pour 2 cafés ? (Arrondissez au centime le plus proche.)",
-    "choices": [
-      "$5.95",
-      "$6.25",
-      "$6.55",
-      "$6.85"
-    ],
-    "answer": "$6.55",
-    "hint": "Calculate the discount first, then subtract from original price.",
-    "steps": [
-      "Find 15% of $3.50: 0.15 * 3.50 = $0.525",
-      "Subtract discount from one coffee: $3.50 - $0.525 = $2.975, then multiply by 2"
-    ]
-  },
-  {
-    "grade": 9,
-    "topic": "Polynomials",
-    "question": "A camping trailer has a rectangular floor with length (x + 4) meters and width (x - 2) meters. What is the area of the floor in expanded form?",
-    "questionFr": "Une remorque de camping a un plancher rectangulaire avec une longueur de (x + 4) mètres et une largeur de (x - 2) mètres. Quelle est l'aire du plancher sous forme développée ?",
-    "choices": [
-      "x² + 2x - 8",
-      "x² + 6x + 8",
-      "x² + 2x + 8",
-      "x² - 6x + 8"
-    ],
-    "answer": "x² + 2x - 8",
-    "hint": "Multiply the binomials using the distributive property.",
-    "steps": [
-      "Use FOIL method: (x)(x) + (x)(-2) + (4)(x) + (4)(-2)",
-      "Combine like terms"
+      "Calculate total known percentages: 40 + 25 + 20 = 85%",
+      "Find remaining percentage: 100 - 85 = 15%",
+      "Calculate number of students: 15% of 100 = 15"
     ]
   },
   {
     "grade": 9,
     "topic": "Linear Equations",
-    "question": "A school has 500 students. If 60% are in Grade 9 and the rest are split evenly between Grades 10-12, how many students are in Grade 10?",
-    "questionFr": "Une école compte 500 élèves. Si 60 % sont en 9e année et le reste est réparti équitablement entre les années 10 à 12, combien d'élèves sont en 10e année ?",
+    "question": "A hockey player scores 2 goals per game. After 5 games, they have 15 goals. How many games will it take to reach 25 goals? (Use the equation: Total goals = 2x + 5).",
+    "questionFr": "Un joueur de hockey marque 2 buts par match. Après 5 matchs, il a 15 buts. Combien de matchs faudra-t-il pour atteindre 25 buts? (Utilisez l'équation: Buts totaux = 2x + 5).",
     "choices": [
-      "100",
-      "125",
-      "150",
-      "175"
+      "3",
+      "5",
+      "7",
+      "8"
     ],
-    "answer": "125",
-    "hint": "Calculate the number of students not in Grade 9 first.",
+    "answer": "5",
+    "hint": "Start by writing the equation for total goals and solve for x.",
     "steps": [
-      "Find 40% of 500: 0.4 * 500 = 200 students",
-      "Divide by 3 grades: 200 / 3 ≈ 66.67, but round to nearest whole number"
+      "Write the equation: 25 = 2x + 5",
+      "Subtract 5 from both sides: 20 = 2x, then divide by 2: x = 10"
+    ]
+  },
+  {
+    "grade": 9,
+    "topic": "Polynomials",
+    "question": "A store sells maple syrup in 2L bottles for $4.50 each. If a customer buys 3 bottles and pays with a $20 bill, how much change do they get? (Calculate using 2L bottles: 4.50x + 3.50).",
+    "questionFr": "Un magasin vend du sirop d'érable en bouteilles de 2L à 4,50 $ chacune. Si un client achète 3 bouteilles et paie avec un billet de 20 $, combien d'argent lui reste-t-il? (Calculez en utilisant 4,50x + 3,50).",
+    "choices": [
+      "$4.00",
+      "$5.50",
+      "$7.50",
+      "$9.50"
+    ],
+    "answer": "$7.50",
+    "hint": "Multiply the cost per bottle by the number of bottles and subtract from $20.",
+    "steps": [
+      "Calculate total cost: 4.50 * 3 = 13.50",
+      "Subtract from $20: 20 - 13.50 = 6.50"
+    ]
+  },
+  {
+    "grade": 9,
+    "topic": "Graphing Lines",
+    "question": "At Tim Hortons, a coffee costs $2.50. If you buy 10 coffees, you get a $5 discount. What is the total cost for 10 coffees? (Equation: y = 2.50x - 5).",
+    "questionFr": "À Tim Hortons, un café coûte 2,50 $. Si vous achetez 10 cafés, vous obtenez une réduction de 5 $. Quel est le coût total pour 10 cafés? (Équation: y = 2.50x - 5).",
+    "choices": [
+      "$20.00",
+      "$25.00",
+      "$27.50",
+      "$30.00"
+    ],
+    "answer": "$20.00",
+    "hint": "Plug x = 10 into the equation and calculate.",
+    "steps": [
+      "Substitute x = 10: y = 2.50(10) - 5",
+      "Calculate: 25 - 5 = 20"
+    ]
+  },
+  {
+    "grade": 9,
+    "topic": "Similar Triangles",
+    "question": "During a camping trip, a camper uses a 1.5m stick to measure the height of a tree. The stick's shadow is 2m, and the tree's shadow is 8m. How tall is the tree? (Similar triangles: stick height/shadow = tree height/shadow).",
+    "questionFr": "Pendant un voyage de camping, un campeur utilise un bâton de 1,5m pour mesurer la hauteur d'un arbre. L'ombre du bâton est de 2m, et l'ombre de l'arbre est de 8m. Combien mesure l'arbre? (Triangles semblables: hauteur du bâton/ombre = hauteur de l'arbre/ombre).",
+    "choices": [
+      "3.0m",
+      "5.5m",
+      "6.0m",
+      "8.5m"
+    ],
+    "answer": "6.0m",
+    "hint": "Set up a proportion using the ratios of height to shadow.",
+    "steps": [
+      "Write proportion: 1.5/2 = x/8",
+      "Cross-multiply: 2x = 12, then x = 6"
     ]
   },
   {
     "grade": 9,
     "topic": "Trigonometry",
-    "question": "A ladder is leaning against a building at a 30° angle. If the ladder is 8 meters long, how high does it reach on the building? (Round to nearest tenth.)",
-    "questionFr": "Un échafaudage est appuyé contre un immeuble à un angle de 30°. Si le échafaudage mesure 8 mètres de long, à quelle hauteur atteint-il le immeuble ? (Arrondissez au dixième près.)",
+    "question": "A ladder is leaning against a building, forming a 30° angle with the ground. If the ladder is 10m long, how high up the building does it reach? (Use sin(30°) = opposite/hypotenuse).",
+    "questionFr": "Une échelle est appuyée contre un immeuble, formant un angle de 30° avec le sol. Si l'échelle mesure 10m, à quelle hauteur l'atteint-elle? (Utilisez sin(30°) = opposé/hypoténuse).",
     "choices": [
-      "4.0 m",
-      "6.9 m",
-      "7.5 m",
-      "8.0 m"
+      "5.0m",
+      "8.7m",
+      "9.5m",
+      "10.0m"
     ],
-    "answer": "4.0 m",
-    "hint": "Use sine ratio (opposite side over hypotenuse).",
+    "answer": "5.0m",
+    "hint": "Use the sine ratio and solve for the opposite side.",
     "steps": [
-      "Identify opposite side (height) and hypotenuse (ladder length)",
-      "Apply sin(30°) = height / 8, solve for height"
+      "Set up equation: sin(30°) = height/10",
+      "Calculate: height = 10 * 0.5 = 5"
     ]
   },
   {
     "grade": 10,
-    "topic": "Quadratic Equations",
-    "question": "During a hockey game, a player shoots a puck that follows the path of the quadratic equation h(t) = -5t² + 20t + 2. At what time t does the puck reach a height of 12 meters? (t is in seconds)",
-    "questionFr": "Pendant un match de hockey, un joueur tire une balle de neige qui suit le chemin de l'équation quadratique h(t) = -5t² + 20t + 2. À quel moment t la balle atteint-elle une hauteur de 12 mètres? (t est en secondes)",
+    "topic": "Quadratics",
+    "question": "A hockey player shoots a puck with an initial velocity of 15 m/s upwards. The height of the puck is modeled by h(t) = -5t² + 15t + 2. What is the maximum height reached by the puck?",
+    "questionFr": "Un joueur de hockey lance une rondelle avec une vitesse initiale de 15 m/s vers le haut. La hauteur de la rondelle est modélisée par h(t) = -5t² + 15t + 2. Quelle est la hauteur maximale atteinte par la rondelle?",
     "choices": [
-      "1 second",
-      "2 seconds",
-      "3 seconds",
-      "4 seconds"
+      "12.5 m",
+      "13.5 m",
+      "14.5 m",
+      "15.5 m"
     ],
-    "answer": "2 seconds",
-    "hint": "Set h(t) = 12 and solve the quadratic equation.",
+    "answer": "14.5 m",
+    "hint": "Find the vertex of the parabola using the formula t = -b/(2a).",
     "steps": [
-      "Subtract 12 from both sides to get -5t² + 20t -10 = 0.",
-      "Factor or use quadratic formula to find t = 2 seconds."
+      "Calculate the time at which the height is maximum using t = -b/(2a).",
+      "Substitute t into the equation to find the maximum height."
     ]
   },
   {
     "grade": 10,
     "topic": "Systems of Equations",
-    "question": "At Tim Hortons, a customer buys 3 hot chocolates and 2 doughnuts for $11.50, and 2 hot chocolates and 3 doughnuts for $9.50. How much does one doughnut cost?",
-    "questionFr": "À Tim Hortons, un client achète 3 chocs et 2 beignets pour 11,50 $, et 2 chocs et 3 beignets pour 9,50 $. Combien coûte un beignet?",
+    "question": "At Tim Hortons, 2 coffees and 3 muffins cost $12, while 4 coffees and 1 muffin cost $16. How much does one muffin cost?",
+    "questionFr": "Au Tim Hortons, 2 cafés et 3 muffins coûtent $12, alors que 4 cafés et 1 muffin coûtent $16. Combien coûte un muffin?",
     "choices": [
-      "$2.00",
-      "$2.50",
-      "$3.00",
-      "$3.50"
+      "$2",
+      "$3",
+      "$4",
+      "$5"
     ],
-    "answer": "$2.50",
-    "hint": "Let variables represent prices and create two equations.",
+    "answer": "$2",
+    "hint": "Set up two equations and solve using substitution or elimination.",
     "steps": [
-      "Let c = cost of hot chocolate, d = cost of doughnut. Set up equations: 3c + 2d = 11.50 and 2c + 3d = 9.50.",
-      "Solve using elimination: multiply first equation by 3, second by 2, subtract to find d = 2.50."
+      "Let x = coffee price and y = muffin price. Write equations: 2x + 3y = 12 and 4x + y = 16.",
+      "Use elimination to find the value of y."
     ]
   },
   {
     "grade": 10,
-    "topic": "Surface Area",
-    "question": "A camping tent is shaped like a triangular prism with a base of 2m, height of 1.5m, and length of 3m. What is its total surface area?",
-    "questionFr": "Un abri de camping a la forme d'un prisme triangulaire avec une base de 2 m, une hauteur de 1,5 m et une longueur de 3 m. Quelle est sa surface totale?",
+    "topic": "Circle Geometry",
+    "question": "A circular track has a radius of 15 m. If a runner completes 3 laps, what is the total distance covered?",
+    "questionFr": "Un circuit circulaire a un rayon de 15 m. Si un coureur effectue 3 tours, quelle est la distance totale parcourue?",
     "choices": [
-      "12 m²",
-      "15 m²",
-      "18 m²",
-      "21 m²"
+      "282.74 m",
+      "285.5 m",
+      "290.0 m",
+      "300.0 m"
     ],
-    "answer": "18 m²",
-    "hint": "Calculate the area of each face and sum them.",
+    "answer": "282.74 m",
+    "hint": "Calculate the circumference first and multiply by the number of laps.",
     "steps": [
-      "Find the area of the two triangular ends: 2*(1/2 * 2 * 1.5) = 3 m².",
-      "Find the area of the three rectangular sides: 2*(2*3) + (1.5*3) = 12 + 4.5 = 16.5 m². Total = 3 + 16.5 = 19.5 m². Wait, this needs correction. Actual correct steps: 2*(1/2 * 2 *1.5) + (2+1.5)*3 = 3 + 10.5 = 13.5 m². Hmm, this shows the need for precise calculation. Let me adjust the steps properly."
+      "Calculate circumference using C = 2πr.",
+      "Multiply by 3 to find the total distance."
+    ]
+  },
+  {
+    "grade": 10,
+    "topic": "Surface Area/Volume",
+    "question": "A camping tent is shaped like a triangular prism with base 2 m, height 3 m, and length 4 m. What is its volume?",
+    "questionFr": "Un abri de camping a la forme d'un prisme triangulaire avec base 2 m, hauteur 3 m, et longueur 4 m. Quel est son volume?",
+    "choices": [
+      "12 m³",
+      "10 m³",
+      "14 m³",
+      "16 m³"
+    ],
+    "answer": "12 m³",
+    "hint": "Use the formula for the volume of a triangular prism.",
+    "steps": [
+      "Calculate the area of the triangular base: (base × height)/2.",
+      "Multiply by the length of the prism to find the volume."
     ]
   },
   {
     "grade": 10,
     "topic": "Trigonometry",
-    "question": "A maple syrup producer needs to know the height of a maple tree. If the angle of elevation from a point 10m away is 60°, what is the tree’s height?",
-    "questionFr": "Un producteur de sirop d'érable doit connaître la hauteur d'un érable. Si l'angle d'élévation depuis un point à 10 m est de 60°, quelle est la hauteur de l'érable?",
+    "question": "A maple syrup barrel is a cylinder with radius 10 cm and height 40 cm. What is its volume in cubic centimeters?",
+    "questionFr": "Un tonneau de sirop d'érable est un cylindre avec rayon 10 cm et hauteur 40 cm. Quel est son volume en centimètres cubes?",
     "choices": [
-      "10 m",
-      "17.32 m",
-      "20 m",
-      "25 m"
+      "4000 cm³",
+      "12560 cm³",
+      "1256 cm³",
+      "4000π cm³"
     ],
-    "answer": "17.32 m",
-    "hint": "Use tangent ratio (opposite/adjacent).",
-    "steps": [
-      "tan(60°) = height / 10m → height = 10 * tan(60°).",
-      "Calculate tan(60°) ≈ 1.732, so height ≈ 10 * 1.732 = 17.32 m."
-    ]
-  },
-  {
-    "grade": 10,
-    "topic": "Volume of 3D Shapes",
-    "question": "A cylindrical can of Tim Hortons pop has a radius of 5 cm and height of 15 cm. What is its volume?",
-    "questionFr": "Un cannette de pop de Tim Hortons a un rayon de 5 cm et une hauteur de 15 cm. Quel est son volume?",
-    "choices": [
-      "375 cm³",
-      "750 cm³",
-      "1178 cm³",
-      "2356 cm³"
-    ],
-    "answer": "1178 cm³",
+    "answer": "4000π cm³",
     "hint": "Use the formula for the volume of a cylinder.",
     "steps": [
-      "Volume = πr²h = π*(5²)*15 = π*25*15 = 375π cm³.",
-      "Calculate 375 * 3.1416 ≈ 1178 cm³."
+      "Recall the formula V = πr²h.",
+      "Substitute r = 10 cm and h = 40 cm into the formula."
     ]
   },
   {
     "grade": 11,
     "topic": "Financial Math",
-    "question": "A student saves $500 in a savings account with 5% annual interest compounded monthly. After 3 years, how much money will they have? (Use A = P(1 + r/n)^(nt))",
-    "questionFr": "Un étudiant épargne 500 $ dans un compte d'épargne avec un taux d'intérêt annuel de 5 % composé mensuellement. Après 3 ans, combien d'argent aura-t-il? (Utilisez A = P(1 + r/n)^(nt))",
+    "question": "A hockey player saves $200 in a piggy bank for new equipment. If the bank offers 5% simple interest annually, how much will the total amount be after 2 years? (Assume no fees)",
+    "questionFr": "Un joueur de hockey économise 200 $ dans une tirelire pour de nouveaux équipements. Si la banque offre 5 % d'intérêt simple annuellement, combien y aura-t-il au total après 2 ans ? (Supposer aucun frais)",
     "choices": [
-      "$580.12",
-      "$600.25",
-      "$620.37",
-      "$650.50"
+      "$220",
+      "$225",
+      "$230",
+      "$240"
     ],
-    "answer": "$580.12",
-    "hint": "Use the compound interest formula and calculate the exponent first.",
+    "answer": "$220",
+    "hint": "Use the simple interest formula: Total = Principal + (Principal × Rate × Time)",
     "steps": [
-      "Calculate the monthly interest rate: 5% / 12 = 0.4167%.",
-      "Apply the formula: 500*(1 + 0.004167)^36 = 580.12"
-    ]
-  },
-  {
-    "grade": 11,
-    "topic": "Logarithms",
-    "question": "A maple syrup producer measures the pH of their syrup as 4.5. What is the hydrogen ion concentration [H+] in mol/L? (pH = -log[H+])",
-    "questionFr": "Un producteur de sirop d'érable mesure le pH de son sirop à 4,5. Quelle est la concentration en ions hydrogène [H+] en mol/L? (pH = -log[H+])",
-    "choices": [
-      "1.0 x 10^-4",
-      "1.0 x 10^-5",
-      "1.0 x 10^-6",
-      "1.0 x 10^-7"
-    ],
-    "answer": "1.0 x 10^-5",
-    "hint": "Rearrange the pH formula to solve for [H+].",
-    "steps": [
-      "Rewrite pH = -log[H+] as [H+] = 10^(-pH).",
-      "Calculate 10^(-4.5) = 3.16 x 10^-5 ≈ 1.0 x 10^-5 (rounded)"
+      "Calculate interest: 200 × 0.05 × 2 = 20",
+      "Add interest to principal: 200 + 20 = 220"
     ]
   },
   {
     "grade": 11,
     "topic": "Sequences/Series",
-    "question": "A camping group hikes 5 km on day 1, increasing by 1 km daily for 7 days. What is the total distance hiked? (Use arithmetic series formula)",
-    "questionFr": "Un groupe de camping fait 5 km le premier jour, augmentant de 1 km quotidiennement pendant 7 jours. Quelle est la distance totale parcourue? (Utilisez la formule de la série arithmétique)",
+    "question": "A maple syrup farmer sells 100L in week 1, 150L in week 2, and 200L in week 3. If this pattern continues, how many liters will they sell in week 7?",
+    "questionFr": "Un fermier de sirop d'érable vend 100 L la première semaine, 150 L la deuxième, et 200 L la troisième. Si ce motif continue, combien de litres vendra-t-il la septième semaine ?",
     "choices": [
-      "42 km",
-      "56 km",
-      "63 km",
-      "70 km"
+      "750",
+      "800",
+      "850",
+      "900"
     ],
-    "answer": "56 km",
-    "hint": "Find the last term first, then apply the sum formula.",
+    "answer": "850",
+    "hint": "Identify the common difference in the sequence",
     "steps": [
-      "Last term = 5 + (7-1)*1 = 11 km.",
-      "Sum = (7/2)*(5 + 11) = 56 km"
+      "Determine the arithmetic sequence: common difference = 50L",
+      "Use formula: a₇ = a₁ + (n-1)d = 100 + 6×50 = 400"
     ]
   },
   {
     "grade": 11,
-    "topic": "Trigonometry",
-    "question": "A hockey player's stick is 1.2 m long. If the angle between the stick and the ice is 30°, what is the height of the puck above the ice when shot? (Use sin θ = opposite/hypotenuse)",
-    "questionFr": "Un bâton de hockey mesure 1,2 m de long. Si l'angle entre le bâton et la glace est de 30°, quelle est la hauteur du puck au-dessus de la glace lorsqu'il est tiré? (Utilisez sin θ = opposé/hypothénuse)",
+    "topic": "Logarithms",
+    "question": "A Tim Hortons coffee has a pH of 4.5. What is the hydrogen ion concentration [H⁺] in moles per liter? (pH = -log[H⁺])",
+    "questionFr": "Un café Tim Hortons a un pH de 4,5. Quelle est la concentration d'ions hydrogène [H⁺] en moles par litre ? (pH = -log[H⁺])",
     "choices": [
-      "0.5 m",
-      "0.6 m",
-      "0.7 m",
-      "0.8 m"
+      "3.2×10⁻⁴",
+      "3.2×10⁻⁵",
+      "3.2×10⁻³",
+      "3.2×10⁻²"
     ],
-    "answer": "0.6 m",
-    "hint": "Identify the opposite side and use sine ratio.",
+    "answer": "3.2×10⁻⁵",
+    "hint": "Rearrange the pH formula to solve for [H⁺]",
     "steps": [
-      "Sin(30°) = height / 1.2 → height = 1.2 * 0.5 = 0.6 m.",
-      "Check units and significant figures"
+      "Convert pH to [H⁺]: [H⁺] = 10⁻⁴·⁵",
+      "Calculate 10⁻⁴·⁵ ≈ 3.2×10⁻⁵"
     ]
   },
   {
     "grade": 11,
     "topic": "Functions",
-    "question": "A local Tim Hortons sells 100 maple syrup bottles weekly. If sales increase by 20 bottles each week, how many bottles will be sold in week 5? (Linear function: f(n) = 100 + 20n)",
-    "questionFr": "Un local Tim Hortons vend 100 bouteilles de sirop d'érable hebdomadairement. Si les ventes augmentent de 20 bouteilles chaque semaine, combien de bouteilles seront vendues à la semaine 5? (Fonction linéaire: f(n) = 100 + 20n)",
+    "question": "A jar contains 10 loonies and 15 toonies. If the total value is f(x) = 0.25x + 0.50(15 - x), what is the total value when x = 5?",
+    "questionFr": "Un récipient contient 10 loonies et 15 toonies. Si la valeur totale est f(x) = 0,25x + 0,50(15 - x), quelle est la valeur totale lorsque x = 5 ?",
     "choices": [
-      "200 bottles",
-      "220 bottles",
-      "240 bottles",
-      "260 bottles"
+      "$7.50",
+      "$8.50",
+      "$9.50",
+      "$10.50"
     ],
-    "answer": "220 bottles",
-    "hint": "Substitute n = 5 into the function.",
+    "answer": "$8.50",
+    "hint": "Substitute x = 5 into the function and simplify",
     "steps": [
-      "Plug n = 5 into f(n) = 100 + 20*5 = 100 + 100 = 200.",
-      "Verify the pattern matches the weekly increase"
-    ]
-  },
-  {
-    "grade": 12,
-    "topic": "Derivatives",
-    "question": "A hockey puck's height above the ice is modeled by h(t) = -4.9t² + 10t + 1. What is the rate of change of its height at t=2 seconds? (Round to one decimal place)",
-    "questionFr": "La hauteur d'une rondelle de hockey au-dessus de la glace est modélisée par h(t) = -4.9t² + 10t + 1. Quelle est le taux de changement de sa hauteur à t=2 secondes? (Arrondir à une décimale)",
-    "choices": [
-      "-9.6",
-      "10.0",
-      "12.5",
-      "15.2"
-    ],
-    "answer": "-9.6",
-    "hint": "Find the derivative of h(t) and evaluate at t=2.",
-    "steps": [
-      "Differentiate h(t) to get h'(t) = -9.8t + 10.",
-      "Substitute t=2 into h'(t) to calculate the rate of change."
-    ]
-  },
-  {
-    "grade": 12,
-    "topic": "Combinations/Permutations",
-    "question": "At Tim Hortons, a customer wants to choose 3 items from 8 on the menu. How many different combinations are possible?",
-    "questionFr": "À Tim Hortons, un client veut choisir 3 items parmi 8 sur le menu. Combien de combinaisons différentes sont possibles?",
-    "choices": [
-      "28",
-      "35",
-      "56",
-      "70"
-    ],
-    "answer": "56",
-    "hint": "Use the combination formula C(n, k) = n! / (k!(n-k)!)",
-    "steps": [
-      "Calculate 8! / (3! * 5!) = (40320) / (6 * 120) = 56.",
-      "Verify the calculation using factorial simplification."
+      "Calculate 0.25(5) + 0.50(10) = 1.25 + 5.00",
+      "Total = $6.25 + $5.00 = $8.50"
     ]
   },
   {
     "grade": 12,
     "topic": "Vectors",
-    "question": "During a camping trip, a hiker walks 3 km east, then 4 km north. What is the magnitude of the hiker's total displacement vector?",
-    "questionFr": "Pendant une randonnée en camping, un randonneur marche 3 km est, puis 4 km nord. Quelle est la magnitude du vecteur de déplacement total du randonneur?",
+    "question": "A hockey player passes the puck 12 meters east and then 9 meters north. What is the magnitude of the resultant vector?",
+    "questionFr": "Un joueur de hockey passe la balle 12 mètres est et ensuite 9 mètres nord. Quelle est la magnitude du vecteur résultant?",
     "choices": [
-      "3 km",
-      "4 km",
-      "5 km",
-      "7 km"
+      "15 m",
+      "21 m",
+      "18 m",
+      "20 m"
     ],
-    "answer": "5 km",
-    "hint": "Use the Pythagorean theorem for displacement vectors.",
+    "answer": "15 m",
+    "hint": "Use the Pythagorean theorem to find the resultant vector's magnitude.",
     "steps": [
-      "Draw the displacement vectors as legs of a right triangle.",
-      "Calculate √(3² + 4²) = √(9 + 16) = √25 = 5 km."
+      "Calculate the east-west and north-south components.",
+      "Apply the Pythagorean theorem: √(12² + 9²)"
+    ]
+  },
+  {
+    "grade": 12,
+    "topic": "Probability",
+    "question": "At Tim Hortons, a customer selects a coffee size (small, medium, large) and a type (black, cappuccino, latte). What is the probability of choosing a medium cappuccino?",
+    "questionFr": "Dans un Tim Hortons, un client choisit une taille de café (petit, moyen, grand) et un type (noir, cappuccino, latte). Quelle est la probabilité de choisir un cappuccino moyen?",
+    "choices": [
+      "1/12",
+      "1/4",
+      "1/3",
+      "1/6"
+    ],
+    "answer": "1/12",
+    "hint": "Multiply the probabilities of independent choices.",
+    "steps": [
+      "Determine the total number of combinations (3 sizes × 3 types = 9).",
+      "Calculate the probability: 1 favorable outcome / 9 total outcomes"
+    ]
+  },
+  {
+    "grade": 12,
+    "topic": "Combinations",
+    "question": "A maple syrup store offers 5 different flavors. How many ways can a customer choose 3 distinct flavors?",
+    "questionFr": "Un magasin de sirop d'érable offre 5 saveurs différentes. Combien de façons un client peut-il choisir 3 saveurs distinctes?",
+    "choices": [
+      "10",
+      "15",
+      "20",
+      "25"
+    ],
+    "answer": "10",
+    "hint": "Use the combination formula C(n, r) = n! / (r!(n−r)!).",
+    "steps": [
+      "Identify n = 5 and r = 3.",
+      "Calculate 5! / (3! × 2!) = 10"
+    ]
+  },
+  {
+    "grade": 12,
+    "topic": "Derivatives",
+    "question": "A company's profit function is P(x) = -2x² + 20x - 10. What is the maximum profit?",
+    "questionFr": "La fonction de profit d'une entreprise est P(x) = -2x² + 20x - 10. Quel est le profit maximum?",
+    "choices": [
+      "$20",
+      "$25",
+      "$30",
+      "$40"
+    ],
+    "answer": "$40",
+    "hint": "Find the vertex of the parabola using calculus.",
+    "steps": [
+      "Take the derivative: P'(x) = -4x + 20.",
+      "Set P'(x) = 0 and solve for x = 5; calculate P(5) = 40"
     ]
   },
   {
     "grade": 12,
     "topic": "Probability Distributions",
-    "question": "A maple syrup producer tests 12 batches, with 25% failing quality checks. What is the probability exactly 3 batches fail? (Use binomial formula)",
-    "questionFr": "Un producteur de sirop d'érable teste 12 lots, avec 25% de rejet. Quelle est la probabilité que exactement 3 lots échouent? (Utiliser la formule binomiale)",
+    "question": "During a 5-day camping trip, there's a 30% chance of rain each day. What is the expected number of rainy days?",
+    "questionFr": "Pendant un voyage de camping de 5 jours, il y a 30% de chances de pluie chaque jour. Quel est le nombre attendu de jours pluvieux?",
     "choices": [
-      "0.225",
-      "0.250",
-      "0.271",
-      "0.294"
+      "1.5",
+      "2.5",
+      "3.0",
+      "2.0"
     ],
-    "answer": "0.225",
-    "hint": "Apply the binomial probability formula P(k) = C(n,k)p^k(1-p)^{n-k}.",
+    "answer": "1.5",
+    "hint": "Multiply the number of days by the probability of rain.",
     "steps": [
-      "Calculate C(12,3)*(0.25)^3*(0.75)^9 = 220 * 0.015625 * 0.0751 ≈ 0.225.",
-      "Verify using calculator or binomial tables."
-    ]
-  },
-  {
-    "grade": 12,
-    "topic": "Advanced Functions",
-    "question": "A financial institution uses the function f(x) = 2x³ - 5x² + 3x to model investment growth. What is the transformed function after reflecting over the x-axis and shifting up 4 units?",
-    "questionFr": "Une institution financière utilise la fonction f(x) = 2x³ - 5x² + 3x pour modéliser la croissance des investissements. Quelle est la fonction transformée après la réflexion sur l'axe des x et le décalage vers le haut de 4 unités?",
-    "choices": [
-      "-2x³ - 5x² + 3x + 4",
-      "2x³ + 5x² - 3x + 4",
-      "-2x³ + 5x² - 3x + 4",
-      "2x³ - 5x² - 3x + 4"
-    ],
-    "answer": "-2x³ + 5x² - 3x + 4",
-    "hint": "Apply transformations: reflect over x-axis (multiply by -1), then shift up 4 units.",
-    "steps": [
-      "Reflect f(x) over x-axis: -f(x) = -2x³ + 5x² - 3x.",
-      "Add 4 to shift up: -2x³ + 5x² - 3x + 4."
+      "Recognize this as a binomial distribution.",
+      "Calculate E(X) = n × p = 5 × 0.3 = 1.5"
     ]
   }
 ]
